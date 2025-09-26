@@ -62,3 +62,19 @@ library(forcats)
 library(broom)
 ```
 
+#Read in Counts Files for Human and Chimpanzee
+```{r Counts Files}
+#read in your chimp raw counts file
+c_raw_counts <- read_table("D:/Dissertation_RNA/RNAseq_TACC/featurecounts/c_samples_counts.txt")
+View(c_raw_counts)
+
+#read in your human raw counts file
+h_raw_counts <- read_table("D:/Dissertation_RNA/RNAseq_TACC/featurecounts/h_samples_counts.txt")
+View(h_raw_counts)
+
+```
+
+```{r}
+
+```
+
