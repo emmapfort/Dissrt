@@ -9,22 +9,56 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+pre[class] {
+  max-height: 200px;
+  
+}
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+#Load Libraries
+```{r Necessary Libraries, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(Biobase)
+library(limma)
+library(edgeR)
+library(edgebundleR)
+library(scales)
+library(biomaRt)
+library(ggrepel)
+library(ggfortify)
+library(corrplot)
+library(readr)
+library(org.Hs.eg.db)
+library(AnnotationDbi)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(reshape2)
+library(ggVennDiagram)
+library(UpSetR)
+library(ggpubr)
+library(VennDiagram)
+library(VennDetail)
+library(BiocParallel)
+library(RUVSeq)
+library(SummarizedExperiment)
+library(ggsignif)
+library(purrr)
+library(rstatix)
+library(ggrastr)
+library(tibble)
+library(grid)
+library(eulerr)
+library(patchwork)
+library(car)
+library(gprofiler2)
+library(forcats)
+library(broom)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
