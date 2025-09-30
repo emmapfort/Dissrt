@@ -3,6 +3,8 @@ title: "RNAseq_QC"
 author: "Emma M Pfortmiller"
 date: "2025-09-26"
 output: html_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -60,5 +62,666 @@ library(car)
 library(gprofiler2)
 library(forcats)
 library(broom)
+```
+
+#Define plot theme
+```{r Custom Theme}
+# Define the custom theme
+# plot_theme_custom <- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = "black"),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, "in"),
+# 
+#       #text and font
+#       axis.text = element_text(color = "black",
+#                                family = "Arial",
+#                                size = 8),
+#       axis.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 10),
+#       legend.text = element_text(color = "black",
+#                                  family = "Arial",
+#                                  size = 8),
+#       legend.title = element_text(color = "black",
+#                                   family = "Arial",
+#                                   size = 10),
+#       plot.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = "grey80", linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = "grey90", linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+
+theme_custom <- readRDS("data/plot_theme_custom.RDS")
+
+```
+
+#Define saving plots as pdfs
+```{r pdf saving function}
+
+save_plot <- function(plot, filename, 
+                      folder = ".", 
+                      width = 8, 
+                      height = 6, 
+                      units = "in", 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
+  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  message("Saved plot as Cairo PDF: ", pdf_file)
+  message("Saved plot as PNG: ", png_file)
+}
+
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height
+```
+
+#Datasets Creation
+```{r Import Counts Tables}
+#I have one counts table for chimpanzee and another for human
+
+#read in chimpanzee counts
+# c_raw_counts <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/c_samples_counts_fin.csv")
+
+# saveRDS(c_raw_counts, "data/counts/c_raw_counts.RDS")
+
+c_raw_counts <- readRDS("data/counts/c_raw_counts.RDS")
+
+#read in human counts table in the same manner
+
+# h_raw_counts <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/h_samples_counts_fin.csv")
+
+# saveRDS(h_raw_counts, "data/counts/h_raw_counts.RDS")
+
+h_raw_counts <- readRDS("data/counts/h_raw_counts.RDS")
+
+```
+
+#Metadata
+```{r Read in Metadata Sheet}
+#I have a metadata sheet so I can associate the column names with their sample ID
+
+# metadata <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv",
+#     col_types = cols(Conc = col_number()))
+
+#save metadata sheet
+
+# saveRDS(metadata, "data/counts/dissrt_metadata.RDS")
+
+metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+
+#subset my metadata 
+human_metadata <- metadata[metadata$Species == "H", ]
+chimp_metadata <- metadata[metadata$Species == "C", ]
+
+```
+
+```{r Change Column Names}
+#I want to modify the column names for each dataset to match their sample id and treatment instead of library id
+
+#first make sure that Geneid changes to Ensembl_ID
+# rename_with_metadata <- function(counts, metadata_subset) {
+#
+#   # 1. Rename first column to Ensembl_ID if not already
+#   colnames(counts)[1] <- "Ensembl_ID"
+#
+#   # 2. Columns to rename (all except first)
+#   cols_to_rename <- colnames(counts)[-1]
+#
+#   # 3. Remove ".sorted.bam" from column names
+#   library_names <- gsub("\\.sorted\\.bam$", "", cols_to_rename)
+#
+#   # 4. Match library names to Sample_name in metadata
+#   new_names <- metadata_subset$Sample_name[match(library_names, metadata_subset$Sample_ID)]
+#
+#   # 5. Warn if any columns didn’t match
+#   unmatched <- cols_to_rename[is.na(new_names)]
+#   if (length(unmatched) > 0) {
+#     warning("The following library names did not match metadata: ", paste(unmatched, collapse = ", "))
+#   }
+#
+#   # 6. Replace column names (keep first column as Ensembl_ID)
+#   colnames(counts) <- c("Ensembl_ID", ifelse(is.na(new_names), cols_to_rename, new_names))
+#
+#   return(counts)
+# }
+
+# Subset metadata by species
+# human_metadata <- metadata[metadata$Species == "H", ]
+# chimp_metadata <- metadata[metadata$Species == "C", ]
+#
+# Apply to counts tables
+# h_counts <- rename_with_metadata(h_raw_counts, human_metadata)
+# c_counts <- rename_with_metadata(c_raw_counts, chimp_metadata)
+
+#save new counts files that have correctly named columns
+# saveRDS(h_counts, "data/counts/h_counts.RDS")
+# saveRDS(c_counts, "data/counts/c_counts.RDS")
+
+#kept all of this for posterity but don't need to run again
+
+#read in final files
+h_counts <- readRDS("data/counts/h_counts.RDS")
+c_counts <- readRDS("data/counts/c_counts.RDS")
+
+```
+
+#Combine my datasets
+```{r Join my Human and Chimp datasets together}
+#make sure to sort them so that all of the genes match up
+
+h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
+c_counts <- c_counts[order(c_counts$Ensembl_ID), ]
+
+hc_counts <- left_join(c_counts, h_counts, by = "Ensembl_ID")
+
+#now save my combined counts table with both species
+# saveRDS(hc_counts, "data/counts/combined_counts_table_h_c.RDS")
+
+hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
+
+#now I have a combined dataframe with the treatment names included
+
+```
+
+#Filter Dataframe
+```{r Filter with rowMeans}
+#first, convert to log2cpm
+
+#make sure to move Ensembl_ID to rownames, skipped conversion for now
+
+hc_counts <- column_to_rownames(hc_counts, var = "Ensembl_ID")
+
+hc_cpm_unfilt <- cpm(hc_counts, log = TRUE)
+dim(hc_cpm_unfilt)
+#44125 genes of 307 columns as expected
+
+hist(hc_cpm_unfilt,
+     main = "Unfiltered Counts (cpm)",
+     xlab = expression("log"[2]*"cpm"),
+     col = 4)
+
+#now filter by rowMeans > 0 to exclude lowly expressed genes
+hc_cpm_matrix <- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) > 0))
+dim(hc_cpm_matrix)
+#15321 genes after filtering
+
+#save this as an RDS and csv
+# saveRDS(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix.RDS")
+# write.csv(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix.csv")
+
+#plot this out to show the filtering
+hist(hc_cpm_matrix, 
+     main = "Filtered Counts (cpm) rowMeans > 0",
+     xlab = expression("log"[2]*"cpm"),
+     col = 2)
+
+```
+
+
+#QC Boxplots
+```{r QC Boxplots for H and C}
+#make boxplots of all counts vs log2cpm filtered counts
+
+par(mar = c(8,4,2,2))
+#boxplot of unfiltered cpm matrix
+hc_cpm_unfilt_boxplot <- boxplot(hc_cpm_unfilt, 
+        main = "Unfiltered log2cpm", 
+        names = colnames(hc_cpm_unfilt), 
+        adj=1, las = 2, cex.axis = 0.7)
+
+#set the margins so the x axis isn't cut off
+par(mar = c(8,4,2,2))
+#boxplot of filtered cpm matrix
+hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix, 
+        main = "Filtered log2cpm (rowMeans > 0)", 
+        names = colnames(hc_cpm_matrix), 
+        adj=1, las = 2, cex.axis = 0.7)
+
+
+```
+
+
+
+#Convert Ensembl to Entrez
+```{r converting ensembl id into entrez id}
+# ensembl_ids <- rownames(hc_cpm_matrix)
+
+# entrez_ids <- mapIds(
+#   org.Hs.eg.db,
+#   keys = ensembl_ids,
+#   column = "ENTREZID",
+#   keytype = "ENSEMBL",
+#   multiVals = "first"
+# )
+
+#since there was many mapping, check which ones are duplicated
+# sum(duplicated(entrez_ids))
+#1701 are duplicated with entrez id
+
+#convert to df
+# hc_cpm_df <- as.data.frame(hc_cpm_matrix)
+
+#add the Entrez_ID column to my counts dataframe
+# hc_cpm_df <- hc_cpm_df %>%
+#   dplyr::mutate(Entrez_ID = entrez_ids)
+
+#move it to the front so I can see it easily against Ensembl_ID
+# hc_cpm_df <- hc_cpm_df %>%
+#   dplyr::select(Entrez_ID, everything())
+
+#now keep only unique values
+# hc_cpm_df <- hc_cpm_df %>%
+#   group_by(Entrez_ID) %>%
+#   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>%
+#   ungroup()
+
+#remove any NA genes
+# hc_cpm_df <- hc_cpm_df[!is.na(hc_cpm_df$Entrez_ID), ]
+
+#this gives me a total of 13619 genes, which is within the range I desired
+
+#now make the rownames Entrez_ID
+# hc_cpm_df <- column_to_rownames(hc_cpm_df, var = "Entrez_ID")
+
+#save entrez_id version of dataframe
+# saveRDS(hc_cpm_df, "data/counts/hc_cpm_filt_entrez_dataframe.RDS")
+# write.csv(hc_cpm_df, "data/counts/hc_cpm_filt_entrez_dataframe.csv")
+
+#read in data
+hc_cpm_df <- readRDS("data/counts/hc_cpm_filt_entrez_dataframe.RDS")
+hc_cpm_df_unfilt <- readRDS("data/counts/hc_cpm_unfilt_entrez_dataframe.RDS")
+```
+
+```{r PCA Plots}
+
+prcomp_hc_unfilt <- prcomp(t(hc_cpm_df_unfilt %>% as.matrix()), center =  TRUE)
+
+prcomp_hc_filt <- prcomp(t(hc_cpm_df %>% as.matrix()), center =  TRUE)
+
+#read in my metadata annotations
+metadata
+
+#add in labels for individual numbers
+# samples_per_ind <- c(22, 22, 22, 22, 22, 22, 22, 22, 21, 22, 22, 22, 22, 22)
+
+# ind_num <- c(rep(1:14, times = samples_per_ind))
+
+ # saveRDS(ind_num, "data/ind_num.RDS")
+
+ind_num <- readRDS("data/ind_num.RDS")
+
+drug_col <- c(
+  "TUN" = "#E41A1C",
+  "THA" = "#377EB8", 
+  "DOX" = "#4DAF4A", 
+  "NUTL" = "#984EA3", 
+  "DMSO" = "#999999", 
+  "LPS" = "#FFFF33", 
+  "TNFa" = "#FC8D62", 
+  "H2O" = "#777777", 
+  "BPA" = "#F781BF", 
+  "PFOA" = "#66C2A5", 
+  "EtOH" = "#AAAAAA"
+)
+
+metadata$Time <- factor(metadata$Time)
+
+metadata$Drug <- factor(
+  metadata$Drug,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+#now plot my PCA for unfiltered log2cpm
+####PC1/PC2####
+unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Unfiltered log"[2]*"cpm PC1/PC2")) +
+  theme_custom()
+
+####PC2/PC3####
+unfilt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Unfiltered log"[2]*"cpm PC2/PC3")) +
+  theme_custom()
+
+####PC3/PC4####
+unfilt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Unfiltered log"[2]*"cpm PC3/PC4")) +
+  theme_custom()
+
+
+#Now plot my PCA for filtered log2cpm
+####PC1/PC2####
+filt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = "Drug", shape = "Time", size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Filtered log"[2]*"cpm PC1/PC2")) +
+  theme_custom()
+
+####PC2/PC3####
+filt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = "Drug", shape = "Time", size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
+  theme_custom()
+
+####PC3/PC4####
+filt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = "Drug", shape = "Time", size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
+  theme_custom()
+
+#now save all of these together in pdf and png
+hc_pca_plots <- list(
+  unfilt_PC1_PC2 = unfilt_PC1_PC2,
+  unfilt_PC2_PC3 = unfilt_PC2_PC3,
+  unfilt_PC3_PC4 = unfilt_PC3_PC4,
+  filt_PC1_PC2 = filt_PC1_PC2,
+  filt_PC2_PC3 = filt_PC2_PC3,
+  filt_PC3_PC4 = filt_PC3_PC4
+)
+
+# for (plot_name in names(hc_pca_plots)) {
+#   save_plot(
+#     plot = hc_pca_plots[[plot_name]],
+#     filename = paste0("PCA_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
+
+```
+
+#Subset PCA
+```{r}
+#UPR Subset
+upr_tx <- c("TUN", "THA", "DMSO")
+upr_meta <- metadata %>% 
+  dplyr::filter(Drug %in% upr_tx)
+upr_cpm <- hc_cpm_df[, colnames(hc_cpm_df) %in% upr_meta$Sample_Tx] 
+upr_cols <- c(
+  "TUN" = "#E41A1C",
+  "THA" = "#377EB8", 
+  "DMSO" = "#999999"
+)
+
+#DDR Subset
+ddr_tx <- c("DOX", "NUTL", "DMSO")
+ddr_meta <- metadata %>% 
+  dplyr::filter(Drug %in% ddr_tx)
+ddr_cpm <- hc_cpm_df[, colnames(hc_cpm_df) %in% ddr_meta$Sample_Tx]  
+ddr_cols <- c(
+  "DOX" = "#4DAF4A", 
+  "NUTL" = "#984EA3",
+  "DMSO" = "#999999")
+
+#IMR Subset
+imr_tx <- c("LPS", "TNFa", "H2O")
+imr_meta <- metadata %>% 
+  dplyr::filter(Drug %in% imr_tx)
+imr_cpm <- hc_cpm_df[, colnames(hc_cpm_df) %in% imr_meta$Sample_Tx]  
+imr_cols <-  c(
+  "LPS" = "#FFFF33", 
+  "TNFa" = "#FC8D62", 
+  "H2O" = "#777777")
+
+#MMR Subset
+mmr_tx <- c("BPA", "PFOA", "EtOH")
+mmr_meta <- metadata %>% 
+  dplyr::filter(Drug %in% mmr_tx)
+mmr_cpm <- hc_cpm_df[, colnames(hc_cpm_df) %in% mmr_meta$Sample_Tx]  
+mmr_cols <- c(
+  "BPA" = "#F781BF", 
+  "PFOA" = "#66C2A5", 
+  "EtOH" = "#AAAAAA")
+
+#now make a function to plot these PCA plots in subsets
+make_pca_plots <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, drug_col) {
+  # filter metadata
+  keep_idx <- metadata$Drug %in% subset_drugs
+  metadata_sub <- metadata[keep_idx, ]
+  ind_sub <- ind_num[keep_idx]
+  
+  # subset expression matrix to same samples
+  hc_matrix_sub <- hc_matrix[, keep_idx]
+  
+  # run PCA on subset
+  prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Time", size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col) +
+    ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC1/PC2")) +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Time", size = 4,
+                 x = 2, y = 3) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col) +
+    ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC2/PC3")) +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2)
+}
+
+# ---- Run for each subset ----
+upr_plots <- make_pca_plots("UPR", c("TUN", "THA", "DMSO"), hc_cpm_matrix, metadata, ind_num, drug_col)
+ddr_plots <- make_pca_plots("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_matrix, metadata, ind_num, drug_col)
+imr_plots <- make_pca_plots("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_matrix, metadata, ind_num, drug_col)
+mmr_plots <- make_pca_plots("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_matrix, metadata, ind_num, drug_col)
+
+#display plots
+upr_plots$p1
+upr_plots$p2
+ddr_plots$p1
+ddr_plots$p2
+imr_plots$p1
+imr_plots$p2
+mmr_plots$p1
+mmr_plots$p2
+
+all_plots <- list(
+  upr_PC1_PC2 = upr_plots$p1,
+  upr_PC2_PC3 = upr_plots$p2,
+  ddr_PC1_PC2 = ddr_plots$p1,
+  ddr_PC2_PC3 = ddr_plots$p2,
+  imr_PC1_PC2 = imr_plots$p1,
+  imr_PC2_PC3 = imr_plots$p2,
+  mmr_PC1_PC2 = mmr_plots$p1,
+  mmr_PC2_PC3 = mmr_plots$p2
+)
+
+# Loop through each plot and save
+# for (plot_name in names(all_plots)) {
+#   save_plot(
+#     plot = all_plots[[plot_name]],
+#     filename = paste0("Subset_PCA_", plot_name, "_EMP"),
+#     folder = output_folder  
+#     )
+# }
+
+
+```
+
+
+#Correlation Heatmaps
+```{r Spearman Heatmaps Correlation, fig.width=18, fig.height=14}
+#first make correlation heatmaps of all samples
+#using ComplexHeatmap
+
+#prepare data
+hc_matrix <- hc_cpm_df
+colnames(hc_matrix) <- metadata$Sample_Tx  # Ensure column names match metadata
+
+#compute Spearman correlation
+cor_matrix_spearman <- cor(hc_matrix, method = "spearman", use = "everything")
+
+#extract metadata for annotations
+Individual <- as.character(metadata$Ind)
+Time <- as.character(metadata$Time)
+Treatment <- as.character(metadata$Drug)
+
+# ---- Define colors for annotations ----
+drug_col <- c(
+  "TUN" = "#E41A1C",
+  "THA" = "#377EB8", 
+  "DOX" = "#4DAF4A", 
+  "NUTL" = "#984EA3", 
+  "DMSO" = "#999999", 
+  "LPS" = "#FFFF33", 
+  "TNFa" = "#FC8D62", 
+  "H2O" = "#777777", 
+  "BPA" = "#F781BF", 
+  "PFOA" = "#66C2A5", 
+  "EtOH" = "#AAAAAA"
+)
+
+ind_col <- setNames(rainbow(length(unique(Individual))), unique(Individual))
+
+time_col <- c("2" = "#392344",
+              "24" = "#457291")
+
+# ---- Create annotations ----
+top_annotation <- HeatmapAnnotation(
+  Individual = Individual, 
+  Time = Time,
+  Treatment = Treatment,
+  col = list(
+    Individual = ind_col,
+    Time = time_col,
+    Treatment = drug_col
+  )
+)
+
+# ---- Spearman heatmap for all samples ----
+heatmap_spearman_all <- Heatmap(cor_matrix_spearman,
+                                name = "Spearman",
+                                top_annotation = top_annotation,
+                                show_row_names = TRUE,
+                                show_column_names = TRUE,
+                                cluster_rows = TRUE,
+                                cluster_columns = TRUE,
+                                border = TRUE)
+draw(heatmap_spearman_all)
+
+# ---- Define subsets ----
+subsets <- list(
+  UPR = c("TUN", "THA", "DMSO"),
+  DDR = c("DOX", "NUTL", "DMSO"),
+  IMR = c("LPS", "TNFa", "H2O"),
+  MMR = c("BPA", "PFOA", "EtOH")
+)
+
+# ---- Loop through subsets ----
+subset_heatmaps <- list()
+
+for (subset_name in names(subsets)) {
+  # Filter columns for this subset
+  cols_subset <- metadata$Sample_Tx[metadata$Drug %in% subsets[[subset_name]]]
+  mat_subset <- hc_matrix[, cols_subset, drop = FALSE]
+  
+  # Correlation
+  cor_subset <- cor(mat_subset, method = "spearman", use = "everything")
+  
+  # Annotations for this subset
+  top_ann_subset <- HeatmapAnnotation(
+    Individual = metadata$Ind[metadata$Sample_Tx %in% cols_subset],
+    Time = metadata$Time[metadata$Sample_Tx %in% cols_subset],
+    Treatment = metadata$Drug[metadata$Sample_Tx %in% cols_subset],
+    col = list(
+      Individual = ind_col,
+      Time = time_col,
+      Treatment = drug_col
+    )
+  )
+  
+  # Heatmap
+  heatmap_subset <- Heatmap(cor_subset,
+                            name = paste0("Spearman_", subset_name),
+                            top_annotation = top_ann_subset,
+                            show_row_names = TRUE,
+                            show_column_names = TRUE,
+                            cluster_rows = TRUE,
+                            cluster_columns = TRUE,
+                            border = TRUE)
+  
+  draw(heatmap_subset)
+  subset_heatmaps[[subset_name]] <- heatmap_subset
+}
+
+
+```
+#
+```{r}
+
 ```
 
