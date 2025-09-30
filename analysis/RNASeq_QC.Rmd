@@ -4,7 +4,7 @@ author: "Emma M Pfortmiller"
 date: "2025-09-26"
 output: html_document
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -187,28 +187,28 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 
 #first make sure that Geneid changes to Ensembl_ID
 # rename_with_metadata <- function(counts, metadata_subset) {
-#
+# #
 #   # 1. Rename first column to Ensembl_ID if not already
 #   colnames(counts)[1] <- "Ensembl_ID"
-#
+#   
 #   # 2. Columns to rename (all except first)
 #   cols_to_rename <- colnames(counts)[-1]
-#
+# 
 #   # 3. Remove ".sorted.bam" from column names
 #   library_names <- gsub("\\.sorted\\.bam$", "", cols_to_rename)
-#
+# 
 #   # 4. Match library names to Sample_name in metadata
 #   new_names <- metadata_subset$Sample_name[match(library_names, metadata_subset$Sample_ID)]
-#
+# 
 #   # 5. Warn if any columns didn’t match
 #   unmatched <- cols_to_rename[is.na(new_names)]
 #   if (length(unmatched) > 0) {
 #     warning("The following library names did not match metadata: ", paste(unmatched, collapse = ", "))
 #   }
-#
+# 
 #   # 6. Replace column names (keep first column as Ensembl_ID)
 #   colnames(counts) <- c("Ensembl_ID", ifelse(is.na(new_names), cols_to_rename, new_names))
-#
+# 
 #   return(counts)
 # }
 
@@ -235,11 +235,11 @@ c_counts <- readRDS("data/counts/c_counts.RDS")
 #Combine my datasets
 ```{r Join my Human and Chimp datasets together}
 #make sure to sort them so that all of the genes match up
-
-h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
-c_counts <- c_counts[order(c_counts$Ensembl_ID), ]
-
-hc_counts <- left_join(c_counts, h_counts, by = "Ensembl_ID")
+# 
+# h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
+# c_counts <- c_counts[order(c_counts$Ensembl_ID), ]
+# 
+# hc_counts <- left_join(c_counts, h_counts, by = "Ensembl_ID")
 
 #now save my combined counts table with both species
 # saveRDS(hc_counts, "data/counts/combined_counts_table_h_c.RDS")
@@ -249,6 +249,589 @@ hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
 #now I have a combined dataframe with the treatment names included
 
 ```
+
+#QC Mapping/fC
+```{r Mapping and Counts Stats}
+#read in my excel file with all of this information
+# map_align_stats <- read_excel("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx",
+#     sheet = "Map_Align_all", col_types = c("skip",
+#         "text", "numeric", "text" , "text", "text",
+#         "text", "numeric", "text", "text",
+#         "text", "text", "text", "numeric",
+#         "text", "numeric", "numeric", "numeric",
+#         "numeric", "numeric", "numeric",
+#         "numeric", "numeric", "numeric",
+#         "numeric", "numeric", "numeric",
+#         "numeric"))
+# View(map_align_stats)
+
+#save as a csv for later
+# saveRDS(map_align_stats, "data/counts/mapping_alignment_stats_sheet.RDS")
+# write.csv(map_align_stats, "data/counts/mapping_alignment_stats_sheet.csv")
+
+map_align_stats <- readRDS("data/counts/mapping_alignment_stats_sheet.RDS")
+
+#now I want to do some QC plots to highlight this information
+
+####Reads by Sample####
+reads_by_sample <- c(
+  "TUN" = "#E41A1C",
+  "THA" = "#377EB8", 
+  "DOX" = "#4DAF4A", 
+  "NUTL" = "#984EA3", 
+  "DMSO" = "#999999", 
+  "LPS" = "#FFFF33", 
+  "TNFa" = "#FC8D62", 
+  "H2O" = "#777777", 
+  "BPA" = "#F781BF", 
+  "PFOA" = "#66C2A5", 
+  "EtOH" = "#AAAAAA"
+)
+
+map_align_stats$Stimulus <- factor(
+  map_align_stats$Stimulus,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+#Total Reads per Sample
+total_reads_sample_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = Total_Reads, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of reads by sample"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+#Total Mapped Reads per Sample
+map_reads_sample_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = Mapped, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of mapped reads by sample"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Reads by Sample Boxplot####
+total_reads_sample_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y= Total_Reads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of reads by sample"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Mapped Reads by Sample Boxplot####
+map_reads_sample_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y= Mapped, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of mapped reads by sample"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Reads by Stimulus####
+total_reads_stimulus_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Stimulus, y= Total_Reads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of reads by stimulus"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Mapped Reads by Stimulus####
+map_reads_stimulus_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Stimulus, y= Mapped, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of mapped reads by stimulus"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Reads Per Individual####
+total_reads_ind_plot <- map_align_stats %>% 
+  ggplot(., aes (x =as.factor(Line), y = Total_Reads))+
+  geom_boxplot(aes(fill= Ind))+
+ scale_fill_manual(values = ind_colors)+
+  ggtitle(expression("Total number of reads by individual"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Mapped Reads Per Individual####
+map_reads_ind_plot <- map_align_stats %>% 
+  ggplot(., aes (x =as.factor(Line), y = Mapped))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression("Total number of mapped reads by individual"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Reads Per Timepoint####
+map_align_stats$Time <- factor(map_align_stats$Time, 
+                            levels = c("2", "24"))
+
+reads_by_time <- c("2" = "#392344", "24" = "#457291")
+
+total_reads_time_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_ID, y = Total_Reads, fill = Time, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression("Total number of reads by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Reads Per Timepoint Boxplot####
+total_reads_time_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Time, y= Total_Reads, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression("Total number of reads by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Mapped Reads Per Timepoint####
+map_reads_time_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Time, y= Mapped, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression("Total number of mapped reads by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Reads Per Species####
+reads_by_species <- c("C" = "#E56473", "H" = "#EE4902")
+total_reads_species_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Line, y = Total_Reads, fill = Species, group_by = Line))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Total number of reads by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Mapped Reads by Species####
+total_reads_species_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Line, y= Total_Reads, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Total number of reads by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Mapped Reads by Species####
+map_reads_species_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Line, y= Mapped, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Total number of mapped reads by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+#make a list so I can save all of these plots
+# qc_map_plots_list <- list(
+#   total_reads_sample_plot,
+#   map_reads_sample_plot,
+#   total_reads_sample_boxplot,
+#   map_reads_sample_boxplot,
+#   total_reads_ind_plot,
+#   map_reads_ind_plot,
+#   total_reads_species_plot,
+#   total_reads_species_boxplot,
+#   map_reads_species_plot,
+#   total_reads_stimulus_plot,
+#   map_reads_stimulus_plot,
+#   total_reads_time_plot,
+#   total_reads_time_boxplot,
+#   map_reads_time_plot
+# )
+# 
+# qc_map_plots_names <- list(
+#   "total_reads_sample",
+#   "map_reads_sample",
+#   "total_reads_sample_boxplot",
+#   "map_reads_sample_boxplot",
+#   "total_reads_ind",
+#   "map_reads_ind",
+#   "total_reads_species",
+#   "total_reads_species_boxplot",
+#   "map_reads_species",
+#   "total_reads_stimulus",
+#   "map_reads_stimulus",
+#   "total_reads_time_plot",
+#   "total_reads_time_boxplot",
+#   "map_reads_time"
+# )
+# 
+# qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
+# 
+# 
+# stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
+
+#save all of these plots to my designated folder
+
+# for (i in seq_along(qc_map_plots_list)) {
+#   save_plot(
+#     plot = qc_map_plots_list[[i]],
+#     filename = qc_map_plots_names[i],
+#     folder = output_folder
+#   )
+# }
+
+```
+
+###QC Boxplots featureCounts
+```{r featureCounts Stats}
+
+#Total Counts per Sample
+map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = Total_Counts, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of counts by sample"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+
+#Total Assigned Counts per Sample
+map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = Assigned, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of assigned counts by sample"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Counts by Sample Boxplot####
+map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y= Total_Counts, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of counts by sample"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Assigned Counts by Sample Boxplot####
+map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y= Assigned, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of assigned counts by sample"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Counts by Stimulus####
+map_align_stats %>% 
+  ggplot(., aes (x = Stimulus, y= Total_Counts, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of counts by stimulus"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Assigned Counts by Stimulus####
+map_align_stats %>% 
+  ggplot(., aes (x = Stimulus, y= Assigned, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression("Total number of assigned counts by stimulus"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Counts Per Individual####
+map_align_stats %>% 
+  ggplot(., aes (x =as.factor(Line), y = Total_Counts))+
+  geom_boxplot(aes(fill= Ind))+
+ scale_fill_manual(values = ind_colors)+
+  ggtitle(expression("Total number of counts by individual"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Total Assigned Counts Per Individual####
+map_align_stats %>% 
+  ggplot(., aes (x =as.factor(Line), y = Assigned))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression("Total number of assigned counts by individual"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Counts Per Timepoint####
+map_align_stats$Time <- factor(map_align_stats$Time, 
+                            levels = c("2", "24"))
+
+reads_by_time <- c("2" = "#392344", "24" = "#457291")
+
+map_align_stats %>% 
+  ggplot(., aes (x = Sample_ID, y = Total_Counts, fill = Time, group_by = Ind))+
+  geom_col()+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression("Total number of counts by timepoint"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Assigned Counts Per Timepoint####
+map_align_stats %>% 
+  ggplot(., aes (x = Time, y= Assigned, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression("Total number of assigned counts by timepoint"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Counts Per Species####
+reads_by_species <- c("C" = "#E56473", "H" = "#EE4902")
+map_align_stats %>% 
+  ggplot(., aes (x = Line, y = Total_Counts, fill = Species, group_by = Line))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Total number of counts by species"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+####Total Assign Counts by Species####
+map_align_stats %>% 
+  ggplot(., aes (x = Line, y= Assigned, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Total number of assigned counts by species"))+
+  xlab("")+
+  ylab(expression("fC Counts"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+
+```
+
 
 #Filter Dataframe
 ```{r Filter with rowMeans}
@@ -283,6 +866,8 @@ hist(hc_cpm_matrix,
      col = 2)
 
 ```
+
+
 
 
 #QC Boxplots
@@ -344,7 +929,7 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
 
 #remove any NA genes
 # hc_cpm_df <- hc_cpm_df[!is.na(hc_cpm_df$Entrez_ID), ]
-
+# dim(hc_cpm_df)
 #this gives me a total of 13619 genes, which is within the range I desired
 
 #now make the rownames Entrez_ID
@@ -366,16 +951,10 @@ prcomp_hc_unfilt <- prcomp(t(hc_cpm_df_unfilt %>% as.matrix()), center =  TRUE)
 prcomp_hc_filt <- prcomp(t(hc_cpm_df %>% as.matrix()), center =  TRUE)
 
 #read in my metadata annotations
-metadata
+metadata <- readRDS("data/counts/dissrt_metadata.RDS")
 
 #add in labels for individual numbers
-# samples_per_ind <- c(22, 22, 22, 22, 22, 22, 22, 22, 21, 22, 22, 22, 22, 22)
-
-# ind_num <- c(rep(1:14, times = samples_per_ind))
-
- # saveRDS(ind_num, "data/ind_num.RDS")
-
-ind_num <- readRDS("data/ind_num.RDS")
+ind_num <- metadata$Ind_Num
 
 drug_col <- c(
   "TUN" = "#E41A1C",
@@ -402,8 +981,8 @@ metadata$Drug <- factor(
 #now plot my PCA for unfiltered log2cpm
 ####PC1/PC2####
 unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=1, y=2) +
-  ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.5, 
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -413,8 +992,8 @@ unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = 
 
 ####PC2/PC3####
 unfilt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=2, y=3) +
-  ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.5, 
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -478,18 +1057,18 @@ hc_pca_plots <- list(
   filt_PC3_PC4 = filt_PC3_PC4
 )
 
-# for (plot_name in names(hc_pca_plots)) {
-#   save_plot(
-#     plot = hc_pca_plots[[plot_name]],
-#     filename = paste0("PCA_HC_", plot_name, "_EMP"),
-#     folder = output_folder
-#   )
-# }
+for (plot_name in names(hc_pca_plots)) {
+  save_plot(
+    plot = hc_pca_plots[[plot_name]],
+    filename = paste0("PCA_HC_", plot_name, "_EMP"),
+    folder = output_folder
+  )
+}
 
 ```
 
 #Subset PCA
-```{r}
+```{r PCA of Subsets}
 #UPR Subset
 upr_tx <- c("TUN", "THA", "DMSO")
 upr_meta <- metadata %>% 
@@ -589,23 +1168,23 @@ imr_plots$p2
 mmr_plots$p1
 mmr_plots$p2
 
-all_plots <- list(
-  upr_PC1_PC2 = upr_plots$p1,
-  upr_PC2_PC3 = upr_plots$p2,
-  ddr_PC1_PC2 = ddr_plots$p1,
-  ddr_PC2_PC3 = ddr_plots$p2,
-  imr_PC1_PC2 = imr_plots$p1,
-  imr_PC2_PC3 = imr_plots$p2,
-  mmr_PC1_PC2 = mmr_plots$p1,
-  mmr_PC2_PC3 = mmr_plots$p2
-)
-
-# Loop through each plot and save
+# all_plots <- list(
+#   upr_PC1_PC2 = upr_plots$p1,
+#   upr_PC2_PC3 = upr_plots$p2,
+#   ddr_PC1_PC2 = ddr_plots$p1,
+#   ddr_PC2_PC3 = ddr_plots$p2,
+#   imr_PC1_PC2 = imr_plots$p1,
+#   imr_PC2_PC3 = imr_plots$p2,
+#   mmr_PC1_PC2 = mmr_plots$p1,
+#   mmr_PC2_PC3 = mmr_plots$p2
+# )
+# 
+# # Loop through each plot and save
 # for (plot_name in names(all_plots)) {
 #   save_plot(
 #     plot = all_plots[[plot_name]],
 #     filename = paste0("Subset_PCA_", plot_name, "_EMP"),
-#     folder = output_folder  
+#     folder = output_folder
 #     )
 # }
 
@@ -627,6 +1206,7 @@ cor_matrix_spearman <- cor(hc_matrix, method = "spearman", use = "everything")
 
 #extract metadata for annotations
 Individual <- as.character(metadata$Ind)
+Species <- as.character(metadata$Species)
 Time <- as.character(metadata$Time)
 Treatment <- as.character(metadata$Drug)
 
@@ -650,15 +1230,20 @@ ind_col <- setNames(rainbow(length(unique(Individual))), unique(Individual))
 time_col <- c("2" = "#392344",
               "24" = "#457291")
 
+species_col <- c("C" = "#E56473",
+                 "H" = "#EE4902")
+
 # ---- Create annotations ----
 top_annotation <- HeatmapAnnotation(
   Individual = Individual, 
   Time = Time,
   Treatment = Treatment,
+  Species = Species,
   col = list(
     Individual = ind_col,
     Time = time_col,
-    Treatment = drug_col
+    Treatment = drug_col,
+    Species = species_col
   )
 )
 
@@ -670,7 +1255,9 @@ heatmap_spearman_all <- Heatmap(cor_matrix_spearman,
                                 show_column_names = TRUE,
                                 cluster_rows = TRUE,
                                 cluster_columns = TRUE,
-                                border = TRUE)
+                                border = TRUE, 
+                                show_row_dend = FALSE,
+                                show_column_dend = FALSE)
 draw(heatmap_spearman_all)
 
 # ---- Define subsets ----
@@ -697,10 +1284,12 @@ for (subset_name in names(subsets)) {
     Individual = metadata$Ind[metadata$Sample_Tx %in% cols_subset],
     Time = metadata$Time[metadata$Sample_Tx %in% cols_subset],
     Treatment = metadata$Drug[metadata$Sample_Tx %in% cols_subset],
+    Species = metadata$Species[metadata$Sample_Tx %in% cols_subset],
     col = list(
       Individual = ind_col,
       Time = time_col,
-      Treatment = drug_col
+      Treatment = drug_col,
+      Species = species_col
     )
   )
   
@@ -720,8 +1309,11 @@ for (subset_name in names(subsets)) {
 
 
 ```
-#
-```{r}
+
+#Prep for Differential Expression Analysis
+```{r DE Analysis Materials}
+#filter my counts for DE
+
 
 ```
 
