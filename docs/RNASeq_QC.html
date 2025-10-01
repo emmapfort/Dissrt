@@ -361,7 +361,7 @@ div.tocify {
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
 <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-workflowr <span class="glyphicon glyphicon-ok text-success"
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
 aria-hidden="true"></span>
 </button>
 </p>
@@ -372,8 +372,8 @@ aria-hidden="true"></span>
 </li>
 <li>
 <a data-toggle="tab" href="#checks"> Checks <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
-</a>
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -382,13 +382,13 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-09-26
+<strong>Last updated:</strong> 2025-10-01
 </p>
 <p>
 <strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
 <span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> 0
+aria-hidden="true"></span> 1
 </p>
 <p>
 <strong>Knit directory:</strong> <code>Dissrt/</code> <span
@@ -411,18 +411,21 @@ versions</em> tab lists the development history.
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
-<span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
-</a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate"
+<div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git
-repository, you know the exact version of the code that produced these
-results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
 </div>
 </div>
 </div>
@@ -513,15 +516,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttreed4f500653d0bf46663e72780e7c9e18dd1c56102targetblankd4f5006a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttree984727337fb49db485a2f7ff43e70c9cf716fac9targetblank9847273a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/emmapfort/Dissrt/tree/d4f500653d0bf46663e72780e7c9e18dd1c56102" target="_blank">d4f5006</a>
+<a href="https://github.com/emmapfort/Dissrt/tree/984727337fb49db485a2f7ff43e70c9cf716fac9" target="_blank">9847273</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttreed4f500653d0bf46663e72780e7c9e18dd1c56102targetblankd4f5006a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttree984727337fb49db485a2f7ff43e70c9cf716fac9targetblank9847273a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -531,7 +534,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/emmapfort/Dissrt/tree/d4f500653d0bf46663e72780e7c9e18dd1c56102" target="_blank">d4f5006</a>.
+<a href="https://github.com/emmapfort/Dissrt/tree/984727337fb49db485a2f7ff43e70c9cf716fac9" target="_blank">9847273</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -548,6 +551,11 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    analysis/figure/
+    Ignored:    data/counts/
+
+Unstaged changes:
+    Modified:   analysis/RNASeq_QC.Rmd
 
 </code></pre>
 <p>
@@ -592,6 +600,108 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/emmapfort/Dissrt/blob/984727337fb49db485a2f7ff43e70c9cf716fac9/analysis/RNASeq_QC.Rmd" target="_blank">9847273</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-30
+</td>
+<td>
+Updated analysis EMP 09/30/25
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/emmapfort/Dissrt/blob/207b6567ef8a0a1a2c34afe874c42b2913217942/analysis/RNASeq_QC.Rmd" target="_blank">207b656</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+Updated Analysis 09/29/25 EMP
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/emmapfort/Dissrt/blob/01a3bbae36e42ae18c8951fffac180caa49450bb/analysis/RNASeq_QC.Rmd" target="_blank">01a3bba</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+t
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/emmapfort/Dissrt/blob/9379166b895fd345ae718bc5a24db25e17bf1ece/analysis/RNASeq_QC.Rmd" target="_blank">9379166</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+save work before cleanup
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/emmapfort/Dissrt/blob/3feb0a67b88ae60bc45a72e889b666dd705be81e/analysis/RNASeq_QC.Rmd" target="_blank">3feb0a6</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-26
+</td>
+<td>
+First analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/emmapfort/Dissrt/308606d9aa457d1bf49d42bc75302a67e9d516c9/docs/RNASeq_QC.html" target="_blank">308606d</a>
+</td>
+<td>
+Emma M. Pfortmiller
+</td>
+<td>
+2025-09-26
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -662,6 +772,1714 @@ pre[class] {
 }
 </style>
 <p>#Load Libraries</p>
+<p>#Define plot theme</p>
+<pre class="r"><code># Define the custom theme
+# plot_theme_custom &lt;- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = &quot;black&quot;),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, &quot;in&quot;),
+# 
+#       #text and font
+#       axis.text = element_text(color = &quot;black&quot;,
+#                                family = &quot;Arial&quot;,
+#                                size = 8),
+#       axis.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 10),
+#       legend.text = element_text(color = &quot;black&quot;,
+#                                  family = &quot;Arial&quot;,
+#                                  size = 8),
+#       legend.title = element_text(color = &quot;black&quot;,
+#                                   family = &quot;Arial&quot;,
+#                                   size = 10),
+#       plot.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = &quot;grey80&quot;, linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = &quot;grey90&quot;, linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, &quot;data/plot_theme_custom.RDS&quot;)
+
+theme_custom &lt;- readRDS(&quot;data/plot_theme_custom.RDS&quot;)</code></pre>
+<p>#Define saving plots as pdfs</p>
+<pre class="r"><code>save_plot &lt;- function(plot, filename, 
+                      folder = &quot;.&quot;, 
+                      width = 8, 
+                      height = 6, 
+                      units = &quot;in&quot;, 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop(&quot;Please provide a filename (without extension) for the plot.&quot;)
+
+  date_str &lt;- if (add_date) paste0(&quot;_&quot;, format(Sys.Date(), &quot;%y%m%d&quot;)) else &quot;&quot;
+  pdf_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.pdf&quot;))
+  png_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.png&quot;))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = &quot;transparent&quot;)
+  ggsave(filename = png_file, plot = plot, device = &quot;png&quot;, width = width, height = height, units = units, dpi = dpi, bg = &quot;transparent&quot;)
+  message(&quot;Saved plot as Cairo PDF: &quot;, pdf_file)
+  message(&quot;Saved plot as PNG: &quot;, png_file)
+}
+
+output_folder &lt;- &quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots&quot;
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height</code></pre>
+<p>#Datasets Creation</p>
+<pre class="r"><code>#I have one counts table for chimpanzee and another for human
+
+#read in chimpanzee counts
+# c_raw_counts &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/c_samples_counts_fin.csv&quot;)
+
+# saveRDS(c_raw_counts, &quot;data/counts/c_raw_counts.RDS&quot;)
+
+c_raw_counts &lt;- readRDS(&quot;data/counts/c_raw_counts.RDS&quot;)
+
+#read in human counts table in the same manner
+
+# h_raw_counts &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/h_samples_counts_fin.csv&quot;)
+
+# saveRDS(h_raw_counts, &quot;data/counts/h_raw_counts.RDS&quot;)
+
+h_raw_counts &lt;- readRDS(&quot;data/counts/h_raw_counts.RDS&quot;)</code></pre>
+<p>#Metadata</p>
+<pre class="r"><code>#I have a metadata sheet so I can associate the column names with their sample ID
+
+# metadata &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv&quot;,
+#     col_types = cols(Conc = col_number()))
+
+#save metadata sheet
+
+# saveRDS(metadata, &quot;data/counts/dissrt_metadata.RDS&quot;)
+
+metadata &lt;- readRDS(&quot;data/counts/dissrt_metadata.RDS&quot;)
+
+#subset my metadata 
+human_metadata &lt;- metadata[metadata$Species == &quot;H&quot;, ]
+chimp_metadata &lt;- metadata[metadata$Species == &quot;C&quot;, ]</code></pre>
+<pre class="r"><code>#I want to modify the column names for each dataset to match their sample id and treatment instead of library id
+
+#first make sure that Geneid changes to Ensembl_ID
+# rename_with_metadata &lt;- function(counts, metadata_subset) {
+# #
+#   # 1. Rename first column to Ensembl_ID if not already
+#   colnames(counts)[1] &lt;- &quot;Ensembl_ID&quot;
+#   
+#   # 2. Columns to rename (all except first)
+#   cols_to_rename &lt;- colnames(counts)[-1]
+# 
+#   # 3. Remove &quot;.sorted.bam&quot; from column names
+#   library_names &lt;- gsub(&quot;\\.sorted\\.bam$&quot;, &quot;&quot;, cols_to_rename)
+# 
+#   # 4. Match library names to Sample_name in metadata
+#   new_names &lt;- metadata_subset$Sample_name[match(library_names, metadata_subset$Sample_ID)]
+# 
+#   # 5. Warn if any columns didn’t match
+#   unmatched &lt;- cols_to_rename[is.na(new_names)]
+#   if (length(unmatched) &gt; 0) {
+#     warning(&quot;The following library names did not match metadata: &quot;, paste(unmatched, collapse = &quot;, &quot;))
+#   }
+# 
+#   # 6. Replace column names (keep first column as Ensembl_ID)
+#   colnames(counts) &lt;- c(&quot;Ensembl_ID&quot;, ifelse(is.na(new_names), cols_to_rename, new_names))
+# 
+#   return(counts)
+# }
+
+# Subset metadata by species
+# human_metadata &lt;- metadata[metadata$Species == &quot;H&quot;, ]
+# chimp_metadata &lt;- metadata[metadata$Species == &quot;C&quot;, ]
+#
+# Apply to counts tables
+# h_counts &lt;- rename_with_metadata(h_raw_counts, human_metadata)
+# c_counts &lt;- rename_with_metadata(c_raw_counts, chimp_metadata)
+
+#save new counts files that have correctly named columns
+# saveRDS(h_counts, &quot;data/counts/h_counts.RDS&quot;)
+# saveRDS(c_counts, &quot;data/counts/c_counts.RDS&quot;)
+
+#kept all of this for posterity but don&#39;t need to run again
+
+#read in final files
+h_counts &lt;- readRDS(&quot;data/counts/h_counts.RDS&quot;)
+c_counts &lt;- readRDS(&quot;data/counts/c_counts.RDS&quot;)</code></pre>
+<p>#Combine my datasets</p>
+<pre class="r"><code>#make sure to sort them so that all of the genes match up
+# 
+# h_counts &lt;- h_counts[order(h_counts$Ensembl_ID), ]
+# c_counts &lt;- c_counts[order(c_counts$Ensembl_ID), ]
+# 
+# hc_counts &lt;- left_join(c_counts, h_counts, by = &quot;Ensembl_ID&quot;)
+
+#now save my combined counts table with both species
+# saveRDS(hc_counts, &quot;data/counts/combined_counts_table_h_c.RDS&quot;)
+
+hc_counts &lt;- readRDS(&quot;data/counts/combined_counts_table_h_c.RDS&quot;)
+
+#now I have a combined dataframe with the treatment names included</code></pre>
+<p>#QC Mapping/fC</p>
+<pre class="r"><code>#read in my excel file with all of this information
+# map_align_stats &lt;- read_excel(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx&quot;,
+#     sheet = &quot;Map_Align_all&quot;, col_types = c(&quot;skip&quot;,
+#         &quot;text&quot;, &quot;numeric&quot;, &quot;text&quot; , &quot;text&quot;, &quot;text&quot;,
+#         &quot;text&quot;, &quot;numeric&quot;, &quot;text&quot;, &quot;text&quot;,
+#         &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, &quot;numeric&quot;,
+#         &quot;text&quot;, &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;))
+# View(map_align_stats)
+
+#save as a csv for later
+# saveRDS(map_align_stats, &quot;data/counts/mapping_alignment_stats_sheet.RDS&quot;)
+# write.csv(map_align_stats, &quot;data/counts/mapping_alignment_stats_sheet.csv&quot;)
+
+map_align_stats &lt;- readRDS(&quot;data/counts/mapping_alignment_stats_sheet.RDS&quot;)
+
+#now I want to do some QC plots to highlight this information
+
+Individual &lt;- as.character(map_align_stats$Ind)
+Species &lt;- as.character(map_align_stats$Species)
+Time &lt;- as.character(map_align_stats$Time)
+Stimulus &lt;- as.character(map_align_stats$Stimulus)
+
+ind_col &lt;- setNames(rainbow(length(unique(Individual))), unique(Individual))
+
+time_col &lt;- c(&quot;2&quot; = &quot;#392344&quot;,
+              &quot;24&quot; = &quot;#457291&quot;)
+
+species_col &lt;- c(&quot;C&quot; = &quot;#E56473&quot;,
+                 &quot;H&quot; = &quot;#EE4902&quot;)
+
+####Reads by Sample####
+reads_by_sample &lt;- c(
+  &quot;TUN&quot; = &quot;#E41A1C&quot;,
+  &quot;THA&quot; = &quot;#377EB8&quot;, 
+  &quot;DOX&quot; = &quot;#4DAF4A&quot;, 
+  &quot;NUTL&quot; = &quot;#984EA3&quot;, 
+  &quot;DMSO&quot; = &quot;#999999&quot;, 
+  &quot;LPS&quot; = &quot;#FFFF33&quot;, 
+  &quot;TNFa&quot; = &quot;#FC8D62&quot;, 
+  &quot;H2O&quot; = &quot;#777777&quot;, 
+  &quot;BPA&quot; = &quot;#F781BF&quot;, 
+  &quot;PFOA&quot; = &quot;#66C2A5&quot;, 
+  &quot;EtOH&quot; = &quot;#AAAAAA&quot;
+)
+
+map_align_stats$Stimulus &lt;- factor(
+  map_align_stats$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+#Total Reads per Sample
+total_reads_sample_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Total_Reads, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of reads by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+#Total Mapped Reads per Sample
+map_reads_sample_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Mapped, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of mapped reads by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Reads by Sample Boxplot####
+total_reads_sample_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Total_Reads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of reads by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Mapped Reads by Sample Boxplot####
+map_reads_sample_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Mapped, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of mapped reads by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+
+####Total Reads by Stimulus####
+total_reads_stimulus_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Total_Reads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of reads by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Mapped Reads by Stimulus####
+map_reads_stimulus_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Mapped, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of mapped reads by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+
+####Total Reads Per Individual####
+total_reads_ind_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Line), y = Total_Reads))+
+  geom_boxplot(aes(fill= Ind))+
+ scale_fill_manual(values = ind_col)+
+  ggtitle(expression(&quot;Total number of reads by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Mapped Reads Per Individual####
+map_reads_ind_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Line), y = Mapped))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression(&quot;Total number of mapped reads by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+
+####Total Reads Per Timepoint####
+map_align_stats$Time &lt;- factor(map_align_stats$Time, 
+                            levels = c(&quot;2&quot;, &quot;24&quot;))
+
+reads_by_time &lt;- c(&quot;2&quot; = &quot;#392344&quot;, &quot;24&quot; = &quot;#457291&quot;)
+
+total_reads_time_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_ID, y = Total_Reads, fill = Time, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression(&quot;Total number of reads by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+
+####Total Reads Per Timepoint Boxplot####
+total_reads_time_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Time, y= Total_Reads, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression(&quot;Total number of reads by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Mapped Reads Per Timepoint####
+map_reads_time_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Time, y= Mapped, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression(&quot;Total number of mapped reads by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+
+####Total Reads Per Species####
+reads_by_species &lt;- c(&quot;C&quot; = &quot;#E56473&quot;, &quot;H&quot; = &quot;#EE4902&quot;)
+total_reads_species_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Line, y = Total_Reads, fill = Species, group_by = Line))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total number of reads by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Mapped Reads by Species####
+total_reads_species_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Line, y= Total_Reads, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total number of reads by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+####Total Mapped Reads by Species####
+map_reads_species_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Line, y= Mapped, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total number of mapped reads by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing reads&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))
+
+#make a list so I can save all of these plots
+# qc_map_plots_list &lt;- list(
+#   total_reads_sample_plot,
+#   map_reads_sample_plot,
+#   total_reads_sample_boxplot,
+#   map_reads_sample_boxplot,
+#   total_reads_ind_plot,
+#   map_reads_ind_plot,
+#   total_reads_species_plot,
+#   total_reads_species_boxplot,
+#   map_reads_species_plot,
+#   total_reads_stimulus_plot,
+#   map_reads_stimulus_plot,
+#   total_reads_time_plot,
+#   total_reads_time_boxplot,
+#   map_reads_time_plot
+# )
+# 
+# qc_map_plots_names &lt;- list(
+#   &quot;total_reads_sample&quot;,
+#   &quot;map_reads_sample&quot;,
+#   &quot;total_reads_sample_boxplot&quot;,
+#   &quot;map_reads_sample_boxplot&quot;,
+#   &quot;total_reads_ind&quot;,
+#   &quot;map_reads_ind&quot;,
+#   &quot;total_reads_species&quot;,
+#   &quot;total_reads_species_boxplot&quot;,
+#   &quot;map_reads_species&quot;,
+#   &quot;total_reads_stimulus&quot;,
+#   &quot;map_reads_stimulus&quot;,
+#   &quot;total_reads_time_plot&quot;,
+#   &quot;total_reads_time_boxplot&quot;,
+#   &quot;map_reads_time&quot;
+# )
+# 
+# qc_map_plots_names &lt;- paste0(qc_map_plots_names, &quot;_EMP&quot;)
+# 
+# 
+# stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
+
+#save all of these plots to my designated folder
+
+# for (i in seq_along(qc_map_plots_list)) {
+#   save_plot(
+#     plot = qc_map_plots_list[[i]],
+#     filename = qc_map_plots_names[i],
+#     folder = output_folder
+#   )
+# }</code></pre>
+<p>###QC Boxplots featureCounts</p>
+<pre class="r"><code>#Total Counts per Sample
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Total_Counts, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of counts by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#Total Assigned Counts per Sample
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Assigned, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of assigned counts by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Counts by Sample Boxplot####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Total_Counts, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of counts by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Assigned Counts by Sample Boxplot####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Assigned, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of assigned counts by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Counts by Stimulus####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Total_Counts, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of counts by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Assigned Counts by Stimulus####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Assigned, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_sample)+
+  ggtitle(expression(&quot;Total number of assigned counts by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Counts Per Individual####
+map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Line), y = Total_Counts))+
+  geom_boxplot(aes(fill= Ind))+
+ scale_fill_manual(values = ind_col)+
+  ggtitle(expression(&quot;Total number of counts by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-7.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Assigned Counts Per Individual####
+map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Line), y = Assigned))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression(&quot;Total number of assigned counts by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 1),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-8.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Counts Per Timepoint####
+map_align_stats$Time &lt;- factor(map_align_stats$Time, 
+                            levels = c(&quot;2&quot;, &quot;24&quot;))
+
+reads_by_time &lt;- c(&quot;2&quot; = &quot;#392344&quot;, &quot;24&quot; = &quot;#457291&quot;)
+
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_ID, y = Total_Counts, fill = Time, group_by = Ind))+
+  geom_col()+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression(&quot;Total number of counts by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-9.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Assigned Counts Per Timepoint####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Time, y= Assigned, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression(&quot;Total number of assigned counts by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-10.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Counts Per Species####
+reads_by_species &lt;- c(&quot;C&quot; = &quot;#E56473&quot;, &quot;H&quot; = &quot;#EE4902&quot;)
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Line, y = Total_Counts, fill = Species, group_by = Line))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total number of counts by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-11.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>####Total Assign Counts by Species####
+map_align_stats %&gt;% 
+  ggplot(., aes (x = Line, y= Assigned, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total number of assigned counts by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;fC Counts&quot;))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = &quot;black&quot;, face = &quot;bold&quot;),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/featureCounts%20Stats-12.png" width="672" style="display: block; margin: auto;" /></p>
+<p>#Filter Dataframe</p>
+<pre class="r"><code>#first, convert to log2cpm
+
+#make sure to move Ensembl_ID to rownames, skipped conversion for now
+
+hc_counts &lt;- column_to_rownames(hc_counts, var = &quot;Ensembl_ID&quot;)
+
+hc_cpm_unfilt &lt;- cpm(hc_counts, log = TRUE)
+dim(hc_cpm_unfilt)</code></pre>
+<pre><code>[1] 44125   307</code></pre>
+<pre class="r"><code>#44125 genes of 307 columns as expected
+
+hist(hc_cpm_unfilt,
+     main = &quot;Unfiltered Counts (cpm)&quot;,
+     xlab = expression(&quot;log&quot;[2]*&quot;cpm&quot;),
+     col = 4)</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/Filter%20with%20rowMeans-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#now filter by rowMeans &gt; 0 to exclude lowly expressed genes
+hc_cpm_matrix &lt;- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) &gt; 0))
+dim(hc_cpm_matrix)</code></pre>
+<pre><code>[1] 15321   307</code></pre>
+<pre class="r"><code>#15321 genes after filtering
+
+#save this as an RDS and csv
+# saveRDS(hc_cpm_matrix, &quot;data/counts/hc_cpm_filtered_matrix.RDS&quot;)
+# write.csv(hc_cpm_matrix, &quot;data/counts/hc_cpm_filtered_matrix.csv&quot;)
+
+#plot this out to show the filtering
+hist(hc_cpm_matrix, 
+     main = &quot;Filtered Counts (cpm) rowMeans &gt; 0&quot;,
+     xlab = expression(&quot;log&quot;[2]*&quot;cpm&quot;),
+     col = 2)</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/Filter%20with%20rowMeans-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>#QC Boxplots</p>
+<pre class="r"><code>#make boxplots of all counts vs log2cpm filtered counts
+
+par(mar = c(8,4,2,2))
+#boxplot of unfiltered cpm matrix
+hc_cpm_unfilt_boxplot &lt;- boxplot(hc_cpm_unfilt, 
+        main = &quot;Unfiltered log2cpm&quot;, 
+        names = colnames(hc_cpm_unfilt), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/QC%20Boxplots%20for%20H%20and%20C-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#set the margins so the x axis isn&#39;t cut off
+par(mar = c(8,4,2,2))
+#boxplot of filtered cpm matrix
+hc_cpm_filt_boxplot &lt;- boxplot(hc_cpm_matrix, 
+        main = &quot;Filtered log2cpm (rowMeans &gt; 0)&quot;, 
+        names = colnames(hc_cpm_matrix), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/QC%20Boxplots%20for%20H%20and%20C-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>#Convert Ensembl to Entrez</p>
+<pre class="r"><code># ensembl_ids &lt;- rownames(hc_cpm_matrix)
+
+# entrez_ids &lt;- mapIds(
+#   org.Hs.eg.db,
+#   keys = ensembl_ids,
+#   column = &quot;ENTREZID&quot;,
+#   keytype = &quot;ENSEMBL&quot;,
+#   multiVals = &quot;first&quot;
+# )
+
+#since there was many mapping, check which ones are duplicated
+# sum(duplicated(entrez_ids))
+#1701 are duplicated with entrez id
+
+#convert to df
+# hc_cpm_df &lt;- as.data.frame(hc_cpm_matrix)
+
+#add the Entrez_ID column to my counts dataframe
+# hc_cpm_df &lt;- hc_cpm_df %&gt;%
+#   dplyr::mutate(Entrez_ID = entrez_ids)
+
+#move it to the front so I can see it easily against Ensembl_ID
+# hc_cpm_df &lt;- hc_cpm_df %&gt;%
+#   dplyr::select(Entrez_ID, everything())
+
+#now keep only unique values
+# hc_cpm_df &lt;- hc_cpm_df %&gt;%
+#   group_by(Entrez_ID) %&gt;%
+#   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %&gt;%
+#   ungroup()
+
+#remove any NA genes
+# hc_cpm_df &lt;- hc_cpm_df[!is.na(hc_cpm_df$Entrez_ID), ]
+# dim(hc_cpm_df)
+#this gives me a total of 13619 genes, which is within the range I desired
+
+#now make the rownames Entrez_ID
+# hc_cpm_df &lt;- column_to_rownames(hc_cpm_df, var = &quot;Entrez_ID&quot;)
+
+#save entrez_id version of dataframe
+# saveRDS(hc_cpm_df, &quot;data/counts/hc_cpm_filt_entrez_dataframe.RDS&quot;)
+# write.csv(hc_cpm_df, &quot;data/counts/hc_cpm_filt_entrez_dataframe.csv&quot;)
+
+#read in data
+hc_cpm_df &lt;- readRDS(&quot;data/counts/hc_cpm_filt_entrez_dataframe.RDS&quot;)
+hc_cpm_df_unfilt &lt;- readRDS(&quot;data/counts/hc_cpm_unfilt_entrez_dataframe.RDS&quot;)</code></pre>
+<pre class="r"><code>prcomp_hc_unfilt &lt;- prcomp(t(hc_cpm_df_unfilt %&gt;% as.matrix()), center =  TRUE)
+
+prcomp_hc_filt &lt;- prcomp(t(hc_cpm_df %&gt;% as.matrix()), center =  TRUE)
+
+#read in my metadata annotations
+metadata &lt;- readRDS(&quot;data/counts/dissrt_metadata.RDS&quot;)
+
+#add in labels for individual numbers
+ind_num &lt;- metadata$Ind_Num
+
+drug_col &lt;- c(
+  &quot;TUN&quot; = &quot;#E41A1C&quot;,
+  &quot;THA&quot; = &quot;#377EB8&quot;, 
+  &quot;DOX&quot; = &quot;#4DAF4A&quot;, 
+  &quot;NUTL&quot; = &quot;#984EA3&quot;, 
+  &quot;DMSO&quot; = &quot;#999999&quot;, 
+  &quot;LPS&quot; = &quot;#FFFF33&quot;, 
+  &quot;TNFa&quot; = &quot;#FC8D62&quot;, 
+  &quot;H2O&quot; = &quot;#777777&quot;, 
+  &quot;BPA&quot; = &quot;#F781BF&quot;, 
+  &quot;PFOA&quot; = &quot;#66C2A5&quot;, 
+  &quot;EtOH&quot; = &quot;#AAAAAA&quot;
+)
+
+metadata$Time &lt;- factor(metadata$Time)
+
+metadata$Drug &lt;- factor(
+  metadata$Drug,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+#now plot my PCA for unfiltered log2cpm
+####PC1/PC2####
+unfilt_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC1/PC2&quot;)) +
+  theme_custom()
+
+####PC2/PC3####
+unfilt_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+####PC3/PC4####
+unfilt_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC3/PC4&quot;)) +
+  theme_custom()
+
+
+#Now plot my PCA for filtered log2cpm
+####PC1/PC2####
+filt_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC1/PC2&quot;)) +
+  theme_custom()
+
+####PC2/PC3####
+filt_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+####PC3/PC4####
+filt_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_filt, data = metadata, colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+#now save all of these together in pdf and png
+hc_pca_plots &lt;- list(
+  unfilt_PC1_PC2 = unfilt_PC1_PC2,
+  unfilt_PC2_PC3 = unfilt_PC2_PC3,
+  unfilt_PC3_PC4 = unfilt_PC3_PC4,
+  filt_PC1_PC2 = filt_PC1_PC2,
+  filt_PC2_PC3 = filt_PC2_PC3,
+  filt_PC3_PC4 = filt_PC3_PC4
+)
+
+for (plot_name in names(hc_pca_plots)) {
+  save_plot(
+    plot = hc_pca_plots[[plot_name]],
+    filename = paste0(&quot;PCA_HC_&quot;, plot_name, &quot;_EMP&quot;),
+    folder = output_folder
+  )
+}</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC1_PC2_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC1_PC2_EMP_251001.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC2_PC3_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC2_PC3_EMP_251001.png</code></pre>
+<pre><code>Warning: ggrepel: 17 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Warning: ggrepel: 10 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC3_PC4_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_unfilt_PC3_PC4_EMP_251001.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC1_PC2_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC1_PC2_EMP_251001.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC2_PC3_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC2_PC3_EMP_251001.png</code></pre>
+<pre><code>Warning: ggrepel: 50 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Warning: ggrepel: 40 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC3_PC4_EMP_251001.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_HC_filt_PC3_PC4_EMP_251001.png</code></pre>
+<p>#Subset PCA</p>
+<pre class="r"><code>#UPR Subset
+upr_tx &lt;- c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;)
+upr_meta &lt;- metadata %&gt;% 
+  dplyr::filter(Drug %in% upr_tx)
+upr_cpm &lt;- hc_cpm_df[, colnames(hc_cpm_df) %in% upr_meta$Sample_Tx] 
+upr_cols &lt;- c(
+  &quot;TUN&quot; = &quot;#E41A1C&quot;,
+  &quot;THA&quot; = &quot;#377EB8&quot;, 
+  &quot;DMSO&quot; = &quot;#999999&quot;
+)
+
+#DDR Subset
+ddr_tx &lt;- c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;)
+ddr_meta &lt;- metadata %&gt;% 
+  dplyr::filter(Drug %in% ddr_tx)
+ddr_cpm &lt;- hc_cpm_df[, colnames(hc_cpm_df) %in% ddr_meta$Sample_Tx]  
+ddr_cols &lt;- c(
+  &quot;DOX&quot; = &quot;#4DAF4A&quot;, 
+  &quot;NUTL&quot; = &quot;#984EA3&quot;,
+  &quot;DMSO&quot; = &quot;#999999&quot;)
+
+#IMR Subset
+imr_tx &lt;- c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;)
+imr_meta &lt;- metadata %&gt;% 
+  dplyr::filter(Drug %in% imr_tx)
+imr_cpm &lt;- hc_cpm_df[, colnames(hc_cpm_df) %in% imr_meta$Sample_Tx]  
+imr_cols &lt;-  c(
+  &quot;LPS&quot; = &quot;#FFFF33&quot;, 
+  &quot;TNFa&quot; = &quot;#FC8D62&quot;, 
+  &quot;H2O&quot; = &quot;#777777&quot;)
+
+#MMR Subset
+mmr_tx &lt;- c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+mmr_meta &lt;- metadata %&gt;% 
+  dplyr::filter(Drug %in% mmr_tx)
+mmr_cpm &lt;- hc_cpm_df[, colnames(hc_cpm_df) %in% mmr_meta$Sample_Tx]  
+mmr_cols &lt;- c(
+  &quot;BPA&quot; = &quot;#F781BF&quot;, 
+  &quot;PFOA&quot; = &quot;#66C2A5&quot;, 
+  &quot;EtOH&quot; = &quot;#AAAAAA&quot;)
+
+#now make a function to plot these PCA plots in subsets
+make_pca_plots &lt;- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, drug_col) {
+  # filter metadata
+  keep_idx &lt;- metadata$Drug %in% subset_drugs
+  metadata_sub &lt;- metadata[keep_idx, ]
+  ind_sub &lt;- ind_num[keep_idx]
+  
+  # subset expression matrix to same samples
+  hc_matrix_sub &lt;- hc_matrix[, keep_idx]
+  
+  # run PCA on subset
+  prcomp_sub &lt;- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 &lt;- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = &quot;grey&quot;,
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col) +
+    ggtitle(bquote(.(subset_name) ~ &quot;subset: Filtered log&quot;[2] * &quot;cpm PC1/PC2&quot;)) +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 &lt;- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = &quot;Drug&quot;, shape = &quot;Time&quot;, size = 4,
+                 x = 2, y = 3) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = &quot;grey&quot;,
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col) +
+    ggtitle(bquote(.(subset_name) ~ &quot;subset: Filtered log&quot;[2] * &quot;cpm PC2/PC3&quot;)) +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2)
+}
+
+# ---- Run for each subset ----
+upr_plots &lt;- make_pca_plots(&quot;UPR&quot;, c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;), hc_cpm_matrix, metadata, ind_num, drug_col)
+ddr_plots &lt;- make_pca_plots(&quot;DDR&quot;, c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;), hc_cpm_matrix, metadata, ind_num, drug_col)
+imr_plots &lt;- make_pca_plots(&quot;IMR&quot;, c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;), hc_cpm_matrix, metadata, ind_num, drug_col)
+mmr_plots &lt;- make_pca_plots(&quot;MMR&quot;, c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;), hc_cpm_matrix, metadata, ind_num, drug_col)
+
+#display plots
+upr_plots$p1</code></pre>
+<pre><code>Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database
+Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>upr_plots$p2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ddr_plots$p1</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ddr_plots$p2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>imr_plots$p1</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>imr_plots$p2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mmr_plots$p1</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-7.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mmr_plots$p2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/PCA%20of%20Subsets-8.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># all_plots &lt;- list(
+#   upr_PC1_PC2 = upr_plots$p1,
+#   upr_PC2_PC3 = upr_plots$p2,
+#   ddr_PC1_PC2 = ddr_plots$p1,
+#   ddr_PC2_PC3 = ddr_plots$p2,
+#   imr_PC1_PC2 = imr_plots$p1,
+#   imr_PC2_PC3 = imr_plots$p2,
+#   mmr_PC1_PC2 = mmr_plots$p1,
+#   mmr_PC2_PC3 = mmr_plots$p2
+# )
+# 
+# # Loop through each plot and save
+# for (plot_name in names(all_plots)) {
+#   save_plot(
+#     plot = all_plots[[plot_name]],
+#     filename = paste0(&quot;Subset_PCA_&quot;, plot_name, &quot;_EMP&quot;),
+#     folder = output_folder
+#     )
+# }</code></pre>
+<p>#Correlation Heatmaps</p>
+<pre class="r"><code>#first make correlation heatmaps of all samples
+#using ComplexHeatmap
+
+#prepare data
+hc_matrix &lt;- hc_cpm_df
+colnames(hc_matrix) &lt;- metadata$Sample_Tx  # Ensure column names match metadata
+
+#compute Spearman correlation
+cor_matrix_spearman &lt;- cor(hc_matrix, method = &quot;spearman&quot;, use = &quot;everything&quot;)
+
+#extract metadata for annotations
+Individual &lt;- as.character(metadata$Ind)
+Species &lt;- as.character(metadata$Species)
+Time &lt;- as.character(metadata$Time)
+Treatment &lt;- as.character(metadata$Drug)
+
+# ---- Define colors for annotations ----
+drug_col &lt;- c(
+  &quot;TUN&quot; = &quot;#E41A1C&quot;,
+  &quot;THA&quot; = &quot;#377EB8&quot;, 
+  &quot;DOX&quot; = &quot;#4DAF4A&quot;, 
+  &quot;NUTL&quot; = &quot;#984EA3&quot;, 
+  &quot;DMSO&quot; = &quot;#999999&quot;, 
+  &quot;LPS&quot; = &quot;#FFFF33&quot;, 
+  &quot;TNFa&quot; = &quot;#FC8D62&quot;, 
+  &quot;H2O&quot; = &quot;#777777&quot;, 
+  &quot;BPA&quot; = &quot;#F781BF&quot;, 
+  &quot;PFOA&quot; = &quot;#66C2A5&quot;, 
+  &quot;EtOH&quot; = &quot;#AAAAAA&quot;
+)
+
+ind_col &lt;- setNames(rainbow(length(unique(Individual))), unique(Individual))
+
+time_col &lt;- c(&quot;2&quot; = &quot;#392344&quot;,
+              &quot;24&quot; = &quot;#457291&quot;)
+
+species_col &lt;- c(&quot;C&quot; = &quot;#E56473&quot;,
+                 &quot;H&quot; = &quot;#EE4902&quot;)
+
+# ---- Create annotations ----
+top_annotation &lt;- HeatmapAnnotation(
+  Individual = Individual, 
+  Time = Time,
+  Treatment = Treatment,
+  Species = Species,
+  col = list(
+    Individual = ind_col,
+    Time = time_col,
+    Treatment = drug_col,
+    Species = species_col
+  )
+)
+
+# ---- Spearman heatmap for all samples ----
+heatmap_spearman_all &lt;- Heatmap(cor_matrix_spearman,
+                                name = &quot;Spearman&quot;,
+                                top_annotation = top_annotation,
+                                show_row_names = TRUE,
+                                show_column_names = TRUE,
+                                cluster_rows = TRUE,
+                                cluster_columns = TRUE,
+                                border = TRUE, 
+                                show_row_dend = FALSE,
+                                show_column_dend = FALSE)
+draw(heatmap_spearman_all)</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/Spearman%20Heatmaps%20Correlation-1.png" width="1728" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># ---- Define subsets ----
+subsets &lt;- list(
+  UPR = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;),
+  DDR = c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;),
+  IMR = c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;),
+  MMR = c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+# ---- Loop through subsets ----
+subset_heatmaps &lt;- list()
+
+for (subset_name in names(subsets)) {
+  # Filter columns for this subset
+  cols_subset &lt;- metadata$Sample_Tx[metadata$Drug %in% subsets[[subset_name]]]
+  mat_subset &lt;- hc_matrix[, cols_subset, drop = FALSE]
+  
+  # Correlation
+  cor_subset &lt;- cor(mat_subset, method = &quot;spearman&quot;, use = &quot;everything&quot;)
+  
+  # Annotations for this subset
+  top_ann_subset &lt;- HeatmapAnnotation(
+    Individual = metadata$Ind[metadata$Sample_Tx %in% cols_subset],
+    Time = metadata$Time[metadata$Sample_Tx %in% cols_subset],
+    Treatment = metadata$Drug[metadata$Sample_Tx %in% cols_subset],
+    Species = metadata$Species[metadata$Sample_Tx %in% cols_subset],
+    col = list(
+      Individual = ind_col,
+      Time = time_col,
+      Treatment = drug_col,
+      Species = species_col
+    )
+  )
+  
+  # Heatmap
+  heatmap_subset &lt;- Heatmap(cor_subset,
+                            name = paste0(&quot;Spearman_&quot;, subset_name),
+                            top_annotation = top_ann_subset,
+                            show_row_names = TRUE,
+                            show_column_names = TRUE,
+                            cluster_rows = TRUE,
+                            cluster_columns = TRUE,
+                            border = TRUE)
+  
+  draw(heatmap_subset)
+  subset_heatmaps[[subset_name]] &lt;- heatmap_subset
+}</code></pre>
+<p><img src="figure/RNASeq_QC.Rmd/Spearman%20Heatmaps%20Correlation-2.png" width="1728" style="display: block; margin: auto;" /><img src="figure/RNASeq_QC.Rmd/Spearman%20Heatmaps%20Correlation-3.png" width="1728" style="display: block; margin: auto;" /><img src="figure/RNASeq_QC.Rmd/Spearman%20Heatmaps%20Correlation-4.png" width="1728" style="display: block; margin: auto;" /><img src="figure/RNASeq_QC.Rmd/Spearman%20Heatmaps%20Correlation-5.png" width="1728" style="display: block; margin: auto;" /></p>
+<p>#Prep for Differential Expression Analysis</p>
+<pre class="r"><code>#filter my counts for DE</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -737,34 +2555,36 @@ loaded via a namespace (and not attached):
  [34] xml2_1.3.8              tidyselect_1.2.1        shape_1.4.6.1          
  [37] UCSC.utils_1.2.0        farver_2.1.2            BiocFileCache_2.14.0   
  [40] jsonlite_2.0.0          GetoptLong_1.0.5        Formula_1.2-5          
- [43] iterators_1.0.14        foreach_1.5.2           tools_4.4.2            
- [46] progress_1.2.3          Rcpp_1.0.14             glue_1.8.0             
- [49] gridExtra_2.3           SparseArray_1.6.0       xfun_0.52              
- [52] withr_3.0.2             formatR_1.14            fastmap_1.2.0          
- [55] latticeExtra_0.6-30     callr_3.7.6             digest_0.6.37          
- [58] timechange_0.3.0        R6_2.6.1                mime_0.13              
- [61] colorspace_2.1-1        jpeg_0.1-11             RSQLite_2.3.9          
- [64] R.methodsS3_1.8.2       generics_0.1.4          data.table_1.17.0      
- [67] rtracklayer_1.66.0      prettyunits_1.2.0       httr_1.4.7             
- [70] htmlwidgets_1.6.4       S4Arrays_1.6.0          whisker_0.4.1          
- [73] pkgconfig_2.0.3         gtable_0.3.6            blob_1.2.4             
- [76] hwriter_1.3.2.1         htmltools_0.5.8.1       clue_0.3-66            
- [79] png_0.1-8               knitr_1.50              lambda.r_1.2.4         
- [82] rstudioapi_0.17.1       tzdb_0.5.0              rjson_0.2.23           
- [85] curl_6.0.1              cachem_1.1.0            GlobalOptions_0.1.2    
- [88] vipor_0.4.7             parallel_4.4.2          restfulr_0.0.15        
- [91] pillar_1.10.2           vctrs_0.6.5             promises_1.3.2         
- [94] dbplyr_2.5.0            xtable_1.8-4            cluster_2.1.6          
- [97] beeswarm_0.4.0          evaluate_1.0.3          GenomicFeatures_1.58.0 
-[100] cli_3.6.3               locfit_1.5-9.12         compiler_4.4.2         
-[103] futile.options_1.0.1    rlang_1.1.6             crayon_1.5.3           
-[106] aroma.light_3.36.0      interp_1.1-6            ps_1.9.1               
-[109] ggbeeswarm_0.7.2        getPass_0.2-4           plyr_1.8.9             
-[112] fs_1.6.6                stringi_1.8.7           viridisLite_0.4.2      
-[115] deldir_2.0-4            lazyeval_0.2.2          Matrix_1.7-1           
-[118] hms_1.1.3               bit64_4.5.2             KEGGREST_1.46.0        
-[121] statmod_1.5.0           shiny_1.10.0            igraph_2.1.4           
-[124] memoise_2.0.1           bslib_0.9.0             bit_4.5.0              </code></pre>
+ [43] iterators_1.0.14        systemfonts_1.2.2       foreach_1.5.2          
+ [46] tools_4.4.2             progress_1.2.3          ragg_1.4.0             
+ [49] Rcpp_1.0.14             glue_1.8.0              gridExtra_2.3          
+ [52] SparseArray_1.6.0       xfun_0.52               withr_3.0.2            
+ [55] formatR_1.14            fastmap_1.2.0           latticeExtra_0.6-30    
+ [58] callr_3.7.6             digest_0.6.37           timechange_0.3.0       
+ [61] R6_2.6.1                mime_0.13               textshaping_1.0.1      
+ [64] colorspace_2.1-1        Cairo_1.6-5             jpeg_0.1-11            
+ [67] RSQLite_2.3.9           R.methodsS3_1.8.2       generics_0.1.4         
+ [70] data.table_1.17.0       rtracklayer_1.66.0      prettyunits_1.2.0      
+ [73] httr_1.4.7              htmlwidgets_1.6.4       S4Arrays_1.6.0         
+ [76] whisker_0.4.1           pkgconfig_2.0.3         gtable_0.3.6           
+ [79] blob_1.2.4              hwriter_1.3.2.1         htmltools_0.5.8.1      
+ [82] clue_0.3-66             png_0.1-8               knitr_1.50             
+ [85] lambda.r_1.2.4          rstudioapi_0.17.1       tzdb_0.5.0             
+ [88] rjson_0.2.23            curl_6.0.1              cachem_1.1.0           
+ [91] GlobalOptions_0.1.2     vipor_0.4.7             parallel_4.4.2         
+ [94] restfulr_0.0.15         pillar_1.10.2           vctrs_0.6.5            
+ [97] promises_1.3.2          dbplyr_2.5.0            xtable_1.8-4           
+[100] cluster_2.1.6           beeswarm_0.4.0          evaluate_1.0.3         
+[103] GenomicFeatures_1.58.0  cli_3.6.3               locfit_1.5-9.12        
+[106] compiler_4.4.2          futile.options_1.0.1    rlang_1.1.6            
+[109] crayon_1.5.3            labeling_0.4.3          aroma.light_3.36.0     
+[112] interp_1.1-6            ps_1.9.1                ggbeeswarm_0.7.2       
+[115] getPass_0.2-4           plyr_1.8.9              fs_1.6.6               
+[118] stringi_1.8.7           viridisLite_0.4.2       deldir_2.0-4           
+[121] lazyeval_0.2.2          Matrix_1.7-1            hms_1.1.3              
+[124] bit64_4.5.2             KEGGREST_1.46.0         statmod_1.5.0          
+[127] shiny_1.10.0            igraph_2.1.4            memoise_2.0.1          
+[130] bslib_0.9.0             bit_4.5.0              </code></pre>
 </div>
 </div>
 </div>

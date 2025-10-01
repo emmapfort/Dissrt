@@ -273,6 +273,20 @@ map_align_stats <- readRDS("data/counts/mapping_alignment_stats_sheet.RDS")
 
 #now I want to do some QC plots to highlight this information
 
+Individual <- as.character(map_align_stats$Ind)
+Species <- as.character(map_align_stats$Species)
+Time <- as.character(map_align_stats$Time)
+Stimulus <- as.character(map_align_stats$Stimulus)
+
+ind_col <- setNames(rainbow(length(unique(Individual))), unique(Individual))
+
+
+time_col <- c("2" = "#392344",
+              "24" = "#457291")
+
+species_col <- c("C" = "#E56473",
+                 "H" = "#EE4902")
+
 ####Reads by Sample####
 reads_by_sample <- c(
   "TUN" = "#E41A1C",
@@ -292,6 +306,13 @@ map_align_stats$Stimulus <- factor(
   map_align_stats$Stimulus,
   levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
              "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+map_align_stats$Ind <- factor(
+  map_align_stats$Ind,
+  levels = c("Ind1", "Ind2", "Ind3", "Ind4", "Ind5", 
+             "Ind6", "Ind7", "Ind8", "Ind9", "Ind10", 
+             "Ind11", "Ind12", "Ind13", "Ind14")
 )
 
 #Total Reads per Sample
@@ -407,7 +428,7 @@ map_reads_stimulus_plot <- map_align_stats %>%
 total_reads_ind_plot <- map_align_stats %>% 
   ggplot(., aes (x =as.factor(Line), y = Total_Reads))+
   geom_boxplot(aes(fill= Ind))+
- scale_fill_manual(values = ind_colors)+
+ scale_fill_manual(values = ind_col)+
   ggtitle(expression("Total number of reads by individual"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
@@ -718,7 +739,7 @@ map_align_stats %>%
 map_align_stats %>% 
   ggplot(., aes (x =as.factor(Line), y = Total_Counts))+
   geom_boxplot(aes(fill= Ind))+
- scale_fill_manual(values = ind_colors)+
+ scale_fill_manual(values = ind_col)+
   ggtitle(expression("Total number of counts by individual"))+
   xlab("")+
   ylab(expression("fC Counts"))+
@@ -1193,7 +1214,7 @@ mmr_plots$p2
 
 
 #Correlation Heatmaps
-```{r Spearman Heatmaps Correlation, fig.width=18, fig.height=14}
+```{r Spearman Heatmaps Correlation, fig.width=18, fig.height=14, warning=FALSE}
 #first make correlation heatmaps of all samples
 #using ComplexHeatmap
 
