@@ -3198,17 +3198,10 @@ combined_plot <- plots[["DOX"]] + plots[["NUTL"]] +
   plot_annotation(theme = theme_custom())
 
 # Save with your custom save_plot function
-save_plot(combined_plot, 
-          "DOX_NUTL_logFC_correlation_EMP", 
-          width = 10, height = 5,
-          folder = output_folder)
-
-
-
-```
-
-
-```{r}
+# save_plot(combined_plot, 
+#           "DOX_NUTL_logFC_correlation_EMP", 
+#           width = 10, height = 5,
+#           folder = output_folder)
 
 
 ```
