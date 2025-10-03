@@ -4,7 +4,7 @@ author: "Emma M Pfortmiller"
 date: "2025-09-26"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -62,6 +62,7 @@ library(car)
 library(gprofiler2)
 library(forcats)
 library(broom)
+library(magick)
 ```
 
 #Define plot theme
@@ -190,7 +191,7 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 # #
 #   # 1. Rename first column to Ensembl_ID if not already
 #   colnames(counts)[1] <- "Ensembl_ID"
-#   
+# 
 #   # 2. Columns to rename (all except first)
 #   cols_to_rename <- colnames(counts)[-1]
 # 
@@ -198,7 +199,7 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 #   library_names <- gsub("\\.sorted\\.bam$", "", cols_to_rename)
 # 
 #   # 4. Match library names to Sample_name in metadata
-#   new_names <- metadata_subset$Sample_name[match(library_names, metadata_subset$Sample_ID)]
+#   new_names <- metadata_subset$Sample_Tx[match(library_names, metadata_subset$Sample_ID)]
 # 
 #   # 5. Warn if any columns didn’t match
 #   unmatched <- cols_to_rename[is.na(new_names)]
@@ -215,12 +216,12 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 # Subset metadata by species
 # human_metadata <- metadata[metadata$Species == "H", ]
 # chimp_metadata <- metadata[metadata$Species == "C", ]
-#
+
 # Apply to counts tables
 # h_counts <- rename_with_metadata(h_raw_counts, human_metadata)
 # c_counts <- rename_with_metadata(c_raw_counts, chimp_metadata)
 
-#save new counts files that have correctly named columns
+# save new counts files that have correctly named columns
 # saveRDS(h_counts, "data/counts/h_counts.RDS")
 # saveRDS(c_counts, "data/counts/c_counts.RDS")
 
@@ -244,9 +245,13 @@ c_counts <- readRDS("data/counts/c_counts.RDS")
 #now save my combined counts table with both species
 # saveRDS(hc_counts, "data/counts/combined_counts_table_h_c.RDS")
 
-hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
+# hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
 
 #now I have a combined dataframe with the treatment names included
+
+####Replace hc_counts with one made below that has Entrez_ID instead of Ensembl_ID
+
+hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 
 ```
 
@@ -858,27 +863,27 @@ map_align_stats %>%
 ```{r Filter with rowMeans}
 #first, convert to log2cpm
 
-#make sure to move Ensembl_ID to rownames, skipped conversion for now
-
-hc_counts <- column_to_rownames(hc_counts, var = "Ensembl_ID")
+#ensure that Entrez_ID are the rownames
 
 hc_cpm_unfilt <- cpm(hc_counts, log = TRUE)
 dim(hc_cpm_unfilt)
-#44125 genes of 307 columns as expected
+#28802 genes of 307 columns as expected
 
 hist(hc_cpm_unfilt,
-     main = "Unfiltered Counts (cpm)",
+     main = "Unfiltered cpm",
      xlab = expression("log"[2]*"cpm"),
      col = 4)
 
 #now filter by rowMeans > 0 to exclude lowly expressed genes
 hc_cpm_matrix <- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) > 0))
 dim(hc_cpm_matrix)
-#15321 genes after filtering
+#13661 genes after filtering
 
 #save this as an RDS and csv
 # saveRDS(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix.RDS")
 # write.csv(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix.csv")
+
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix.RDS")
 
 #plot this out to show the filtering
 hist(hc_cpm_matrix, 
@@ -918,58 +923,67 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
 #Convert Ensembl to Entrez
 ```{r converting ensembl id into entrez id}
 # ensembl_ids <- rownames(hc_cpm_matrix)
+# ensembl_ids_unfilt <- rownames(hc_counts)
 
-# entrez_ids <- mapIds(
+# entrez_ids_unfilt <- mapIds(
 #   org.Hs.eg.db,
-#   keys = ensembl_ids,
+#   keys = ensembl_ids_unfilt,
 #   column = "ENTREZID",
 #   keytype = "ENSEMBL",
 #   multiVals = "first"
 # )
 
 #since there was many mapping, check which ones are duplicated
-# sum(duplicated(entrez_ids))
+# sum(duplicated(entrez_ids_unfilt))
 #1701 are duplicated with entrez id
 
 #convert to df
 # hc_cpm_df <- as.data.frame(hc_cpm_matrix)
+# hc_counts_df <- as.data.frame(hc_counts)
 
 #add the Entrez_ID column to my counts dataframe
-# hc_cpm_df <- hc_cpm_df %>%
-#   dplyr::mutate(Entrez_ID = entrez_ids)
+# hc_counts_df <- hc_counts_df %>%
+#   dplyr::mutate(Entrez_ID = entrez_ids_unfilt)
 
 #move it to the front so I can see it easily against Ensembl_ID
-# hc_cpm_df <- hc_cpm_df %>%
+# hc_counts_df <- hc_counts_df %>%
 #   dplyr::select(Entrez_ID, everything())
 
 #now keep only unique values
-# hc_cpm_df <- hc_cpm_df %>%
+# hc_counts_df <- hc_counts_df %>%
 #   group_by(Entrez_ID) %>%
 #   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>%
 #   ungroup()
 
 #remove any NA genes
-# hc_cpm_df <- hc_cpm_df[!is.na(hc_cpm_df$Entrez_ID), ]
-# dim(hc_cpm_df)
+# hc_counts_df <- hc_counts_df[!is.na(hc_counts_df$Entrez_ID), ]
+# dim(hc_counts_df)
 #this gives me a total of 13619 genes, which is within the range I desired
+#when done for counts it gives me 28802 genes
 
 #now make the rownames Entrez_ID
-# hc_cpm_df <- column_to_rownames(hc_cpm_df, var = "Entrez_ID")
+# hc_counts_df <- column_to_rownames(hc_counts_df, var = "Entrez_ID")
 
 #save entrez_id version of dataframe
-# saveRDS(hc_cpm_df, "data/counts/hc_cpm_filt_entrez_dataframe.RDS")
-# write.csv(hc_cpm_df, "data/counts/hc_cpm_filt_entrez_dataframe.csv")
+# saveRDS(hc_counts_df, "data/counts/hc_counts_entrez_dataframe.RDS")
+# write.csv(hc_counts_df, "data/counts/hc_counts_entrez_dataframe.csv")
 
 #read in data
 hc_cpm_df <- readRDS("data/counts/hc_cpm_filt_entrez_dataframe.RDS")
 hc_cpm_df_unfilt <- readRDS("data/counts/hc_cpm_unfilt_entrez_dataframe.RDS")
+hc_counts_df <- readRDS("data/counts/hc_counts_entrez_dataframe.RDS")
+
+# hc_counts <- hc_counts_df
+
+# saveRDS(hc_counts, "data/counts/hc_counts_entrez.RDS")
+# now move this above to where I was making cpm lists so I have entrez id instead
 ```
 
 ```{r PCA Plots}
 
-prcomp_hc_unfilt <- prcomp(t(hc_cpm_df_unfilt %>% as.matrix()), center =  TRUE)
+prcomp_hc_unfilt <- prcomp(t(hc_cpm_unfilt), center =  TRUE)
 
-prcomp_hc_filt <- prcomp(t(hc_cpm_df %>% as.matrix()), center =  TRUE)
+prcomp_hc_filt <- prcomp(t(hc_cpm_matrix), center =  TRUE)
 
 #read in my metadata annotations
 metadata <- readRDS("data/counts/dissrt_metadata.RDS")
@@ -977,19 +991,7 @@ metadata <- readRDS("data/counts/dissrt_metadata.RDS")
 #add in labels for individual numbers
 ind_num <- metadata$Ind_Num
 
-drug_col <- c(
-  "TUN" = "#E41A1C",
-  "THA" = "#377EB8", 
-  "DOX" = "#4DAF4A", 
-  "NUTL" = "#984EA3", 
-  "DMSO" = "#999999", 
-  "LPS" = "#FFFF33", 
-  "TNFa" = "#FC8D62", 
-  "H2O" = "#777777", 
-  "BPA" = "#F781BF", 
-  "PFOA" = "#66C2A5", 
-  "EtOH" = "#AAAAAA"
-)
+drug_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
 
 metadata$Time <- factor(metadata$Time)
 
@@ -1010,6 +1012,7 @@ unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = 
   scale_color_manual(values=drug_col) +
   ggtitle(expression("Unfiltered log"[2]*"cpm PC1/PC2")) +
   theme_custom()
+
 
 ####PC2/PC3####
 unfilt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt, data = metadata, colour = "Drug", shape = "Time", size =4, x=2, y=3) +
@@ -1078,15 +1081,166 @@ hc_pca_plots <- list(
   filt_PC3_PC4 = filt_PC3_PC4
 )
 
-for (plot_name in names(hc_pca_plots)) {
-  save_plot(
-    plot = hc_pca_plots[[plot_name]],
-    filename = paste0("PCA_HC_", plot_name, "_EMP"),
-    folder = output_folder
-  )
-}
+print(hc_pca_plots)
+
+# for (plot_name in names(hc_pca_plots)) {
+#   save_plot(
+#     plot = hc_pca_plots[[plot_name]],
+#     filename = paste0("PCA_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
 
 ```
+
+##PCA 24hr
+```{r PCA Plots 24hr Only}
+#now filter out all of the 2hr points and plot your filtered PCA plots
+
+#read in my metadata annotations
+metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+
+metadata_24 <- metadata %>% 
+  dplyr::filter(Time == "24")
+
+#now make my matrices into only 24hr samples
+hc_cpm_unfilt_24 <- hc_cpm_unfilt[, metadata_24$Sample_Tx, drop = FALSE]
+hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Sample_Tx, drop = FALSE]
+
+#prcomp transformation
+prcomp_hc_unfilt_24 <- prcomp(t(hc_cpm_unfilt_24), center = TRUE)
+prcomp_hc_filt_24 <- prcomp(t(hc_cpm_mat_24), center =  TRUE)
+
+#add in labels for individual numbers
+ind_num <- metadata_24$Ind_Num
+drug_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+
+metadata_24$Drug <- factor(
+  metadata_24$Drug,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+metadata_24$Species <- factor(
+  metadata_24$Species, 
+  levels = c("H", "C")
+)
+
+#now plot my PCA for unfiltered/filtered log2cpm
+####PC1/PC2####
+unfilt24_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC1/PC2 24hr (unfilt)")) +
+  theme_custom()
+
+
+filt24_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC1/PC2 24hr")) +
+  theme_custom()
+
+####PC2/3####
+unfilt24_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC2/PC3 24hr (unfilt)")) +
+  theme_custom()
+
+
+filt24_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC2/PC3 24hr")) +
+  theme_custom()
+
+####PC3/4####
+unfilt24_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC3/PC4 24hr (unfilt)")) +
+  theme_custom()
+
+
+filt24_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC3/PC4 24hr")) +
+  theme_custom()
+
+#make a list of your 24hr PCA plots and print them all
+
+pca_24_list <- list(
+  unfilt24_PC1_PC2 = unfilt24_PC1_PC2,
+  unfilt24_PC2_PC3 = unfilt24_PC2_PC3,
+  unfilt24_PC3_PC4 = unfilt24_PC3_PC4,
+  filt24_PC1_PC2 = filt24_PC1_PC2,
+  filt24_PC2_PC3 = filt24_PC2_PC3,
+  filt24_PC3_PC4 = filt24_PC3_PC4
+)
+
+print(pca_24_list)
+
+# for (plot_name in names(pca_24_list)) {
+#   save_plot(
+#     plot = pca_24_list[[plot_name]],
+#     filename = paste0("PCA_24hr_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
+
+
+```
+
 
 #Subset PCA
 ```{r PCA of Subsets}
@@ -1179,35 +1333,136 @@ ddr_plots <- make_pca_plots("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_matrix, meta
 imr_plots <- make_pca_plots("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_matrix, metadata, ind_num, drug_col)
 mmr_plots <- make_pca_plots("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_matrix, metadata, ind_num, drug_col)
 
-#display plots
-upr_plots$p1
-upr_plots$p2
-ddr_plots$p1
-ddr_plots$p2
-imr_plots$p1
-imr_plots$p2
-mmr_plots$p1
-mmr_plots$p2
+all_plots_subset_pca <- list(
+  upr_PC1_PC2 = upr_plots$p1,
+  upr_PC2_PC3 = upr_plots$p2,
+  ddr_PC1_PC2 = ddr_plots$p1,
+  ddr_PC2_PC3 = ddr_plots$p2,
+  imr_PC1_PC2 = imr_plots$p1,
+  imr_PC2_PC3 = imr_plots$p2,
+  mmr_PC1_PC2 = mmr_plots$p1,
+  mmr_PC2_PC3 = mmr_plots$p2
+)
 
-# all_plots <- list(
-#   upr_PC1_PC2 = upr_plots$p1,
-#   upr_PC2_PC3 = upr_plots$p2,
-#   ddr_PC1_PC2 = ddr_plots$p1,
-#   ddr_PC2_PC3 = ddr_plots$p2,
-#   imr_PC1_PC2 = imr_plots$p1,
-#   imr_PC2_PC3 = imr_plots$p2,
-#   mmr_PC1_PC2 = mmr_plots$p1,
-#   mmr_PC2_PC3 = mmr_plots$p2
-# )
-# 
+print(all_plots_subset_pca)
+
 # # Loop through each plot and save
-# for (plot_name in names(all_plots)) {
+# for (plot_name in names(all_plots_subset_pca)) {
 #   save_plot(
-#     plot = all_plots[[plot_name]],
+#     plot = all_plots_subset_pca[[plot_name]],
 #     filename = paste0("Subset_PCA_", plot_name, "_EMP"),
 #     folder = output_folder
 #     )
 # }
+
+
+```
+
+##24hr Subset PCA
+```{r Subset PCA plots 24hr only}
+#now do the same thing you did above but filter out any 2hr samples
+
+#make matrices into only 24hr samples
+hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Sample_Tx, drop = FALSE]
+
+#UPR Subset
+upr_tx <- c("TUN", "THA", "DMSO")
+upr_meta_24 <- metadata_24 %>% 
+  dplyr::filter(Drug %in% upr_tx)
+upr_cpm_24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% upr_meta_24$Sample_Tx] 
+
+#DDR Subset
+ddr_tx <- c("DOX", "NUTL", "DMSO")
+ddr_meta_24 <- metadata_24 %>% 
+  dplyr::filter(Drug %in% ddr_tx)
+ddr_cpm_24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% ddr_meta_24$Sample_Tx]  
+
+#IMR Subset
+imr_tx <- c("LPS", "TNFa", "H2O")
+imr_meta_24 <- metadata_24 %>% 
+  dplyr::filter(Drug %in% imr_tx)
+imr_cpm_24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% imr_meta_24$Sample_Tx]  
+
+#MMR Subset
+mmr_tx <- c("BPA", "PFOA", "EtOH")
+mmr_meta_24 <- metadata_24 %>% 
+  dplyr::filter(Drug %in% mmr_tx)
+mmr_cpm_24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% mmr_meta_24$Sample_Tx]  
+
+
+#now make a function to plot these PCA plots in subsets
+#use metadata not metadata_24 since it needs to be self-contained
+make_pca_plots_24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, drug_col) {
+  # filter metadata
+  keep_idx <- metadata$Drug %in% subset_drugs
+  metadata_sub <- metadata[keep_idx, ]
+  ind_sub <- ind_num[keep_idx]
+  
+  # subset expression matrix to same samples
+  hc_matrix_sub <- hc_matrix[, keep_idx, drop = FALSE]
+  
+  drug_col_sub <- drug_col[names(drug_col) %in% unique(metadata_sub$Drug)]
+  
+  # run PCA on subset
+  prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Species", size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 50,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col_sub) +
+    ggtitle(bquote(.(subset_name) ~ "subset: log"[2]*"cpm PC1/PC2")) +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Species", size = 4,
+                 x = 2, y = 3) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col_sub) +
+    ggtitle(bquote(.(subset_name) ~ "subset: log"[2]*"cpm PC2/PC3")) +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2)
+}
+
+# ---- Run for each subset ----
+upr_plots_24 <- make_pca_plots_24("UPR", c("TUN", "THA", "DMSO"), hc_cpm_mat_24, metadata_24, ind_num, drug_col)
+ddr_plots_24 <- make_pca_plots_24("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_mat_24, metadata_24, ind_num, drug_col)
+imr_plots_24 <- make_pca_plots_24("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_mat_24, metadata_24, ind_num, drug_col)
+mmr_plots_24 <- make_pca_plots_24("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_mat_24, metadata_24, ind_num, drug_col)
+
+all_plots_subset_pca24 <- list(
+  upr24_PC1_PC2 = upr_plots_24$p1,
+  upr24_PC2_PC3 = upr_plots_24$p2,
+  ddr24_PC1_PC2 = ddr_plots_24$p1,
+  ddr24_PC2_PC3 = ddr_plots_24$p2,
+  imr24_PC1_PC2 = imr_plots_24$p1,
+  imr24_PC2_PC3 = imr_plots_24$p2,
+  mmr24_PC1_PC2 = mmr_plots_24$p1,
+  mmr24_PC2_PC3 = mmr_plots_24$p2
+)
+
+print(all_plots_subset_pca24)
+
+# Loop through each plot and save
+for (plot_name in names(all_plots_subset_pca24)) {
+  save_plot(
+    plot = all_plots_subset_pca24[[plot_name]],
+    filename = paste0("Subset_PCA_24_", plot_name, "_EMP"),
+    folder = output_folder
+    )
+}
+
 
 
 ```
@@ -1218,6 +1473,11 @@ mmr_plots$p2
 #first make correlation heatmaps of all samples
 #using ComplexHeatmap
 
+#First I want to alter the column names to be clearer
+new_names <- metadata$Final_sample_name[match(colnames(x), metadata$Final_sample_name)]
+
+colnames(hc_cpm_df) <- new_names
+
 #prepare data
 hc_matrix <- hc_cpm_df
 colnames(hc_matrix) <- metadata$Sample_Tx  # Ensure column names match metadata
@@ -1225,52 +1485,42 @@ colnames(hc_matrix) <- metadata$Sample_Tx  # Ensure column names match metadata
 #compute Spearman correlation
 cor_matrix_spearman <- cor(hc_matrix, method = "spearman", use = "everything")
 
+#define a standard color scale where 0 = white
+col_fun <- colorRamp2(
+  breaks = c(-1,0,1),
+  colors = c("blue", "white", "red")
+)
+
 #extract metadata for annotations
 Individual <- as.character(metadata$Ind)
 Species <- as.character(metadata$Species)
 Time <- as.character(metadata$Time)
-Treatment <- as.character(metadata$Drug)
+Stimulus <- as.character(metadata$Drug)
 
-# ---- Define colors for annotations ----
-drug_col <- c(
-  "TUN" = "#E41A1C",
-  "THA" = "#377EB8", 
-  "DOX" = "#4DAF4A", 
-  "NUTL" = "#984EA3", 
-  "DMSO" = "#999999", 
-  "LPS" = "#FFFF33", 
-  "TNFa" = "#FC8D62", 
-  "H2O" = "#777777", 
-  "BPA" = "#F781BF", 
-  "PFOA" = "#66C2A5", 
-  "EtOH" = "#AAAAAA"
-)
+#define colors for my annotations
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+time_col <- readRDS("data/theme/time_category_color_palette.RDS")
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
 
-ind_col <- setNames(rainbow(length(unique(Individual))), unique(Individual))
-
-time_col <- c("2" = "#392344",
-              "24" = "#457291")
-
-species_col <- c("C" = "#E56473",
-                 "H" = "#EE4902")
-
-# ---- Create annotations ----
+#create my annotations
 top_annotation <- HeatmapAnnotation(
   Individual = Individual, 
   Time = Time,
-  Treatment = Treatment,
+  Stimulus = Stimulus,
   Species = Species,
   col = list(
     Individual = ind_col,
     Time = time_col,
-    Treatment = drug_col,
-    Species = species_col
+    Stimulus = stim_col,
+    Species = spec_col
   )
 )
 
 # ---- Spearman heatmap for all samples ----
 heatmap_spearman_all <- Heatmap(cor_matrix_spearman,
                                 name = "Spearman",
+                                col = col_fun,
                                 top_annotation = top_annotation,
                                 show_row_names = TRUE,
                                 show_column_names = TRUE,
@@ -1278,8 +1528,22 @@ heatmap_spearman_all <- Heatmap(cor_matrix_spearman,
                                 cluster_columns = TRUE,
                                 border = TRUE, 
                                 show_row_dend = FALSE,
-                                show_column_dend = FALSE)
-draw(heatmap_spearman_all)
+                                show_column_dend = FALSE,
+                                use_raster = TRUE,
+                                raster_quality = 2,
+                                raster_device = "CairoPNG",
+                                row_names_gp = gpar(fontsize = 8),
+                                column_names_gp = gpar(fontsize = 8),
+                                cell_fun = function(j, i, x, y, 
+                                                    width, 
+                                                    height, 
+                                                    fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
+
+# draw(heatmap_spearman_all)
 
 # ---- Define subsets ----
 subsets <- list(
@@ -1304,13 +1568,13 @@ for (subset_name in names(subsets)) {
   top_ann_subset <- HeatmapAnnotation(
     Individual = metadata$Ind[metadata$Sample_Tx %in% cols_subset],
     Time = metadata$Time[metadata$Sample_Tx %in% cols_subset],
-    Treatment = metadata$Drug[metadata$Sample_Tx %in% cols_subset],
+    Stimulus = metadata$Drug[metadata$Sample_Tx %in% cols_subset],
     Species = metadata$Species[metadata$Sample_Tx %in% cols_subset],
     col = list(
       Individual = ind_col,
       Time = time_col,
-      Treatment = drug_col,
-      Species = species_col
+      Stimulus = stim_col,
+      Species = spec_col
     )
   )
   
@@ -1318,23 +1582,1508 @@ for (subset_name in names(subsets)) {
   heatmap_subset <- Heatmap(cor_subset,
                             name = paste0("Spearman_", subset_name),
                             top_annotation = top_ann_subset,
+                            col = col_fun,
                             show_row_names = TRUE,
                             show_column_names = TRUE,
                             cluster_rows = TRUE,
                             cluster_columns = TRUE,
-                            border = TRUE)
+                            border = TRUE,
+                            show_row_dend = FALSE,
+                            show_column_dend = FALSE,
+                            use_raster = TRUE,
+                            raster_quality = 2,
+                            raster_device = "CairoPNG",
+                            row_names_gp = gpar(fontsize = 8),
+                            column_names_gp = gpar(fontsize = 8), 
+                            cell_fun = function(j, i, 
+                                                x, y, 
+                                                width, height, fill) {
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
   
-  draw(heatmap_subset)
+  
+  # draw(heatmap_subset)
   subset_heatmaps[[subset_name]] <- heatmap_subset
+}
+
+#save my subset heatmaps
+for (nm in names(subset_heatmaps)) {
+  ht <- subset_heatmaps[[nm]]
+  save_complex_heatmap(
+    ht = ht,
+    filename = paste0("CorHM_Spearman_", nm, "_EMP"),
+    folder = output_folder,
+    height = 18,
+    width = 18
+  )
+  message("Saved subset heatmap: ", nm)
+}
+
+#save all samples heatmap
+save_complex_heatmap(
+  ht = heatmap_spearman_all,
+  filename = "CorHM_Spearman_AllSamples_EMP",
+  folder = output_folder,
+  height = 40, width = 40)
+
+
+```
+
+##24hr Correlation Heatmaps
+```{r Cor HMs Spearman 24hr Only}
+#first make correlation heatmaps of all samples
+#using ComplexHeatmap
+
+hc_cpm_df_24 <- hc_cpm_df[, metadata_24$Final_sample_name, drop = FALSE]
+
+#First I want to alter the column names so they're not inc time
+clean_sample_names <- function(x) {
+  #changing col names DOX_24_H_1 -> DOX_H1
+  x <- gsub("_24_", "_", x)      
+  x <- gsub("_([HC])_", "_\\1", x) 
+  x <- gsub("_(\\d+)$", "\\1", x)
+  return(x)
+}
+
+# Apply only to 24hr samples in metadata_24
+meta_24 <- metadata_24 %>%
+  mutate(Sample_Tx_clean = ifelse(
+    grepl("_24_", Sample_Tx),
+    clean_sample_names(Sample_Tx),
+    Sample_Tx
+  ))
+
+colnames(hc_cpm_df_24) <- clean_sample_names(colnames(hc_cpm_df_24))
+
+#prepare data
+hc_matrix_24 <- hc_cpm_df_24
+colnames(hc_matrix_24) <- meta_24$Sample_Tx_clean
+
+#compute Spearman correlation
+cor_matrix_spearman_24 <- cor(hc_matrix_24, method = "spearman", use = "everything")
+
+#define a standard color scale where 0 = white
+col_fun <- colorRamp2(
+  breaks = c(-1,0,1),
+  colors = c("blue", "white", "red")
+)
+
+#extract metadata for annotations
+Individual <- as.character(meta_24$Ind)
+Species <- as.character(meta_24$Species)
+Stimulus <- as.character(meta_24$Drug)
+Response <- as.character(meta_24$Response)
+
+
+#define colors for my annotations
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
+resp_col <- readRDS("data/theme/response_category_color_palette.RDS")
+
+#create my annotations
+top_annotation_24 <- HeatmapAnnotation(
+  Individual = Individual, 
+  Stimulus = Stimulus,
+  Species = Species,
+  Response = Response,
+  col = list(
+    Individual = ind_col,
+    Stimulus = stim_col,
+    Species = spec_col,
+    Response = resp_col
+  )
+)
+
+#spearman heatmap for all samples
+heatmap_spearman_24 <- Heatmap(cor_matrix_spearman_24,
+                                name = "Spearman",
+                                col = col_fun,
+                                top_annotation = top_annotation_24,
+                                show_row_names = TRUE,
+                                show_column_names = TRUE,
+                                cluster_rows = TRUE,
+                                cluster_columns = TRUE,
+                                border = TRUE, 
+                                show_row_dend = FALSE,
+                                show_column_dend = FALSE,
+                                use_raster = TRUE,
+                                raster_quality = 2,
+                                raster_device = "CairoPNG",
+                                row_names_gp = gpar(fontsize = 8),
+                                column_names_gp = gpar(fontsize = 8),
+                                layer_fun = function(j, i, x, y, 
+                                                    width, 
+                                                    height, 
+                                                    fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
+
+# draw(heatmap_spearman_24)
+
+# ---- Define subsets ----
+subsets <- list(
+  UPR = c("TUN", "THA", "DMSO"),
+  DDR = c("DOX", "NUTL", "DMSO"),
+  IMR = c("LPS", "TNFa", "H2O"),
+  MMR = c("BPA", "PFOA", "EtOH")
+)
+
+# ---- Loop through subsets ----
+subset_heatmaps_24 <- list()
+
+for (subset_name in names(subsets)) {
+  # Filter columns for this subset
+  cols_subset_24 <- meta_24$Sample_Tx_clean[meta_24$Drug %in% subsets[[subset_name]]]
+  mat_subset <- hc_matrix_24[, cols_subset_24, drop = FALSE]
+  
+  # Correlation
+  cor_subset_24 <- cor(mat_subset, method = "spearman", use = "everything")
+  
+  # Annotations for this subset
+  top_ann_subset_24 <- HeatmapAnnotation(
+    Individual = meta_24$Ind[meta_24$Sample_Tx_clean %in% cols_subset_24],
+    Stimulus = meta_24$Drug[meta_24$Sample_Tx_clean %in% cols_subset_24],
+    Species = meta_24$Species[meta_24$Sample_Tx_clean %in% cols_subset_24],
+    col = list(
+      Individual = ind_col,
+      Stimulus = stim_col,
+      Species = spec_col
+    )
+  )
+  
+  # Heatmap
+  heatmap_subset_24 <- Heatmap(cor_subset_24,
+                            name = paste0("Spearman_24_", subset_name),
+                            top_annotation = top_ann_subset_24,
+                            col = col_fun,
+                            show_row_names = TRUE,
+                            show_column_names = TRUE,
+                            cluster_rows = TRUE,
+                            cluster_columns = TRUE,
+                            border = TRUE,
+                            show_row_dend = FALSE,
+                            show_column_dend = FALSE,
+                            use_raster = TRUE,
+                            raster_quality = 2,
+                            raster_device = "CairoPNG",
+                            row_names_gp = gpar(fontsize = 8),
+                            column_names_gp = gpar(fontsize = 8), 
+                            layer_fun = function(j, i, 
+                                                x, y, 
+                                                width, height, fill) {
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
+  
+  
+  # draw(heatmap_subset_24)
+  subset_heatmaps_24[[subset_name]] <- heatmap_subset_24
+}
+
+#save my subset heatmaps
+for (nm in names(subset_heatmaps_24)) {
+  ht <- subset_heatmaps_24[[nm]]
+  save_complex_heatmap(
+    ht = ht,
+    filename = paste0("CorHM_Spearman_24_", nm, "_EMP_251002"),
+    folder = output_folder,
+    height = 12,
+    width = 12
+  )
+  message("Saved subset heatmap: ", nm)
+}
+
+#save all samples heatmap
+save_complex_heatmap(
+  ht = heatmap_spearman_24,
+  filename = "CorHM_Spearman_24hr_EMP_251002",
+  folder = output_folder,
+  height = 18,
+  width = 18
+)
+
+```
+
+
+#Perform Differential Expression Analysis
+```{r DE Analysis}
+#filter my counts for DE
+#make sure that hc_counts with my raw counts information has the right column names
+# identical(colnames(hc_counts_df), colnames(hc_cpm_df))
+#TRUE
+
+# x = hc_counts_df[row.names(hc_cpm_df), ] %>%
+#   as.matrix()
+#now i've filtered my raw counts for DE by the number of genes that I got after rowMeans filtering
+
+#modify my metadata to match with the rownames being my sample names in columns here
+# metadata_2 <- metadata %>%
+#   as.data.frame()
+
+rownames(metadata_2) <- metadata_2$Sample_ID
+colnames(x) <- metadata_2$Final_sample_name
+rownames(metadata_2) <- metadata_2$Final_sample_name
+
+metadata_2$Cond <- make.names(metadata_2$Cond)
+metadata_2$Ind <- as.character(metadata_2$Ind)
+
+# saveRDS(metadata_2, "data/de/metadata_2_de.RDS")
+# saveRDS(x, "data/de/x_counts_de.RDS")
+
+#read in your saved metadata_2 and x so it doesn't get altered
+metadata_2 <- readRDS("data/de/metadata_2_de.RDS")
+x <- readRDS("data/de/x_counts_de.RDS")
+
+#now that I've formatted my dataframes, I'm going to go ahead and start the process of DE
+
+#create DGEList object
+dge <- DGEList(counts = x)
+#make sure that the groups are based on my column names
+dge$samples$group <- factor(metadata_2$Cond)
+#now perform TMM normalization for library size
+dge <- calcNormFactors(dge, method = "TMM")
+
+#before making my design matrix, factor
+metadata_2$Ind_Num <- factor(metadata_2$Ind_Num, levels = unique(metadata_2$Ind_Num))
+metadata_2$Drug <- factor(metadata_2$Drug, levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH"))
+metadata_2$Time <- factor(metadata_2$Time, levels = c("2", "24"))
+metadata_2$Species <- factor(metadata_2$Species, levels = c("C", "H"))
+metadata_2$Cond <- factor(metadata_2$Cond, levels = unique(metadata_2$Cond))
+
+#create my design matrix
+design <- model.matrix(~ 0 + metadata_2$Cond)
+colnames(design) <- gsub("metadata_2\\$Cond", "", colnames(design))
+
+# saveRDS(design, "data/de/design_matrix.RDS")
+
+#since I factored condition above, they stayed in the right order but keep an eye on them
+
+#run duplicate correlation for individual effect
+corfit <- duplicateCorrelation(object = dge$counts,
+                               design = design,
+                               block = metadata_2$Ind_Num)
+
+#run voom transformation and plot it
+v <- voom(dge, design, 
+          block = metadata_2$Ind_Num, 
+          correlation = corfit$consensus.correlation)
+
+#fit my linear model
+fit <- lmFit(v, design,
+             block = metadata_2$Ind_Num,
+             correlation = corfit$consensus.correlation)
+
+#put together my contrast matrix
+contrast_matrix <- makeContrasts(
+  V.TUN2_C = TUN_2_C - DMSO_2_C,
+  V.THA2_C = THA_2_C - DMSO_2_C,
+  V.DOX2_C = DOX_2_C - DMSO_2_C,
+  V.NUTL2_C = NUTL_2_C - DMSO_2_C,
+  V.LPS2_C = LPS_2_C - H2O_2_C,
+  V.TNFa2_C = TNFa_2_C - H2O_2_C,
+  V.BPA2_C = BPA_2_C - EtOH_2_C,
+  V.PFOA2_C = PFOA_2_C - EtOH_2_C,
+  V.TUN24_C = TUN_24_C - DMSO_24_C,
+  V.THA24_C = THA_24_C - DMSO_24_C,
+  V.DOX24_C = DOX_24_C - DMSO_24_C,
+  V.NUTL24_C = NUTL_24_C - DMSO_24_C,
+  V.LPS24_C = LPS_24_C - H2O_24_C,
+  V.TNFa24_C = TNFa_24_C - H2O_24_C,
+  V.BPA24_C = BPA_24_C - EtOH_24_C,
+  V.PFOA24_C = PFOA_24_C - EtOH_24_C,
+  V.TUN2_H = TUN_2_H - DMSO_2_H,
+  V.THA2_H = THA_2_H - DMSO_2_H,
+  V.DOX2_H = DOX_2_H - DMSO_2_H,
+  V.NUTL2_H = NUTL_2_H - DMSO_2_H,
+  V.LPS2_H = LPS_2_H - H2O_2_H,
+  V.TNFa2_H = TNFa_2_H - H2O_2_H,
+  V.BPA2_H = BPA_2_H - EtOH_2_H,
+  V.PFOA2_H = PFOA_2_H - EtOH_2_H,
+  V.TUN24_H = TUN_24_H - DMSO_24_H,
+  V.THA24_H = THA_24_H - DMSO_24_H,
+  V.DOX24_H = DOX_24_H - DMSO_24_H,
+  V.NUTL24_H = NUTL_24_H - DMSO_24_H,
+  V.LPS24_H = LPS_24_H - H2O_24_H,
+  V.TNFa24_H = TNFa_24_H - H2O_24_H,
+  V.BPA24_H = BPA_24_H - EtOH_24_H,
+  V.PFOA24_H = PFOA_24_H - EtOH_24_H,
+  levels = design
+)
+
+#apply these contrasts to compare drug to matched vehicles
+fit2 <- contrasts.fit(fit, contrast_matrix)
+fit2 <- eBayes(fit2)
+
+#plot the mean-variance trend
+plotSA(fit2, main = "Dissertation Model: MV Trend")
+
+#pull my results summary for DEGs
+results_summary <- decideTests(fit2, 
+                               adjust.method = "BH",
+                               p.value = 0.05)
+
+summary(results_summary)
+
+```
+
+#Create Toptables
+```{r DE Toptables Chimp}
+#make toptables of DEGs - start with Chimp
+
+#2hr Chimp
+Toptable_V.TUN2_C <- topTable(fit = fit2, 
+                            coef = "V.TUN2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_C <- topTable(fit = fit2, 
+                            coef = "V.THA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX2_C <- topTable(fit = fit2, 
+                            coef = "V.DOX2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL2_C <- topTable(fit = fit2, 
+                            coef = "V.NUTL2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS2_C <- topTable(fit = fit2, 
+                            coef = "V.LPS2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa2_C <- topTable(fit = fit2, 
+                            coef = "V.TNFa2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA2_C <- topTable(fit = fit2, 
+                            coef = "V.BPA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA2_C <- topTable(fit = fit2, 
+                            coef = "V.PFOA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#24hr toptables
+Toptable_V.TUN24_C <- topTable(fit = fit2, 
+                            coef = "V.TUN24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_C <- topTable(fit = fit2, 
+                            coef = "V.THA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_C <- topTable(fit = fit2, 
+                            coef = "V.DOX24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_C <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_C <- topTable(fit = fit2, 
+                            coef = "V.LPS24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_C <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_C <- topTable(fit = fit2, 
+                            coef = "V.BPA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_C <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+```
+
+```{r DE Toptables Human}
+#2hr Human
+Toptable_V.TUN2_H <- topTable(fit = fit2, 
+                            coef = "V.TUN2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_H <- topTable(fit = fit2, 
+                            coef = "V.THA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX2_H <- topTable(fit = fit2, 
+                            coef = "V.DOX2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL2_H <- topTable(fit = fit2, 
+                            coef = "V.NUTL2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS2_H <- topTable(fit = fit2, 
+                            coef = "V.LPS2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa2_H <- topTable(fit = fit2, 
+                            coef = "V.TNFa2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA2_H <- topTable(fit = fit2, 
+                            coef = "V.BPA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA2_H <- topTable(fit = fit2, 
+                            coef = "V.PFOA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#24hr toptables
+Toptable_V.TUN24_H <- topTable(fit = fit2, 
+                            coef = "V.TUN24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_H <- topTable(fit = fit2, 
+                            coef = "V.THA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_H <- topTable(fit = fit2, 
+                            coef = "V.DOX24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_H <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_H <- topTable(fit = fit2, 
+                            coef = "V.LPS24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_H <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_H <- topTable(fit = fit2, 
+                            coef = "V.BPA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_H <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+```
+
+#Combine Toptables List
+```{r Combined Toptables}
+
+c_toptables_2 <- list(
+  "V.TUN2_C" = Toptable_V.TUN2_C, 
+  "V.THA2_C" = Toptable_V.THA2_C, 
+  "V.DOX2_C" = Toptable_V.DOX2_C,
+  "V.NUTL2_C" = Toptable_V.NUTL2_C, 
+  "V.LPS2_C" = Toptable_V.LPS2_C, 
+  "V.TNFa2_C" = Toptable_V.TNFa2_C,
+  "V.BPA2_C" = Toptable_V.BPA2_C,
+  "V.PFOA2_C" = Toptable_V.PFOA2_C
+)
+
+h_toptables_2 <- list(
+  "V.TUN2_H" = Toptable_V.TUN2_H, 
+  "V.THA2_H" = Toptable_V.THA2_H, 
+  "V.DOX2_H" = Toptable_V.DOX2_H,
+  "V.NUTL2_H" = Toptable_V.NUTL2_H, 
+  "V.LPS2_H" = Toptable_V.LPS2_H, 
+  "V.TNFa2_H" = Toptable_V.TNFa2_H,
+  "V.BPA2_H" = Toptable_V.BPA2_H,
+  "V.PFOA2_H" = Toptable_V.PFOA2_H
+)
+
+c_toptables_24 <- list(
+  "V.TUN24_C" = Toptable_V.TUN24_C,
+  "V.THA24_C" = Toptable_V.THA24_C,
+  "V.DOX24_C" = Toptable_V.DOX24_C,
+  "V.NUTL24_C" = Toptable_V.NUTL24_C,
+  "V.LPS24_C" = Toptable_V.LPS24_C,
+  "V.TNFa24_C" = Toptable_V.TNFa24_C,
+  "V.BPA24_C" = Toptable_V.BPA24_C,
+  "V.PFOA24_C" = Toptable_V.PFOA24_C
+)
+
+h_toptables_24 <- list(
+  "V.TUN24_H" = Toptable_V.TUN24_H,
+  "V.THA24_H" = Toptable_V.THA24_H,
+  "V.DOX24_H" = Toptable_V.DOX24_H,
+  "V.NUTL24_H" = Toptable_V.NUTL24_H,
+  "V.LPS24_H" = Toptable_V.LPS24_H,
+  "V.TNFa24_H" = Toptable_V.TNFa24_H,
+  "V.BPA24_H" = Toptable_V.BPA24_H,
+  "V.PFOA24_H" = Toptable_V.PFOA24_H
+)
+
+c_toptables_all <- list(
+  "V.TUN2_C" = Toptable_V.TUN2_C, 
+  "V.THA2_C" = Toptable_V.THA2_C, 
+  "V.DOX2_C" = Toptable_V.DOX2_C,
+  "V.NUTL2_C" = Toptable_V.NUTL2_C, 
+  "V.LPS2_C" = Toptable_V.LPS2_C, 
+  "V.TNFa2_C" = Toptable_V.TNFa2_C,
+  "V.BPA2_C" = Toptable_V.BPA2_C,
+  "V.PFOA2_C" = Toptable_V.PFOA2_C,
+  "V.TUN24_C" = Toptable_V.TUN24_C,
+  "V.THA24_C" = Toptable_V.THA24_C,
+  "V.DOX24_C" = Toptable_V.DOX24_C,
+  "V.NUTL24_C" = Toptable_V.NUTL24_C,
+  "V.LPS24_C" = Toptable_V.LPS24_C,
+  "V.TNFa24_C" = Toptable_V.TNFa24_C,
+  "V.BPA24_C" = Toptable_V.BPA24_C,
+  "V.PFOA24_C" = Toptable_V.PFOA24_C
+)
+
+h_toptables_all <- list(
+  "V.TUN2_H" = Toptable_V.TUN2_H, 
+  "V.THA2_H" = Toptable_V.THA2_H, 
+  "V.DOX2_H" = Toptable_V.DOX2_H,
+  "V.NUTL2_H" = Toptable_V.NUTL2_H, 
+  "V.LPS2_H" = Toptable_V.LPS2_H, 
+  "V.TNFa2_H" = Toptable_V.TNFa2_H,
+  "V.BPA2_H" = Toptable_V.BPA2_H,
+  "V.PFOA2_H" = Toptable_V.PFOA2_H,
+  "V.TUN24_H" = Toptable_V.TUN24_H,
+  "V.THA24_H" = Toptable_V.THA24_H,
+  "V.DOX24_H" = Toptable_V.DOX24_H,
+  "V.NUTL24_H" = Toptable_V.NUTL24_H,
+  "V.LPS24_H" = Toptable_V.LPS24_H,
+  "V.TNFa24_H" = Toptable_V.TNFa24_H,
+  "V.BPA24_H" = Toptable_V.BPA24_H,
+  "V.PFOA24_H" = Toptable_V.PFOA24_H
+)
+
+hc_toptables <- list(
+  "V.TUN2_H" = Toptable_V.TUN2_H,
+  "V.THA2_H" = Toptable_V.THA2_H,
+  "V.DOX2_H" = Toptable_V.DOX2_H,
+  "V.NUTL2_H" = Toptable_V.NUTL2_H,
+  "V.LPS2_H" = Toptable_V.LPS2_H,
+  "V.TNFa2_H" = Toptable_V.TNFa2_H,
+  "V.BPA2_H" = Toptable_V.BPA2_H,
+  "V.PFOA2_H" = Toptable_V.PFOA2_H,
+  "V.TUN24_H" = Toptable_V.TUN24_H,
+  "V.THA24_H" = Toptable_V.THA24_H,
+  "V.DOX24_H" = Toptable_V.DOX24_H,
+  "V.NUTL24_H" = Toptable_V.NUTL24_H,
+  "V.LPS24_H" = Toptable_V.LPS24_H,
+  "V.TNFa24_H" = Toptable_V.TNFa24_H,
+  "V.BPA24_H" = Toptable_V.BPA24_H,
+  "V.PFOA24_H" = Toptable_V.PFOA24_H,
+  "V.TUN2_C" = Toptable_V.TUN2_C,
+  "V.THA2_C" = Toptable_V.THA2_C,
+  "V.DOX2_C" = Toptable_V.DOX2_C,
+  "V.NUTL2_C" = Toptable_V.NUTL2_C,
+  "V.LPS2_C" = Toptable_V.LPS2_C,
+  "V.TNFa2_C" = Toptable_V.TNFa2_C,
+  "V.BPA2_C" = Toptable_V.BPA2_C,
+  "V.PFOA2_C" = Toptable_V.PFOA2_C,
+  "V.TUN24_C" = Toptable_V.TUN24_C,
+  "V.THA24_C" = Toptable_V.THA24_C,
+  "V.DOX24_C" = Toptable_V.DOX24_C,
+  "V.NUTL24_C" = Toptable_V.NUTL24_C,
+  "V.LPS24_C" = Toptable_V.LPS24_C,
+  "V.TNFa24_C" = Toptable_V.TNFa24_C,
+  "V.BPA24_C" = Toptable_V.BPA24_C,
+  "V.PFOA24_C" = Toptable_V.PFOA24_C
+)
+
+
+#save each of these toptables in a list so I can access them later for analysis 
+# saveRDS(list(
+#   "V.TUN2_H" = Toptable_V.TUN2_H,
+#   "V.THA2_H" = Toptable_V.THA2_H,
+#   "V.DOX2_H" = Toptable_V.DOX2_H,
+#   "V.NUTL2_H" = Toptable_V.NUTL2_H,
+#   "V.LPS2_H" = Toptable_V.LPS2_H,
+#   "V.TNFa2_H" = Toptable_V.TNFa2_H,
+#   "V.BPA2_H" = Toptable_V.BPA2_H,
+#   "V.PFOA2_H" = Toptable_V.PFOA2_H,
+#   "V.TUN24_H" = Toptable_V.TUN24_H,
+#   "V.THA24_H" = Toptable_V.THA24_H,
+#   "V.DOX24_H" = Toptable_V.DOX24_H,
+#   "V.NUTL24_H" = Toptable_V.NUTL24_H,
+#   "V.LPS24_H" = Toptable_V.LPS24_H,
+#   "V.TNFa24_H" = Toptable_V.TNFa24_H,
+#   "V.BPA24_H" = Toptable_V.BPA24_H,
+#   "V.PFOA24_H" = Toptable_V.PFOA24_H,
+#   "V.TUN2_C" = Toptable_V.TUN2_C,
+#   "V.THA2_C" = Toptable_V.THA2_C,
+#   "V.DOX2_C" = Toptable_V.DOX2_C,
+#   "V.NUTL2_C" = Toptable_V.NUTL2_C,
+#   "V.LPS2_C" = Toptable_V.LPS2_C,
+#   "V.TNFa2_C" = Toptable_V.TNFa2_C,
+#   "V.BPA2_C" = Toptable_V.BPA2_C,
+#   "V.PFOA2_C" = Toptable_V.PFOA2_C,
+#   "V.TUN24_C" = Toptable_V.TUN24_C,
+#   "V.THA24_C" = Toptable_V.THA24_C,
+#   "V.DOX24_C" = Toptable_V.DOX24_C,
+#   "V.NUTL24_C" = Toptable_V.NUTL24_C,
+#   "V.LPS24_C" = Toptable_V.LPS24_C,
+#   "V.TNFa24_C" = Toptable_V.TNFa24_C,
+#   "V.BPA24_C" = Toptable_V.BPA24_C,
+#   "V.PFOA24_C" = Toptable_V.PFOA24_C
+# ), file = "data/de/Toptable_list.RDS")
+
+
+#save each of these toptables for each comparison
+#convert rownames to Entrez_ID for every topTable
+# toptable_list_entrez <- lapply(toptable_list, function(df) {
+#   df$Entrez_ID <- rownames(df)
+#   df <- df[, c("Entrez_ID", setdiff(colnames(df), "Entrez_ID"))]  # Entrez_ID first
+#   return(df)
+# })
+# 
+# #save csv 
+# for (nm in names(toptable_list_entrez)) {
+#   write.csv(
+#     toptable_list_entrez[[nm]],
+#     file = file.path("data/de", paste0("Toptable_", nm, ".csv")),
+#     row.names = FALSE
+#   )
+# }
+
+#save as an RDS as well
+# saveRDS(toptable_list_entrez, file = "data/de/Toptable_list.RDS")
+
+#now go ahead and filter for adj. p value < 0.05 to make a list of all significant DEGs in these lists per comparison
+# toptable_sig_list <- list()
+
+# #make a function to loop through toptables
+# for (nm in names(toptable_list)) {
+#   df <- toptable_list[[nm]]
+#   
+#   #find the adj. p value to filter by
+#   if ("adj.P.Val" %in% colnames(df)) {
+#     df_sig <- df[df$adj.P.Val < 0.05, ]
+#   } else {
+#     warning(paste("No adj. p-value column in", nm))
+#     next
+#   }
+#   
+#   #skip tables with 0 significant DEGs
+#   if (nrow(df_sig) == 0) {
+#     message(paste("Skipping", nm, "- no significant DEGs"))
+#     next
+#   }
+#   
+#   #add filtered table to list
+#   toptable_sig_list[[nm]] <- df_sig
+# }
+
+#save filtered significant list as an RDS
+# saveRDS(toptable_sig_list, file = "data/de/Toptable_sig_list.RDS")
+
+#read in my toptable list for downstream analysis
+toptable_list <- readRDS("data/de/Toptable_list.RDS")
+toptable_sig_list <- readRDS("data/de/Toptable_sig_list.RDS")
+
+```
+
+```{r Joined Toptable 24hr}
+#I want to make a toptable that has all of the data for both species all combined and not just a list
+
+#define the treatments to pull and species
+# tx_24 <- c("TUN24", "THA24", "DOX24", "NUTL24", "LPS24", "TNFa24", "BPA24", "PFOA24")
+
+# spec <- c("H", "C")
+
+#make a function to merge each of these toptables into one
+# tables_to_merge <- c()
+# for (trt in tx_24) {
+#   for (sp in spec) {
+#     key <- paste0("V.", trt, "_", sp)
+#     if (key %in% names(toptable_list_entrez)) {
+#       tables_to_merge[[key]] <- toptable_list_entrez[[key]]
+#     }
+#   }
+# }
+# combined_24hr <- tables_to_merge[[1]]
+# 
+# #add suffix to all other tables before merging to keep track of treatment/species
+# for (i in 2:length(tables_to_merge)) {
+#   df <- tables_to_merge[[i]]
+#   
+#   #rename columns to include treatment/species
+#   df <- df %>%
+#     rename_with(~ paste0(names(tables_to_merge)[i], "_", .), -Entrez_ID)
+#   
+#   #full join by Entrez_ID
+#   combined_24hr <- full_join(combined_24hr, df, by = "Entrez_ID")
+# }
+
+# saveRDS(combined_24hr, "data/de/Combined_24hr_Toptable_EMP_251001.RDS")
+
+combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
+
+```
+
+```{r Volcano Plots DEGs All Timepoints}
+#now I want to create a function to plot volcano plots for all comparisons
+
+generate_volcano_plot <- function(toptable, title) {
+  
+  #check for entrezid 
+  if(!"Entrez_ID" %in% colnames(toptable)) stop("Entrez_ID col not present")
+  
+  #make significance labels
+  toptable <- toptable %>% 
+    mutate(Significance = case_when(
+      logFC > 0 & adj.P.Val < 0.05 ~ "Upregulated",
+      logFC < 0 & adj.P.Val < 0.05 ~ "Downregulated",
+      TRUE  ~ "Not Significant"
+    ))
+  
+  #factor significance
+  toptable$Significance <- factor(
+    toptable$Significance, 
+    levels = c("Upregulated", 
+               "Not Significant", 
+               "Downregulated")
+  )
+  
+  #count genes in each category
+  upgenes <- sum(toptable$Significance == "Upregulated")
+  nsgenes <- sum(toptable$Significance == "Not Significant")
+  downgenes <- sum(toptable$Significance == "Downregulated")
+  
+  #skip the plot if there are no up and down genes
+  if(upgenes == 0 & downgenes == 0) {
+    message(paste("Skipping", title, "- no significant DEGs"))
+    return(NULL)
+  }
+  
+  #labels for legend
+  legend_lab <- c(
+    paste0("Upregulated: ", upgenes),
+    paste0("Not Significant: ", nsgenes),
+    paste0("Downregulated: ", downgenes)
+  )
+  
+  #colors 
+  color_map <- c("Upregulated" = "blue",
+                 "Not Significant" = "grey30",
+                 "Downregulated" = "red")
+  
+  #generate volcano plots
+  p <- ggplot(toptable, aes(x = logFC, 
+                            y = -log10(P.Value),
+                            color = Significance)) +
+    geom_point_rast(alpha = 0.8, size = 3) +
+    scale_color_manual(values = color_map, 
+                       labels = legend_lab,
+                       breaks = c("Upregulated",
+                                  "Not Significant", 
+                                  "Downregulated"))  +
+    xlim(-10,10) +
+    labs(title = title, 
+         x = expression("log"[2]*"FC"),
+         y = expression("-log"[10]*"p-value")) +
+    theme_custom() +
+    theme(legend.position = "right")
+  
+  return(p)
+}
+
+#now generate a volcano plot for each set
+volcano_plots_sig <- lapply(names(toptable_list), function(nm) {
+  generate_volcano_plot(toptable_list[[nm]], title = nm)
+})
+names(volcano_plots_sig) <- names(toptable_list)
+
+#display all
+for (plot_name in names(volcano_plots_sig)) {
+  print(volcano_plots_sig[[plot_name]])
+}
+
+#now save each of these as pdf and png files
+# for (plot_name in names(volcano_plots_sig)) {
+#   
+#   if (is.null(plot_name) || is.na(plot_name) || is.null(volcano_plots_sig[[plot_name]])) {
+#     message(paste("skipping", plot_name, "- plot does not have DEGs"))
+#     next
+#   }
+#   
+#   p <- volcano_plots_sig[[plot_name]]
+#   
+#   filename_base <- paste0("Volcano_Plot_", plot_name, "_EMP")
+#   
+#   save_plot(
+#     plot = p,
+#     filename = filename_base,
+#     folder = output_folder
+#   )
+# }
+
+```
+#Add SYMBOL column
+```{r Add HGNC Symbol to each toptable}
+#in order to plot the logFC heatmaps, I want to add a SYMBOL column to each of my toptables based on their Entrez_ID
+
+#make a loop to do this since it might take a while
+# toptable_list <- lapply(toptable_list, function(tt) {
+#   tt <- tt %>% 
+#     mutate(
+#       Entrez_ID = rownames(tt),
+#       SYMBOL = mapIds(org.Hs.eg.db, 
+#                       keys = Entrez_ID,
+#                       column = "SYMBOL",
+#                       keytype = "ENTREZID",
+#                       multiVals = "first")
+#     )
+#   rownames(tt) <- NULL
+#   
+#   return(tt)
+# })
+
+#resave your toptable list so you can keep the symbol col
+# saveRDS(toptable_list, "data/de/Toptable_list_entrez.RDS")
+
+#read in your new toptable_list
+toptable_list <- readRDS("data/de/Toptable_list_entrez.RDS")
+
+```
+
+#DEGs
+```{r Specify your DEGs lists}
+#loop through and save my toptable csvs into easier names to maneuver for later analysis - ie Toptable_V.TUN2_C into TUN2_C
+
+#first save all of the toptables that now have entrez and symbol as csv in my DEGs folder
+
+# output <- "data/de/DEGs"
+# 
+# #save all data frames in toptable_list to csv
+# walk2(toptable_list, names(toptable_list), ~ {
+#   file_path <- file.path(output, paste0("Toptable_", .y, ".csv"))
+#   write.csv(.x, file_path, row.names = FALSE)
+#   message("Saved: ", file_path)
+# })
+
+#all of the csvs are saved
+
+#now create a load_deg function to load them as needed from this path
+load_deg <- function(name, folder = "data/de/DEGs") {
+  file <- file.path(folder, paste0("Toptable_V.", name, ".csv"))
+  read.csv(file)
+}
+
+```
+
+```{r Define gene sets for later analysis}
+#define your gene sets DIC and DDR
+
+#here is the set with categories, symbol, and entrezid
+fonoudi_genes <- readRDS("data/genesets/Fonoudi_gene_set.RDS")
+ddr_genes <- readRDS("data/genesets/DDR_gene_set.RDS")
+
+#here are the ids where it's only a vector of Entrez_ID
+fonoudi_ids <- readRDS("data/genesets/Fonoudi_genes_entrezid.RDS")
+ddr_ids <- readRDS("data/genesets/DDR_genes_entrezid.RDS")
+
+
+```
+
+##logFC Heatmaps
+```{r logFC HM DDR DIC 24hr}
+
+# toptable_24hr_names <- names(toptable_list)[grepl("24", names(toptable_list))]
+# 
+# toptable_list_24 <- toptable_list[toptable_24hr_names]
+
+# saveRDS(toptable_list_24, "data/de/Toptable_list_24hr.RDS")
+
+#read in my toptable list for 24hr
+toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
+
+#read in my gene sets
+ddr_genes
+fonoudi_genes
+
+#read in colors
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ddr_col <- c("DOX" = "#3B4DA3", "NUTL" = "#A0CFF8")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+
+#make my ddr heatmap
+
+
+```
+
+#DDR logFC HM
+```{r logFC HM DDR genes 24hr DOX NUTL}
+# Load 24hr DEGs
+DOX_24_H <- read.csv("data/de/Toptable_V.DOX24_H.csv")
+DOX_24_C <- read.csv("data/de/Toptable_V.DOX24_C.csv")
+NUTL_24_H <- read.csv("data/de/Toptable_V.NUTL24_H.csv")
+NUTL_24_C <- read.csv("data/de/Toptable_V.NUTL24_C.csv")
+
+#I named them without the time since I don't want that annotated onto the heatmaps
+
+# DDR gene set (with categories and Entrez IDs)
+ddr_genes <- readRDS("data/genesets/DDR_gene_set.RDS")
+
+ddr_genes <- ddr_genes %>% 
+  mutate(Entrez_ID = as.character(Entrez_ID))
+
+ddr_ids <- readRDS("data/genesets/DDR_genes_entrezid.RDS") %>% 
+  as.character()
+
+# Metadata table (columns: Final_sample_name, Stimulus, Species, Individual)
+metadata_24 <- metadata %>% 
+  dplyr::filter(Time == "24")
+
+#extract relevant DEG values
+extract_data_DDR <- function(df, name) {
+  df %>%
+    filter(Entrez_ID %in% ddr_ids) %>%
+    mutate(
+      Gene = mapIds(org.Hs.eg.db, 
+                    as.character(Entrez_ID),
+                    column = "SYMBOL", 
+                    keytype = "ENTREZID", 
+                    multiVals = "first"),
+      Condition = name,
+      Signif = ifelse(adj.P.Val < 0.05, "*", "")
+    )
+}
+
+deg_list_ddr24 <- list("DOX_H" = DOX_24_H, 
+                       "NUTL_H" = NUTL_24_H, 
+                       "DOX_C" = DOX_24_C,
+                       "NUTL_C" = NUTL_24_C
+)
+
+deg_list_ddr24 <- lapply(deg_list_ddr24, function(df) {
+  df %>% mutate(Entrez_ID = as.character(Entrez_ID))
+})
+
+all_data_ddr <- bind_rows(mapply(extract_data_DDR, deg_list_ddr24, names(deg_list_ddr24), SIMPLIFY = FALSE)) %>% 
+  left_join(ddr_genes, by = "Entrez_ID")
+
+#create my matrices
+logFC_matddr <- acast(all_data_ddr, Gene ~ Condition, value.var = "logFC")
+signif_matddr <- acast(all_data_ddr, Gene ~ Condition, value.var = "Signif")
+
+#set desired order
+desired_order <- c("DOX_H", "DOX_C", "NUTL_H", "NUTL_C")
+
+logFC_mat_ddr <- logFC_matddr[, desired_order, drop = FALSE]
+signif_mat_ddr <- signif_matddr[, desired_order, drop = FALSE]
+
+#make column annotations (stimuli species)
+meta_ddr <- str_split_fixed(colnames(logFC_mat_ddr), "_", 2)
+
+col_annot <- HeatmapAnnotation(
+  Stimulus = meta_ddr[, 1],
+  Species = meta_ddr[, 2],
+  col = list(
+    Stimulus = ddr_col,
+    Species = spec_col
+  ),
+  annotation_height = unit(c(1, 1, 1), "cm")
+)
+
+#row annotation (categories)
+gene_order_df_ddr <- all_data_ddr %>% 
+  distinct(Gene, Category) %>% 
+  arrange(factor(Category, 
+                 levels = sort(unique(ddr_genes$Category))), Gene)
+
+ordered_genes_ddr <- gene_order_df_ddr$Gene
+logFC_mat_ddr <- logFC_mat_ddr[ordered_genes_ddr, ]
+signif_mat_ddr <- signif_mat_ddr[ordered_genes_ddr, ]
+
+category_levels <- sort(unique(ddr_genes$Category))
+
+category_cols_ddr <- setNames(
+  c("darkorange", "steelblue", "darkgreen", "firebrick",
+    "orchid", "mediumpurple"),
+  sort(unique(ddr_genes$Category))
+)
+
+ha_left_ddr <- rowAnnotation(
+  Category = gene_order_df_ddr$Category,
+  col = list(Category = category_cols_ddr),
+  annotation_name_side = "top"
+)
+
+#plot the heatmap
+DDR_logFC_HM <- Heatmap(logFC_mat_ddr,
+        name = "logFC",
+        top_annotation = col_annot,
+        left_annotation = ha_left_ddr,
+        cluster_columns = FALSE,
+        cluster_rows = FALSE,
+        show_row_names = TRUE,
+        show_column_names = FALSE,
+        row_names_gp = gpar(fontsize = 10),
+        column_title = "DDR Genes logFC HM",
+        column_title_gp = gpar(fontsize = 12),
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+          #add significance for DEGs
+          grid.text(signif_mat_ddr[i,j], x, y, gp = gpar(fontsize = 10))
+        })
+
+#save this as a pdf and png
+#make a function specifically to save ComplexHeatmaps since save_plot doesn't work with these
+
+save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height = 10, dpi = 300, add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+  
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  
+  # Save PDF
+  cairo_pdf(pdf_file, width = width, height = height)
+  draw(ht)
+  dev.off()
+  message("Saved PDF: ", pdf_file)
+  
+  # Save PNG
+  png(png_file, width = width, height = height, units = "in", res = dpi)
+  draw(ht)
+  dev.off()
+  message("Saved PNG: ", png_file)
+}
+
+print(DDR_logFC_HM)
+
+#now save my heatmap
+# save_complex_heatmap(DDR_logFC_HM, 
+#                      "DDR_logFC_HM_EMP", 
+#                      folder = output_folder)
+
+
+```
+
+
+#DOX Cardiotox logFC HM
+```{r Dox Cardiotox Fonoudi genes logFC HM}
+# Load 24hr DEGs
+DOX_24_H <- read.csv("data/de/Toptable_V.DOX24_H.csv")
+DOX_24_C <- read.csv("data/de/Toptable_V.DOX24_C.csv")
+NUTL_24_H <- read.csv("data/de/Toptable_V.NUTL24_H.csv")
+NUTL_24_C <- read.csv("data/de/Toptable_V.NUTL24_C.csv")
+
+#I named them without the time since I don't want that annotated onto the heatmaps
+
+# DDR gene set (with categories and Entrez IDs)
+fnd_genes <- readRDS("data/genesets/Fonoudi_gene_set.RDS")
+
+fnd_genes <- fnd_genes %>% 
+  mutate(Entrez_ID = as.character(Entrez_ID))
+
+fnd_ids <- readRDS("data/genesets/Fonoudi_genes_entrezid.RDS") %>% 
+  as.character()
+
+# Metadata table (columns: Final_sample_name, Stimulus, Species, Individual)
+metadata_24 <- metadata %>% 
+  dplyr::filter(Time == "24")
+
+#extract relevant DEG values
+extract_data_fnd <- function(df, name) {
+  df %>%
+    filter(Entrez_ID %in% fnd_ids) %>%
+    mutate(
+      Gene = mapIds(org.Hs.eg.db, 
+                    as.character(Entrez_ID),
+                    column = "SYMBOL", 
+                    keytype = "ENTREZID", 
+                    multiVals = "first"),
+      Condition = name,
+      Signif = ifelse(adj.P.Val < 0.05, "*", "")
+    )
+}
+
+deg_list_fnd24 <- list("DOX_H" = DOX_24_H, 
+                       "NUTL_H" = NUTL_24_H, 
+                       "DOX_C" = DOX_24_C,
+                       "NUTL_C" = NUTL_24_C
+)
+
+deg_list_fnd24 <- lapply(deg_list_fnd24, function(df) {
+  df %>% mutate(Entrez_ID = as.character(Entrez_ID))
+})
+
+all_data_fnd <- bind_rows(mapply(extract_data_fnd, deg_list_fnd24, names(deg_list_fnd24), SIMPLIFY = FALSE)) %>% 
+  left_join(fnd_genes, by = "Entrez_ID")
+
+#create my matrices
+logFC_matfnd <- acast(all_data_fnd, Gene ~ Condition, value.var = "logFC")
+signif_matfnd <- acast(all_data_fnd, Gene ~ Condition, value.var = "Signif")
+
+#set desired order
+desired_order <- c("DOX_H", "DOX_C", "NUTL_H", "NUTL_C")
+
+logFC_mat_fnd <- logFC_matfnd[, desired_order, drop = FALSE]
+signif_mat_fnd <- signif_matfnd[, desired_order, drop = FALSE]
+
+#make column annotations (stimuli species)
+meta_fnd <- str_split_fixed(colnames(logFC_mat_fnd), "_", 2)
+
+col_annot <- HeatmapAnnotation(
+  Stimulus = meta_fnd[, 1],
+  Species = meta_fnd[, 2],
+  col = list(
+    Stimulus = ddr_col,
+    Species = spec_col
+  ),
+  annotation_height = unit(c(1, 1, 1), "cm")
+)
+
+#row annotation (categories)
+gene_order_df_fnd <- all_data_fnd %>% 
+  distinct(Gene, Category) %>% 
+  arrange(factor(Category, 
+                 levels = sort(unique(fnd_genes$Category))), Gene)
+
+ordered_genes_fnd <- gene_order_df_fnd$Gene
+logFC_mat_fnd <- logFC_mat_fnd[ordered_genes_fnd, ]
+signif_mat_fnd <- signif_mat_fnd[ordered_genes_fnd, ]
+
+category_levels <- sort(unique(fnd_genes$Category))
+
+category_cols_fnd <- setNames(
+  c("darkorange", "steelblue", "darkgreen", "firebrick",
+    "orchid", "mediumpurple",  "gold"),
+  sort(unique(fnd_genes$Category))
+)
+
+ha_left_fnd <- rowAnnotation(
+  Category = gene_order_df_fnd$Category,
+  col = list(Category = category_cols_fnd),
+  annotation_name_side = "top"
+)
+
+#plot the heatmap
+FND_logFC_HM <- Heatmap(logFC_mat_fnd,
+        name = "logFC",
+        top_annotation = col_annot,
+        left_annotation = ha_left_fnd,
+        cluster_columns = FALSE,
+        cluster_rows = FALSE,
+        show_row_names = TRUE,
+        show_column_names = FALSE,
+        row_names_gp = gpar(fontsize = 10),
+        column_title = "Fonoudi Genes logFC HM",
+        column_title_gp = gpar(fontsize = 12),
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+          #add significance for DEGs
+          grid.text(signif_mat_fnd[i,j], x, y, gp = gpar(fontsize = 10))
+        })
+
+print(FND_logFC_HM)
+
+#now save my heatmap
+# save_complex_heatmap(FND_logFC_HM, 
+#                      "FND_logFC_HM_EMP", 
+#                      folder = output_folder)
+
+
+```
+
+#Treatment Comparisons
+```{r Compare DEGs Venn Diagrams}
+#make comparisons across all 24hr pairwise treatment DEGs
+#venn diagram 
+
+stimuli <- c("TUN24", "THA24", "DOX24", "NUTL24",
+             "LPS24", "TNFa24", "BPA24", "PFOA24")
+
+#loop through the defined treatments
+for (st in stimuli) {
+  
+  #make object names
+  nm_H <- paste0("V.", st, "_H")
+  nm_C <- paste0("V.", st, "_C")
+  
+  #skip if not in the toptable list for DEGs
+  if (!(nm_H %in% names(toptable_list_24)) & !(nm_C %in% names(toptable_list_24))) {
+    message("skipping", st, "- no DEGs H and C")
+    next
+  }
+  
+  h_genes <- if (nm_H %in% names(toptable_list_24)) {
+    df_h <- toptable_list_24[[nm_H]]
+    df_h$Entrez_ID <- as.character(df_h$Entrez_ID)
+    df_h$Entrez_ID[!is.na(df_h$adj.P.Val) & df_h$adj.P.Val < 0.05]
+  } else character(0)
+  
+  c_genes <- if (nm_C %in% names(toptable_list_24)) {
+    df_c <- toptable_list_24[[nm_C]]
+    df_c$Entrez_ID <- as.character(df_c$Entrez_ID)
+    df_c$Entrez_ID[!is.na(df_c$adj.P.Val) & df_c$adj.P.Val < 0.05]
+  }
+  
+  # #pull DEGs by filtering for adj.p < 0.05
+  deg_H <- toptable_list_24[[nm_H]] %>%
+    dplyr::filter(adj.P.Val < 0.05) %>%
+    pull(Entrez_ID)
+  deg_C <- toptable_list_24[[nm_H]] %>%
+    dplyr::filter(adj.P.Val < 0.05) %>%
+    pull(Entrez_ID)
+
+  #if both empty - skip
+  if (length(h_genes) == 0 & length(c_genes) == 0) {
+    message("skipping", st, "- no DEGs H and C")
+    next
+  }
+  
+  #create venn list
+  venn_list <- list(
+    H = h_genes,
+    C = c_genes
+  )
+  
+  #fit proportional venn
+  fit <- euler(venn_list, shape = "ellipse")
+  
+  #plot proportional venn
+  plot_title <- paste0("DEGs H vs C - ", st)
+  p <- plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+       labels = TRUE,
+       quantities = TRUE, 
+       main = plot_title
+       )
+  
+  print(p)
+  
+  # #save as png and pdf in my output_folder
+  # png_filename <- file.path(output_folder,
+  #                           paste0("PropVenn_", st, "_EMP_251002.png"))
+  # png(png_filename, width = 6, height = 6, units = "in", res = 300)
+  # print(
+  #   plot(fit,
+  #      fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+  #      labels = TRUE,
+  #      quantities = TRUE,
+  #      main = plot_title
+  # )
+  # )
+  # dev.off()
+  # 
+  # pdf_filename <- file.path(output_folder,
+  #                           paste0("PropVenn_", st, "_EMP_251002.pdf"))
+  # cairo_pdf(pdf_filename, width = 6, height = 6)
+  # print(
+  #   plot(fit,
+  #      fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+  #      labels = TRUE,
+  #      quantities = TRUE,
+  #      main = plot_title
+  # )
+  # )
+  # dev.off()
+  # 
+  # message("Saved Euler diagram for ", st)
+
 }
 
 
 ```
 
-#Prep for Differential Expression Analysis
-```{r DE Analysis Materials}
-#filter my counts for DE
+```{r Scatterplots logFC All Treatments 24hr}
+#read in my toptable_list_24
+toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
 
+toptable_list_24 <- lapply(toptable_list_24, function(df) {
+  df %>% mutate(Entrez_ID = as.character(Entrez_ID))
+})
+
+#define stimuli
+stimuli <- c("TUN24", "THA24", "DOX24", "NUTL24",
+             "LPS24", "TNFa24", "BPA24", "PFOA24")
+
+#store correlation data
+spearman_results <- data.frame(
+  Stimulus = character(),
+  Spearman_rho = numeric(),
+  pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+
+for (st in stimuli) {
+  #make object names
+  nm_H <- paste0("V.", st, "_H")
+  nm_C <- paste0("V.", st, "_C")
+  
+  #skip if not in the toptable list for DEGs
+  if (!(nm_H %in% names(toptable_list_24)) & !(nm_C %in% names(toptable_list_24))) {
+    message("skipping", st, "- no H and C found")
+    next
+  }
+  
+  #pull my data and default to empty tibble if missing
+  df_h <- toptable_list_24[[nm_H]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+  
+  df_c <- toptable_list_24[[nm_C]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+
+  
+  merged_df <- data.frame(
+    Entrez_ID = df_h$Entrez_ID,
+    logFC_H = as.numeric(df_h$logFC),
+    logFC_C = as.numeric(df_c$logFC)
+  )
+  
+  #calculate spearman correlation and plot rho on plot
+  cor_test <- cor.test(merged_df$logFC_H, merged_df$logFC_C, 
+                       method = "spearman")
+  rho <- round(cor_test$estimate, 3)
+  pval <- ifelse(cor_test$p.value < 0.001, "<0.001",
+                 round(cor_test$p.value, 3))
+  cor_label <- paste0("rho = ", rho, "\n", "p = ", pval)
+  
+  spearman_results <- rbind(spearman_results,
+                            data.frame(Stimulus = st,
+                                       Rho = rho,
+                                       pvalue = cor_test$p.value))
+  
+  stim_name <- sub("24.*", "", st)
+  point_color <- ifelse(stim_name %in% names(stim_col),
+                        stim_col[stim_name], "gray50")
+  
+  #plot scatterplots
+  #use fixed coordinates for same visual scale
+  p <- ggplot(merged_df, aes(x = logFC_H, y = logFC_C)) +
+    rasterize(geom_point(color = point_color), dpi = 300) +
+    geom_abline(slope = 1, intercept = 0, 
+                linetype = "dashed", color = "black", lwd = 1) +
+    coord_fixed(xlim = c(-9, 9),
+                ylim = c(-9, 9)) +
+    labs(title = paste0("logFC H vs C - ", st),
+         x = expression(log[2]*"FC H"),
+         y = expression(log[2]*"FC C")
+    ) +
+    annotate("text", x = -8.5, y = 8.5, label = cor_label,
+             hjust = 0, vjust = 1, size = 4) +
+    theme_custom()
+  
+  print(p)
+  
+  # Save using your save_plot function
+  # filename_base <- paste0("logFC_scatter_", st, "_EMP")
+  # save_plot(plot = p,
+  #           filename = filename_base,
+  #           folder = output_folder)
+  # 
+  # message("Saved scatterplot for ", st)
+  # 
+}
+
+print(spearman_results)
 
 ```
+
 
