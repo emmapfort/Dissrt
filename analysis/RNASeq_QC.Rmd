@@ -1188,6 +1188,7 @@ metadata_24 <- metadata %>%
 #now make my matrices into only 24hr samples
 hc_cpm_unfilt_24 <- hc_cpm_unfilt[, metadata_24$Sample_Tx, drop = FALSE]
 hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Sample_Tx, drop = FALSE]
+# saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr.RDS")
 
 #prcomp transformation
 prcomp_hc_unfilt_24 <- prcomp(t(hc_cpm_unfilt_24), center = TRUE)
@@ -2597,6 +2598,7 @@ for (plot_name in names(volcano_plots_sig)) {
 # }
 
 ```
+
 #Add SYMBOL column
 ```{r Add HGNC Symbol to each toptable}
 #in order to plot the logFC heatmaps, I want to add a SYMBOL column to each of my toptables based on their Entrez_ID
@@ -2656,11 +2658,12 @@ load_deg <- function(name, folder = "data/de/DEGs") {
 #here is the set with categories, symbol, and entrezid
 fonoudi_genes <- readRDS("data/genesets/Fonoudi_gene_set.RDS")
 ddr_genes <- readRDS("data/genesets/DDR_gene_set.RDS")
+dic_genes <- readRDS("data/genesets/DIC_gene_set.RDS")
 
 #here are the ids where it's only a vector of Entrez_ID
 fonoudi_ids <- readRDS("data/genesets/Fonoudi_genes_entrezid.RDS")
 ddr_ids <- readRDS("data/genesets/DDR_genes_entrezid.RDS")
-
+dic_ids <- readRDS("data/genesets/DIC_genes_entrezid.RDS")
 
 ```
 
@@ -2972,239 +2975,113 @@ print(FND_logFC_HM)
 
 ```
 
-#Species Specific Genes
-```{r Identify Species-Specific genes from logFC}
-#I want to take my dataset and identify whether genes are responding in one species, both species, or neither species
 
-#read in toptable list at 24hr and filter down to DOX and NUTL only
-# toptable_list_24
+```{r DIC logFC HM}
+#read in list of genes in DIC gene set (from Matthews et al., 2021)
+dic_genes <- readRDS("data/genesets/DIC_genes_set.RDS")
+dic_ids <- readRDS("data/genesets/DIC_genes_entrezid.RDS")
 
-toptable_list_ddr_24 <- toptable_list_24[grepl("DOX|NUTL", names(toptable_list_24))]
+# Load 24hr DEGs
+DOX_24_H <- read.csv("data/de/Toptable_V.DOX24_H.csv")
+DOX_24_C <- read.csv("data/de/Toptable_V.DOX24_C.csv")
+NUTL_24_H <- read.csv("data/de/Toptable_V.NUTL24_H.csv")
+NUTL_24_C <- read.csv("data/de/Toptable_V.NUTL24_C.csv")
 
-#pull out the factors I'm interested in for now
-ddr_stim <- c("DOX", "NUTL")
-species <- c("H", "C")
+#I named them without the time since I don't want that annotated onto the heatmaps
 
-#read in my two gene sets that I want to assess the response in across species from the heatmaps above
-gene_sets_ddr <- list(
-  ddr = ddr_ids,
-  dtox = fonoudi_ids
-)
+# DDR gene set (with categories and Entrez IDs)
+dic_genes <- dic_genes %>% 
+  mutate(Entrez_ID = as.character(Entrez_ID))
 
-#now make a function to extract logFC and adj.P.Val for each
-extract_species_df <- function(stim, sp) {
-  #make object names
-  nm <- paste0("V.", stim, "24_", sp)
-  
-  if(!nm %in% names(toptable_list_ddr_24)) {
-    stop(paste("Table not found: ", nm))
-  }
+dic_ids <- readRDS("data/genesets/DIC_genes_entrezid.RDS") %>% 
+  as.character()
 
-  df <- toptable_list_ddr_24[[nm]] %>% 
-    dplyr::select(Entrez_ID, logFC, adj.P.Val) %>% 
+# Metadata table (columns: Final_sample_name, Stimulus, Species, Individual)
+metadata_24 <- metadata %>% 
+  dplyr::filter(Time == "24")
+
+#extract relevant DEG values
+extract_data_dic <- function(df, name) {
+  df %>%
+    filter(Entrez_ID %in% dic_ids) %>%
     mutate(
-      Entrez_ID = as.character(Entrez_ID),
-      logFC = as.character(logFC),
-      adj.P.Val = as.numeric(adj.P.Val)
+      Gene = mapIds(org.Hs.eg.db, 
+                    as.character(Entrez_ID),
+                    column = "SYMBOL", 
+                    keytype = "ENTREZID", 
+                    multiVals = "first"),
+      Condition = name,
+      Signif = ifelse(adj.P.Val < 0.05, "*", "")
     )
-  
-  #add a suffix for species and stimulus
-  colnames(df)[2:3] <- paste0(colnames(df)[2:3], "_", sp)
-  return(df)
 }
 
-#now extract your four datasets
-DOX_H <- extract_species_df("DOX", "H")
-DOX_C <- extract_species_df("DOX", "C")
-NUTL_H <- extract_species_df("NUTL", "H")
-NUTL_C <- extract_species_df("NUTL", "C")
-
-#merge datasets by Entrez_ID
-merged_ddr <- DOX_H %>% 
-  left_join(DOX_C, by = "Entrez_ID") %>% 
-  left_join(NUTL_H, by = "Entrez_ID") %>% 
-  left_join(NUTL_C, by = "Entrez_ID")
-
-
-#add tags for degs based on sig adj.P.Val < 0.05
-merged_ddr <- merged_ddr %>% 
-  mutate(
-    sig_H_DOX = adj.P.Val_H.x < 0.05, #add .x from merge
-    sig_C_DOX = adj.P.Val_C.x < 0.05,
-    sig_H_NUTL = adj.P.Val_H.y < 0.05, #add .y from merge
-    sig_C_NUTL = adj.P.Val_C.y < 0.05
-  )
-
-
-#add response direction
-merged_ddr <- merged_ddr %>% 
-  mutate(
-    Dir_H_DOX = case_when(
-      sig_H_DOX & logFC_H.x > 0 ~ "Up",
-      sig_H_DOX & logFC_H.x < 0 ~ "Down",
-      TRUE ~ "NR"
-    ),
-    Dir_C_DOX = case_when(
-      sig_C_DOX & logFC_C.x > 0 ~ "Up",
-      sig_C_DOX & logFC_C.x < 0 ~ "Down",
-      TRUE ~ "NR"
-    ),
-    Dir_H_NUTL = case_when(
-      sig_H_NUTL & logFC_H.y > 0 ~ "Up",
-      sig_H_NUTL & logFC_H.y < 0 ~ "Down",
-      TRUE ~ "NR"
-    ),
-    Dir_C_NUTL = case_when(
-      sig_C_NUTL & logFC_C.y > 0 ~ "Up",
-      sig_C_NUTL & logFC_C.y < 0 ~ "Down",
-      TRUE ~ "NR"
-    )
-  )
-
-#classify response patterns between species to find species-specific deg
-classify_response <- function(df, col_H, col_C) {
-  case_when(
-    df[[col_H]] == "NR" & df[[col_C]] == "NR" ~ "NR",
-    df[[col_H]] != "NR" & df[[col_C]] != "NR" & 
-      df [[col_H]] == df[[col_C]] ~ "Conserved",
-    df[[col_H]] != "NR" & df[[col_C]] != "NR" &
-      df[[col_H]] != df[[col_C]] ~ "Divergent",
-    df[[col_H]] != "NR" & df[[col_C]] == "NR" ~ "H_specific",
-    df[[col_H]] == "NR" & df[[col_C]] != "NR" ~ "C_specific",
-    TRUE ~ "Other"
-  )
-}
-
-merged_ddr <- merged_ddr %>% 
-  mutate(
-    Response_DOX = classify_response(., 
-                                     "Dir_H_DOX",
-                                     "Dir_C_DOX"),
-    Response_NUTL = classify_response(., 
-                                      "Dir_H_NUTL",
-                                      "Dir_C_NUTL")
-  )
-
-#make my merged table and save as csv
-# write.csv(merged_ddr, "data/de/DDR_DTOX_24hr_Species_Responses_AllGenes_EMP_251003.csv",
-#           row.names = FALSE)
-
-#get the column SYMBOL in there since it's easy to map it to there
-# identical(merged_ddr$Entrez_ID, toptable_list_24$V.TUN24_H$Entrez_ID)
-#TRUE
-
-# merged_ddr$SYMBOL <- toptable_list_24$V.TUN24_H$SYMBOL
-
-#now subset your data to find only those that are DE
-full_ddr <- merged_ddr
-
-deg_ddr_24 <- full_ddr %>% 
-  dplyr::filter(
-    sig_H_DOX | sig_C_DOX | sig_H_NUTL | sig_C_NUTL
-  )
-
-# saveRDS(deg_resp_ddr, "DDR_DEGs_direction.RDS")
-
-```
-
-```{r Species Specific logFC Scatterplots}
-
-#define stimuli
-ddr_stim <- c("DOX", "NUTL")
-
-spearman_res <- data.frame(
-  Stimulus = character(),
-  Rho = numeric(),
-  pvalue = numeric(),
-  stringsAsFactors = FALSE
+deg_list_dic24 <- list("DOX_H" = DOX_24_H, 
+                       "NUTL_H" = NUTL_24_H, 
+                       "DOX_C" = DOX_24_C,
+                       "NUTL_C" = NUTL_24_C
 )
 
-plots <- list()
+deg_list_dic24 <- lapply(deg_list_dic24, function(df) {
+  df %>% mutate(Entrez_ID = as.character(Entrez_ID))
+})
 
-for (st in ddr_stim) {
-  # Make object names
-  nm_H <- paste0("V.", st, "24_H")
-  nm_C <- paste0("V.", st, "24_C")
-  
-  if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
-    message("Skipping ", st, " (missing H or C)")
-    next
-  }
-  
-  df_h <- toptable_list_24[[nm_H]] %>% 
-    mutate(Entrez_ID = as.character(Entrez_ID))
-  df_c <- toptable_list_24[[nm_C]] %>% 
-    mutate(Entrez_ID = as.character(Entrez_ID))
-  
-  # Merge by Entrez ID
-  merged_df <- data.frame(
-    Entrez_ID = df_h$Entrez_ID,
-    logFC_H = as.numeric(df_h$logFC),
-    logFC_C = as.numeric(df_c$logFC)
-  )
-  
-  # Identify opposite-direction genes
-  merged_df <- merged_df %>%
-    mutate(OppositeDir = case_when(
-      logFC_H > 0 & logFC_C < 0 ~ "Opposite",
-      logFC_H < 0 & logFC_C > 0 ~ "Opposite",
-      TRUE ~ "Same"
-    ))
-  
-  n_opposite <- sum(merged_df$OppositeDir == "Opposite")
-  
-  # Spearman correlation
-  cor_test <- cor.test(merged_df$logFC_H, merged_df$logFC_C, method = "spearman")
-  rho <- round(cor_test$estimate, 2)
-  pval <- ifelse(cor_test$p.value < 0.001, "<0.001", round(cor_test$p.value, 3))
-  cor_label <- paste0("rho = ", rho, "\n", "p = ", pval)
-  
-  spearman_res <- rbind(spearman_res,
-                            data.frame(Stimulus = st,
-                                       Rho = rho,
-                                       pvalue = cor_test$p.value))
-  
-  stim_name <- gsub("24$", "", st)
-  stim_color <- ifelse(stim_name %in% names(stim_col), stim_col[stim_name], "purple")
-  
-  # Scatterplot
-  p <- ggplot(merged_df, aes(x = logFC_H, y = logFC_C)) +
-    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Same"),
-                         color = "black", alpha = 0.5, size = 0.8), dpi = 300) +
-    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Opposite"),
-                         color = stim_color, alpha = 0.9, size = 1.1), dpi = 300) +
-    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray30") +
-    geom_hline(yintercept = 0, linetype = "solid", color = "black") +
-    geom_vline(xintercept = 0, linetype = "solid", color = "black") +
-    coord_fixed(xlim = c(-5, 5), ylim = c(-5, 5)) +
-    labs(title = paste0("logFC H vs C - ", stim_name),
-         x = expression(log[2]*"FC H"),
-         y = expression(log[2]*"FC C")) +
-    annotate("text", x = -4.5, y = 4.5, label = cor_label,
-             hjust = 0, vjust = 1, size = 4) +
-    annotate("text", x = 4.5, y = -4.5, 
-             label = paste0("n = ", n_opposite),
-             hjust = 1, vjust = 0, size = 4, color = stim_color) +
-    theme_custom()
-  
-  plots[[st]] <- p
-  print(p)
-}
+all_data_dic <- bind_rows(mapply(extract_data_dic, deg_list_dic24, names(deg_list_dic24), SIMPLIFY = FALSE)) %>% 
+  left_join(dic_genes, by = "Entrez_ID")
 
-print(spearman_res)
+#create my matrices
+logFC_matdic <- acast(all_data_dic, Gene ~ Condition, value.var = "logFC")
+signif_matdic <- acast(all_data_dic, Gene ~ Condition, value.var = "Signif")
 
+#set desired order
+desired_order <- c("DOX_H", "DOX_C", "NUTL_H", "NUTL_C")
 
-combined_plot <- plots[["DOX"]] + plots[["NUTL"]] +
-  plot_annotation(theme = theme_custom())
+logFC_mat_dic <- logFC_matdic[, desired_order, drop = FALSE]
+signif_mat_dic <- signif_matdic[, desired_order, drop = FALSE]
 
-# Save with your custom save_plot function
-# save_plot(combined_plot, 
-#           "DOX_NUTL_logFC_correlation_EMP", 
-#           width = 10, height = 5,
-#           folder = output_folder)
+#make column annotations (stimuli species)
+meta_dic <- str_split_fixed(colnames(logFC_mat_dic), "_", 2)
+
+col_annot <- HeatmapAnnotation(
+  Stimulus = meta_dic[, 1],
+  Species = meta_dic[, 2],
+  col = list(
+    Stimulus = ddr_col,
+    Species = spec_col
+  ),
+  annotation_height = unit(c(1, 1, 1), "cm")
+)
+
+#don't need row annotation for this set, no categories
+
+#plot the heatmap
+DIC_logFC_HM <- Heatmap(logFC_mat_dic,
+        name = "logFC",
+        top_annotation = col_annot,
+        cluster_columns = FALSE,
+        cluster_rows = TRUE,
+        show_row_names = TRUE,
+        show_column_names = FALSE,
+        row_names_gp = gpar(fontsize = 10),
+        column_title = "DIC Genes logFC HM",
+        column_title_gp = gpar(fontsize = 12),
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+          #add significance for DEGs
+          grid.text(signif_mat_dic[i,j], x, y, gp = gpar(fontsize = 10))
+        })
+
+print(DIC_logFC_HM)
+
+#now save my heatmap
+save_complex_heatmap(DIC_logFC_HM,
+                     "DIC_logFC_HM_EMP",
+                     folder = output_folder)
 
 
 ```
+
 
 
 #Treatment Comparisons
@@ -3400,6 +3277,615 @@ for (st in stimuli) {
 }
 
 print(spearman_results)
+
+```
+
+
+#Species Specific Genes
+```{r Identify Species-Specific genes from logFC}
+#I want to take my dataset and identify whether genes are responding in one species, both species, or neither species
+
+#read in toptable list at 24hr and filter down to DOX and NUTL only
+# toptable_list_24
+
+toptable_list_ddr_24 <- toptable_list_24[grepl("DOX|NUTL", names(toptable_list_24))]
+
+#pull out the factors I'm interested in for now
+ddr_stim <- c("DOX", "NUTL")
+species <- c("H", "C")
+
+#read in my two gene sets that I want to assess the response in across species from the heatmaps above
+gene_sets_ddr <- list(
+  ddr = ddr_ids,
+  dtox = fonoudi_ids
+)
+
+#now make a function to extract logFC and adj.P.Val for each
+extract_species_df <- function(stim, sp) {
+  #make object names
+  nm <- paste0("V.", stim, "24_", sp)
+  
+  if(!nm %in% names(toptable_list_ddr_24)) {
+    stop(paste("Table not found: ", nm))
+  }
+
+  df <- toptable_list_ddr_24[[nm]] %>% 
+    dplyr::select(Entrez_ID, logFC, adj.P.Val) %>% 
+    mutate(
+      Entrez_ID = as.character(Entrez_ID),
+      logFC = as.character(logFC),
+      adj.P.Val = as.numeric(adj.P.Val)
+    )
+  
+  #add a suffix for species and stimulus
+  colnames(df)[2:3] <- paste0(colnames(df)[2:3], "_", sp)
+  return(df)
+}
+
+#now extract your four datasets
+DOX_H <- extract_species_df("DOX", "H")
+DOX_C <- extract_species_df("DOX", "C")
+NUTL_H <- extract_species_df("NUTL", "H")
+NUTL_C <- extract_species_df("NUTL", "C")
+
+#merge datasets by Entrez_ID
+merged_ddr <- DOX_H %>% 
+  left_join(DOX_C, by = "Entrez_ID") %>% 
+  left_join(NUTL_H, by = "Entrez_ID") %>% 
+  left_join(NUTL_C, by = "Entrez_ID")
+
+
+#add tags for degs based on sig adj.P.Val < 0.05
+merged_ddr <- merged_ddr %>% 
+  mutate(
+    sig_H_DOX = adj.P.Val_H.x < 0.05, #add .x from merge
+    sig_C_DOX = adj.P.Val_C.x < 0.05,
+    sig_H_NUTL = adj.P.Val_H.y < 0.05, #add .y from merge
+    sig_C_NUTL = adj.P.Val_C.y < 0.05
+  )
+
+
+#add response direction
+merged_ddr <- merged_ddr %>% 
+  mutate(
+    Dir_H_DOX = case_when(
+      sig_H_DOX & logFC_H.x > 0 ~ "Up",
+      sig_H_DOX & logFC_H.x < 0 ~ "Down",
+      TRUE ~ "NR"
+    ),
+    Dir_C_DOX = case_when(
+      sig_C_DOX & logFC_C.x > 0 ~ "Up",
+      sig_C_DOX & logFC_C.x < 0 ~ "Down",
+      TRUE ~ "NR"
+    ),
+    Dir_H_NUTL = case_when(
+      sig_H_NUTL & logFC_H.y > 0 ~ "Up",
+      sig_H_NUTL & logFC_H.y < 0 ~ "Down",
+      TRUE ~ "NR"
+    ),
+    Dir_C_NUTL = case_when(
+      sig_C_NUTL & logFC_C.y > 0 ~ "Up",
+      sig_C_NUTL & logFC_C.y < 0 ~ "Down",
+      TRUE ~ "NR"
+    )
+  )
+
+#classify response patterns between species to find species-specific deg
+classify_response <- function(df, col_H, col_C) {
+  case_when(
+    df[[col_H]] == "NR" & df[[col_C]] == "NR" ~ "NR",
+    df[[col_H]] != "NR" & df[[col_C]] != "NR" & 
+      df [[col_H]] == df[[col_C]] ~ "Conserved",
+    df[[col_H]] != "NR" & df[[col_C]] != "NR" &
+      df[[col_H]] != df[[col_C]] ~ "Divergent",
+    df[[col_H]] != "NR" & df[[col_C]] == "NR" ~ "H_specific",
+    df[[col_H]] == "NR" & df[[col_C]] != "NR" ~ "C_specific",
+    TRUE ~ "Other"
+  )
+}
+
+merged_ddr <- merged_ddr %>% 
+  mutate(
+    Response_DOX = classify_response(., 
+                                     "Dir_H_DOX",
+                                     "Dir_C_DOX"),
+    Response_NUTL = classify_response(., 
+                                      "Dir_H_NUTL",
+                                      "Dir_C_NUTL")
+  )
+
+#make my merged table and save as csv
+# write.csv(merged_ddr, "data/de/DDR_DTOX_24hr_Species_Responses_AllGenes_EMP_251003.csv",
+#           row.names = FALSE)
+
+#get the column SYMBOL in there since it's easy to map it to there
+# identical(merged_ddr$Entrez_ID, toptable_list_24$V.TUN24_H$Entrez_ID)
+#TRUE
+
+# merged_ddr$SYMBOL <- toptable_list_24$V.TUN24_H$SYMBOL
+
+#now subset your data to find only those that are DE
+full_ddr <- merged_ddr
+
+deg_ddr_24 <- full_ddr %>% 
+  dplyr::filter(
+    sig_H_DOX | sig_C_DOX | sig_H_NUTL | sig_C_NUTL
+  )
+
+# saveRDS(deg_resp_ddr, "DDR_DEGs_direction.RDS")
+
+```
+
+
+
+```{r Species Specific logFC Scatterplots}
+
+#define stimuli
+ddr_stim <- c("DOX", "NUTL")
+
+spearman_res <- data.frame(
+  Stimulus = character(),
+  Rho = numeric(),
+  pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+plots <- list()
+
+for (st in ddr_stim) {
+  # Make object names
+  nm_H <- paste0("V.", st, "24_H")
+  nm_C <- paste0("V.", st, "24_C")
+  
+  if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
+    message("Skipping ", st, " (missing H or C)")
+    next
+  }
+  
+  df_h <- toptable_list_24[[nm_H]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+  df_c <- toptable_list_24[[nm_C]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+  
+  # Merge by Entrez ID
+  merged_df <- data.frame(
+    Entrez_ID = df_h$Entrez_ID,
+    logFC_H = as.numeric(df_h$logFC),
+    logFC_C = as.numeric(df_c$logFC)
+  )
+  
+  # Identify opposite-direction genes
+  merged_df <- merged_df %>%
+    mutate(OppositeDir = case_when(
+      logFC_H > 0 & logFC_C < 0 ~ "Opposite",
+      logFC_H < 0 & logFC_C > 0 ~ "Opposite",
+      TRUE ~ "Same"
+    ))
+  
+  n_opposite <- sum(merged_df$OppositeDir == "Opposite")
+  
+  # Spearman correlation
+  cor_test <- cor.test(merged_df$logFC_H, merged_df$logFC_C, method = "spearman")
+  rho <- round(cor_test$estimate, 2)
+  pval <- ifelse(cor_test$p.value < 0.001, "<0.001", round(cor_test$p.value, 3))
+  cor_label <- paste0("rho = ", rho, "\n", "p = ", pval)
+  
+  spearman_res <- rbind(spearman_res,
+                            data.frame(Stimulus = st,
+                                       Rho = rho,
+                                       pvalue = cor_test$p.value))
+  
+  stim_name <- gsub("24$", "", st)
+  stim_color <- ifelse(stim_name %in% names(stim_col), stim_col[stim_name], "purple")
+  
+  # Scatterplot
+  p <- ggplot(merged_df, aes(x = logFC_H, y = logFC_C)) +
+    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Same"),
+                         color = "black", alpha = 0.5, size = 0.8), dpi = 300) +
+    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Opposite"),
+                         color = stim_color, alpha = 0.9, size = 1.1), dpi = 300) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray30") +
+    geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+    geom_vline(xintercept = 0, linetype = "solid", color = "black") +
+    coord_fixed(xlim = c(-5, 5), ylim = c(-5, 5)) +
+    labs(title = paste0("logFC H vs C - ", stim_name),
+         x = expression(log[2]*"FC H"),
+         y = expression(log[2]*"FC C")) +
+    annotate("text", x = -4.5, y = 4.5, label = cor_label,
+             hjust = 0, vjust = 1, size = 4) +
+    annotate("text", x = 4.5, y = -4.5, 
+             label = paste0("n = ", n_opposite),
+             hjust = 1, vjust = 0, size = 4, color = stim_color) +
+    theme_custom()
+  
+  plots[[st]] <- p
+  print(p)
+}
+
+print(spearman_res)
+
+
+combined_plot <- plots[["DOX"]] + plots[["NUTL"]] +
+  plot_annotation(theme = theme_custom())
+
+# Save with your custom save_plot function
+# save_plot(combined_plot, 
+#           "DOX_NUTL_logFC_correlation_EMP", 
+#           width = 10, height = 5,
+#           folder = output_folder)
+
+
+```
+
+#Species Specific logFC Correlation Scatterplots - all stimuli
+```{r Species Specific logFC Cor Scatter all}
+#define stimuli
+# stimuli <- c("TUN", "THA", "DOX", "NUTL",
+#              "LPS", "TNFa", "BPA", "PFOA")
+# saveRDS(stimuli, "data/theme/stimuli_abbrv_list.RDS")
+
+stimuli <- readRDS("data/theme/stimuli_abbrv_list.RDS")
+
+spearman_res_all <- data.frame(
+  Stimulus = character(),
+  Rho = numeric(),
+  pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+plots_all <- list()
+
+for (st in stimuli) {
+  # Make object names
+  nm_H <- paste0("V.", st, "24_H")
+  nm_C <- paste0("V.", st, "24_C")
+  
+  if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
+    message("Skipping ", st, " (missing H or C)")
+    next
+  }
+  
+  df_h <- toptable_list_24[[nm_H]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+  df_c <- toptable_list_24[[nm_C]] %>% 
+    mutate(Entrez_ID = as.character(Entrez_ID))
+  
+  # Merge by Entrez ID
+  merged_df <- data.frame(
+    Entrez_ID = df_h$Entrez_ID,
+    logFC_H = as.numeric(df_h$logFC),
+    logFC_C = as.numeric(df_c$logFC)
+  )
+  
+  # Identify opposite-direction genes
+  merged_df <- merged_df %>%
+    mutate(OppositeDir = case_when(
+      logFC_H > 0 & logFC_C < 0 ~ "Opposite",
+      logFC_H < 0 & logFC_C > 0 ~ "Opposite",
+      TRUE ~ "Same"
+    ))
+  
+  n_opposite <- sum(merged_df$OppositeDir == "Opposite")
+  
+  # Spearman correlation
+  cor_test <- cor.test(merged_df$logFC_H, merged_df$logFC_C, 
+                       method = "spearman")
+  rho <- round(cor_test$estimate, 2)
+  pval <- ifelse(cor_test$p.value < 0.001, "<0.001",
+                 round(cor_test$p.value, 3))
+  cor_label <- paste0("rho = ", rho, "\n", "p = ", pval)
+  
+  spearman_res_all <- rbind(spearman_res_all,
+                            data.frame(Stimulus = st,
+                                       Rho = rho,
+                                       pvalue = cor_test$p.value))
+  
+  stim_name <- gsub("24$", "", st)
+  stim_color <- ifelse(stim_name %in% names(stim_col), stim_col[stim_name], "black")
+  
+  # Scatterplot
+  p <- ggplot(merged_df, aes(x = logFC_H, y = logFC_C)) +
+    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Same"),
+                         color = "black", alpha = 0.5, size = 0.8), 
+              dpi = 300) +
+    rasterise(geom_point(data = merged_df %>% 
+                           filter(OppositeDir == "Opposite"),
+                         color = stim_color, alpha = 0.9, 
+                         size = 1.1), dpi = 300) +
+    geom_abline(slope = 1, intercept = 0, 
+                linetype = "dashed", color = "gray30") +
+    geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+    geom_vline(xintercept = 0, linetype = "solid", color = "black") +
+    coord_fixed(xlim = c(-5, 5), ylim = c(-5, 5)) +
+    labs(title = paste0("logFC H vs C - ", stim_name),
+         x = expression(log[2]*"FC H"),
+         y = expression(log[2]*"FC C")) +
+    annotate("text", x = -4.5, y = 4.5, label = cor_label,
+             hjust = 0, vjust = 1, size = 4) +
+    annotate("text", x = 4.5, y = -4.5, 
+             label = paste0("n = ", n_opposite),
+             hjust = 1, vjust = 0, size = 4, color = stim_color) +
+    theme_custom()
+  
+  plots_all[[st]] <- p
+  print(p)
+}
+
+print(spearman_res_all)
+
+#print single plots
+# for (st in stimuli) {
+#   p <- plots_all[[st]]
+#   print(p)
+#   filename_base <- paste0("Species_logFC_Cor_scatter_", st, "_EMP")
+#   save_plot(plot = p, filename = filename_base, folder = output_folder, width = 5, height = 5)
+# }
+
+#save as 2x4 grid
+# combined_plot_2x4 <- wrap_plots(
+#   plots_all[["TUN"]],
+#   plots_all[["THA"]],
+#   plots_all[["DOX"]],
+#   plots_all[["NUTL"]],
+#   plots_all[["LPS"]],
+#   plots_all[["TNFa"]],
+#   plots_all[["BPA"]],
+#   plots_all[["PFOA"]],
+#   ncol = 4,
+#   nrow = 2
+# ) + plot_annotation(theme = theme_custom())
+
+#save — each plot as 5x5 → total 20x10 inches
+# save_plot(
+#   plot = combined_plot_2x4,
+#   filename = "Species_logFC_Cor_scatter_allstimuli_2x4_EMP",
+#   folder = output_folder,
+#   width = 20,
+#   height = 10
+# )
+
+#now save this as a 4x2 grid just in case
+# combined_plot_4x2 <- wrap_plots(
+#   plots_all[["TUN"]],
+#   plots_all[["THA"]],
+#   plots_all[["DOX"]],
+#   plots_all[["NUTL"]],
+#   plots_all[["LPS"]],
+#   plots_all[["TNFa"]],
+#   plots_all[["BPA"]],
+#   plots_all[["PFOA"]],
+#   ncol = 2,
+#   nrow = 4
+# ) + plot_annotation(theme = theme_custom())
+
+#save — each plot 5x5 = total 10x20 inches
+# save_plot(
+#   plot = combined_plot_4x2,
+#   filename = "Species_logFC_Cor_scatter_allstimuli_4x2_EMP",
+#   folder = output_folder,
+#   width = 10,
+#   height = 20
+# )
+
+
+```
+
+#Pull out Species Specific Genes
+```{r Species Specific Genes List}
+#I want to pull out genes that are specific to each species to plot examples later
+#I can use my merged_df from above with all stimuli to make a dataframe for classification of these genes based on logFC
+
+#Human Specific = logFC H > 0, logFC C < 0
+#Chimp Specific = logFC H < 0, logFC C > 0
+#Shared = logFC H </> 0, logFC C </> 0
+
+
+# merged_df_all <- merged_df %>% 
+#   mutate(
+#     Category = case_when(
+#       logFC_H > 0 & logFC_C < 0 ~ "Human-specific",
+#       logFC_H < 0 & logFC_C > 0 ~ "Chimp-specific",
+#       sign(logFC_H) == sign(logFC_C) ~ "Shared"
+#     )
+#   ) %>% 
+#   dplyr::select(Entrez_ID, logFC_H, logFC_C, Category)
+
+# saveRDS(merged_df_all, "data/de/species_specific_classification_df.RDS")
+
+#read in your new df 
+merged_df_all <- readRDS("data/de/species_specific_classification_df.RDS")
+
+#make one that is classified by stimulus as well
+# all_gene_classified <- do.call(rbind, lapply(stimuli, function(st) {
+#   nm_H <- paste0("V.", st, "24_H")
+#   nm_C <- paste0("V.", st, "24_C")
+# 
+#   if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
+#     return(NULL)
+#   }
+#   
+#   df_h <- toptable_list_24[[nm_H]] %>% 
+#     mutate(
+#       Entrez_ID = as.character(Entrez_ID),
+#       SYMBOL = as.character(SYMBOL),
+#       adj.P.Val_H = adj.P.Val
+#     )
+# 
+#   df_c <- toptable_list_24[[nm_C]] %>%
+#     mutate(Entrez_ID = as.character(Entrez_ID),
+#            SYMBOL = as.character(SYMBOL),
+#            adj.P.Val_C = adj.P.Val
+#     )
+# 
+#   df_species_spec <- data.frame(
+#     Entrez_ID = df_h$Entrez_ID,
+#     SYMBOL = df_h$SYMBOL,
+#     logFC_H = as.numeric(df_h$logFC),
+#     logFC_C = as.numeric(df_c$logFC),
+#     adj.P.Val_H = as.numeric(df_h$adj.P.Val_H),
+#     adj.P.Val_C = as.numeric(df_c$adj.P.Val_C)
+#   ) %>%
+#     mutate(
+#       Category = case_when(
+#         logFC_H > 0 & logFC_C < 0 ~ "Human-specific",
+#         logFC_H < 0 & logFC_C > 0 ~ "Chimp-specific",
+#         sign(logFC_H) == sign(logFC_C) ~ "Shared"
+#       ),
+#       Stimulus = st,
+#       Time = "24"
+#     )
+# 
+#   return(df_species_spec)
+# }))
+
+# saveRDS(all_gene_classified, "data/de/specspec/all_classified_genes_df.RDS")
+
+#now pull the data to get the genes for each category
+# h_spec_genes <- all_gene_classified %>% filter(Category == "Human-specific")
+# saveRDS(h_spec_genes, "data/de/specspec/human_specific_df.RDS")
+# h_spec_genes_list <- h_spec_genes$Entrez_ID
+# saveRDS(h_spec_genes_list, "data/de/specspec/human_specific_entrezid_list.RDS")
+
+# c_spec_genes <- all_gene_classified %>% filter(Category == "Chimp-specific")
+# saveRDS(c_spec_genes, "data/de/specspec/chimp_specific_df.RDS")
+# c_spec_genes_list <- c_spec_genes$Entrez_ID
+# saveRDS(c_spec_genes_list, "data/de/specspec/chimp_specific_entrezid_list.RDS")
+
+# hc_shared_genes <- all_gene_classified %>% filter(Category == "Shared")
+# saveRDS(hc_shared_genes, "data/de/specspec/shared_genes_df_hc.RDS")
+# hc_shared_genes_list <- hc_shared_genes$Entrez_ID
+# saveRDS(hc_shared_genes_list, "data/de/specspec/shared_hc_genes_entrezid_list.RDS")
+
+#keep this for posterity, but I have saved each of these as RDS objects
+all_gene_classified <- readRDS("data/de/specspec/all_classified_genes_df.RDS")
+
+#make a short table
+all_gene_classified_table <- table(all_gene_classified$Stimulus, all_gene_classified$Category)
+
+print(all_gene_classified_table)
+
+#create a list of stimulus specific and species specific dataframes
+# species_gene_list <- list()
+# 
+# for (st in stimuli) {
+#   nm_H <- paste0("V.", st, "24_H")
+#   nm_C <- paste0("V.", st, "24_C")
+#   
+#   df_h <- toptable_list_24[[nm_H]] %>% 
+#     dplyr::select(SYMBOL, Entrez_ID, adj.P.Val, logFC)
+#   df_c <- toptable_list_24[[nm_C]] %>% 
+#     dplyr::select(SYMBOL, Entrez_ID, adj.P.Val, logFC)
+#     
+#     df_species_spec <- data.frame(
+#     Entrez_ID = df_h$Entrez_ID,
+#     SYMBOL = df_h$SYMBOL,
+#     logFC_H = as.numeric(df_h$logFC),
+#     logFC_C = as.numeric(df_c$logFC)
+#   ) %>%
+#     mutate(
+#       Category = case_when(
+#         logFC_H > 0 & logFC_C < 0 ~ "Human-specific",
+#         logFC_H < 0 & logFC_C > 0 ~ "Chimp-specific",
+#         sign(logFC_H) == sign(logFC_C) ~ "Shared"
+#       ),
+#       Stimulus = st,
+#     )
+#   
+#   # save the dataframe to the list
+#   species_gene_list[[st]] <- df_species_spec
+# }
+
+# saveRDS(species_gene_list, "data/de/specspec/species_categorized_genes_bystim_listofdf.RDS")
+
+species_gene_list <- readRDS("data/de/specspec/species_categorized_genes_bystim_listofdf.RDS")
+
+dic_symbols <- dic_genes$SYMBOL
+
+#check if genes are differentially expressed
+de_specspec_dic <- all_gene_classified %>%
+  filter(SYMBOL %in% dic_symbols,      # must be in your DDR gene list
+         (Category == "Human-specific" & adj.P.Val_H < 0.05) |
+         (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
+         (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
+  arrange(Category)
+
+de_specspec_all <- all_gene_classified %>%
+  filter((Category == "Human-specific" & adj.P.Val_H < 0.05) |
+         (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
+         (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
+  arrange(Category)
+
+#now I have filtered for DE genes within these two sets across categories
+
+```
+
+```{r Plot log2cpm example genes across species}
+#plot a human specific gene, chimp specific gene, and a shared gene
+#look first at those that are in your dic_ids list to see if any are present across stimuli and then plot
+
+#read in my filtered cpm matrix
+hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr.RDS")
+colnames(hc_cpm_mat_24) <- metadata_24$Final_sample_name
+#change the column names to match my metadata
+
+#filter all_gene_classified to only have DOX and NUTL
+gene_classified_ddr <- de_specspec_all %>% 
+  dplyr::filter(Stimulus %in% c("DOX", "NUTL")) %>% 
+  arrange(Category)
+
+dic_gene_classified <- gene_classified_ddr %>% 
+  dplyr::filter(SYMBOL %in% dic_symbols) %>% 
+  arrange(Category)
+
+category_counts_ddr <- dic_gene_classified %>% 
+  group_by(Category) %>% 
+  summarise(n_genes = n_distinct(SYMBOL))
+
+#return all of the genes that are species specific
+human_DOX <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "DOX") %>% 
+  filter(Category == "Human-specific") %>% 
+  pull(SYMBOL)
+
+chimp_DOX <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "DOX") %>% 
+  filter(Category == "Chimp-specific") %>% 
+  pull(SYMBOL)
+
+shared_DOX <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "DOX") %>% 
+  filter(Category == "Shared") %>% 
+  pull(SYMBOL)
+
+#now the nutl groups
+human_NUTL <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "NUTL") %>% 
+  filter(Category == "Human-specific") %>% 
+  pull(SYMBOL)
+
+chimp_NUTL <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "NUTL") %>% 
+  filter(Category == "Chimp-specific") %>% 
+  pull(SYMBOL)
+
+shared_NUTL <- gene_classified_ddr %>% 
+  dplyr::filter(Stimulus == "NUTL") %>% 
+  filter(Category == "Shared") %>% 
+  pull(SYMBOL)
+
+order_bps <- c("DOX_H", "NUTL_H", "DMSO_H",
+               "DOX_C", "NUTL_C", "DMSO_C")
+
+# combine all groups into a list
+gene_groups <- list(
+  human_DOX = human_DOX,
+  human_NUTL = human_NUTL,
+  chimp_DOX = chimp_DOX,
+  chimp_NUTL = chimp_NUTL,
+  shared_DOX = shared_DOX,
+  shared_NUTL = shared_NUTL
+)
+
 
 ```
 
