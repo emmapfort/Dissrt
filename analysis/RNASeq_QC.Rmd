@@ -1230,12 +1230,12 @@ filt24_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt_24,
                                     data = metadata_24, 
                                     colour = "Drug", 
                                     shape = "Species", 
-                                    size =4, x=1, y=2) +
-  ggrepel::geom_text_repel(label=ind_num,
-                           vjust = -.5,
-                           max.overlaps = 50,
-                           segment.color = "grey",
-                           segment.size = 0.1) +
+                                    size =3, x=1, y=2) +
+  # ggrepel::geom_text_repel(label=ind_num,
+  #                          vjust = -.5,
+  #                          max.overlaps = 50,
+  #                          segment.color = "grey",
+  #                          segment.size = 0.1) +
   scale_color_manual(values=drug_col) +
   ggtitle(expression("log"[2]*"cpm PC1/PC2 24hr")) +
   theme_custom()
@@ -1320,6 +1320,158 @@ print(pca_24_list)
 #     folder = output_folder
 #   )
 # }
+
+save_plot(
+  plot = filt2_PC1_PC2,
+  filename = "PCA_2hr_HC_filt2_PC1_PC2_EMP",
+  folder = output_folder
+)
+
+
+```
+
+
+```{r 2hr PCA Plots}
+metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+
+metadata_2hr <- metadata %>% 
+  dplyr::filter(Time == "2")
+
+#now make my matrices into only 24hr samples
+hc_cpm_unfilt_2 <- hc_cpm_unfilt[, metadata_2hr$Sample_Tx, drop = FALSE]
+hc_cpm_mat_2 <- hc_cpm_matrix[, metadata_2hr$Sample_Tx, drop = FALSE]
+# saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr.RDS")
+
+#prcomp transformation
+prcomp_hc_unfilt_2 <- prcomp(t(hc_cpm_unfilt_2), center = TRUE)
+prcomp_hc_filt_2 <- prcomp(t(hc_cpm_mat_2), center =  TRUE)
+
+#add in labels for individual numbers
+ind_num <- metadata_2hr$Ind_Num
+drug_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+
+metadata_2hr$Drug <- factor(
+  metadata_2hr$Drug,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+metadata_2hr$Species <- factor(
+  metadata_2hr$Species, 
+  levels = c("H", "C")
+)
+
+#now plot my PCA for unfiltered/filtered log2cpm
+####PC1/PC2####
+unfilt2_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC1/PC2 2hr (unfilt)")) +
+  theme_custom()
+
+
+filt2_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =3, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC1/PC2 2hr")) +
+  theme_custom()
+
+####PC2/3####
+unfilt2_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC2/PC3 2hr (unfilt)")) +
+  theme_custom()
+
+
+filt2_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC2/PC3 2hr")) +
+  theme_custom()
+
+####PC3/4####
+unfilt2_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC3/PC4 2hr (unfilt)")) +
+  theme_custom()
+
+
+filt2_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2hr, 
+                                    colour = "Drug", 
+                                    shape = "Species", 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = "grey",
+                           segment.size = 0.1) +
+  scale_color_manual(values=drug_col) +
+  ggtitle(expression("log"[2]*"cpm PC3/PC4 2hr")) +
+  theme_custom()
+
+#make a list of your 2hr PCA plots and print them all
+
+pca_2_list <- list(
+  unfilt2_PC1_PC2 = unfilt2_PC1_PC2,
+  unfilt2_PC2_PC3 = unfilt2_PC2_PC3,
+  unfilt2_PC3_PC4 = unfilt2_PC3_PC4,
+  filt2_PC1_PC2 = filt2_PC1_PC2,
+  filt2_PC2_PC3 = filt2_PC2_PC3,
+  filt2_PC3_PC4 = filt2_PC3_PC4
+)
+
+print(pca_2_list)
+
+for (plot_name in names(pca_2_list)) {
+  save_plot(
+    plot = pca_2_list[[plot_name]],
+    filename = paste0("PCA_2hr_HC_", plot_name, "_EMP"),
+    folder = output_folder
+  )
+}
 
 
 ```
@@ -1550,6 +1702,114 @@ for (plot_name in names(all_plots_subset_pca24)) {
 
 ```
 
+
+
+```{r 2hr Subset PCA plots}
+#now do the same thing you did above but filter out any 2hr samples
+
+#make matrices into only 2hr samples
+# hc_cpm_mat_2 <- hc_cpm_matrix[, metadata_2hr$Sample_Tx, drop = FALSE]
+
+#UPR Subset
+upr_tx <- c("TUN", "THA", "DMSO")
+upr_meta_2 <- metadata_2hr %>% 
+  dplyr::filter(Drug %in% upr_tx)
+upr_cpm_2 <- hc_cpm_mat_2[, colnames(hc_cpm_mat_2) %in% upr_meta_2$Sample_Tx] 
+
+#DDR Subset
+ddr_tx <- c("DOX", "NUTL", "DMSO")
+ddr_meta_2 <- metadata_2hr%>% 
+  dplyr::filter(Drug %in% ddr_tx)
+ddr_cpm_24 <- hc_cpm_mat_2[, colnames(hc_cpm_mat_2) %in% ddr_meta_2$Sample_Tx]  
+
+#IMR Subset
+imr_tx <- c("LPS", "TNFa", "H2O")
+imr_meta_2 <- metadata_2hr %>% 
+  dplyr::filter(Drug %in% imr_tx)
+imr_cpm_2 <- hc_cpm_mat_2[, colnames(hc_cpm_mat_2) %in% imr_meta_2$Sample_Tx]  
+
+#MMR Subset
+mmr_tx <- c("BPA", "PFOA", "EtOH")
+mmr_meta_2 <- metadata_2hr %>% 
+  dplyr::filter(Drug %in% mmr_tx)
+mmr_cpm_2 <- hc_cpm_mat_2[, colnames(hc_cpm_mat_2) %in% mmr_meta_2$Sample_Tx]  
+
+
+#now make a function to plot these PCA plots in subsets
+#use metadata not metadata_24 since it needs to be self-contained
+make_pca_plots_2 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, drug_col) {
+  # filter metadata
+  keep_idx <- metadata$Drug %in% subset_drugs
+  metadata_sub <- metadata[keep_idx, ]
+  ind_sub <- ind_num[keep_idx]
+  
+  # subset expression matrix to same samples
+  hc_matrix_sub <- hc_matrix[, keep_idx, drop = FALSE]
+  
+  drug_col_sub <- drug_col[names(drug_col) %in% unique(metadata_sub$Drug)]
+  
+  # run PCA on subset
+  prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Species", size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 50,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col_sub) +
+    ggtitle(bquote(.(subset_name) ~ "subset: log"[2]*"cpm PC1/PC2")) +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 <- autoplot(prcomp_sub, data = metadata_sub,
+                 colour = "Drug", shape = "Species", size = 4,
+                 x = 2, y = 3) +
+    geom_text_repel(label = ind_sub,
+                    vjust = -.5,
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = drug_col_sub) +
+    ggtitle(bquote(.(subset_name) ~ "subset: log"[2]*"cpm PC2/PC3")) +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2)
+}
+
+# ---- Run for each subset ----
+upr_plots_2 <- make_pca_plots_2("UPR", c("TUN", "THA", "DMSO"), hc_cpm_mat_2, metadata_2hr, ind_num, drug_col)
+ddr_plots_2 <- make_pca_plots_2("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_mat_2, metadata_2hr, ind_num, drug_col)
+imr_plots_2 <- make_pca_plots_2("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_mat_2, metadata_2hr, ind_num, drug_col)
+mmr_plots_2 <- make_pca_plots_2("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_mat_2, metadata_2hr, ind_num, drug_col)
+
+all_plots_subset_pca2 <- list(
+  upr2_PC1_PC2 = upr_plots_2$p1,
+  upr2_PC2_PC3 = upr_plots_2$p2,
+  ddr2_PC1_PC2 = ddr_plots_2$p1,
+  ddr2_PC2_PC3 = ddr_plots_2$p2,
+  imr2_PC1_PC2 = imr_plots_2$p1,
+  imr2_PC2_PC3 = imr_plots_2$p2,
+  mmr2_PC1_PC2 = mmr_plots_2$p1,
+  mmr2_PC2_PC3 = mmr_plots_2$p2
+)
+
+print(all_plots_subset_pca2)
+
+# Loop through each plot and save
+for (plot_name in names(all_plots_subset_pca2)) {
+  save_plot(
+    plot = all_plots_subset_pca2[[plot_name]],
+    filename = paste0("Subset_PCA_2_", plot_name, "_EMP"),
+    folder = output_folder
+    )
+}
+
+
+```
 
 #Correlation Heatmaps
 ```{r Spearman Heatmaps Correlation, fig.width=18, fig.height=14, warning=FALSE}
@@ -1890,6 +2150,182 @@ save_complex_heatmap(
 )
 
 ```
+
+
+```{r 2hr Spearman Correlation HM}
+hc_cpm_df_2 <- hc_cpm_df[, metadata_2hr$Final_sample_name, drop = FALSE]
+
+#First I want to alter the column names so they're not inc time
+clean_sample_names <- function(x) {
+  #changing col names DOX_24_H_1 -> DOX_H1
+  x <- gsub("_2_", "_", x)      
+  x <- gsub("_([HC])_", "_\\1", x) 
+  x <- gsub("_(\\d+)$", "\\1", x)
+  return(x)
+}
+
+# Apply only to 24hr samples in metadata_24
+meta_2 <- metadata_2hr %>%
+  mutate(Sample_Tx_clean = ifelse(
+    grepl("_2_", Sample_Tx),
+    clean_sample_names(Sample_Tx),
+    Sample_Tx
+  ))
+
+colnames(hc_cpm_df_2) <- clean_sample_names(colnames(hc_cpm_df_2))
+
+#prepare data
+hc_matrix_2 <- hc_cpm_df_2
+colnames(hc_matrix_2) <- meta_2$Sample_Tx_clean
+
+#compute Spearman correlation
+cor_matrix_spearman_2 <- cor(hc_matrix_2, method = "spearman", use = "everything")
+
+#define a standard color scale where 0 = white
+col_fun <- colorRamp2(
+  breaks = c(-1,0,1),
+  colors = c("blue", "white", "red")
+)
+
+#extract metadata for annotations
+Individual <- as.character(meta_2$Ind)
+Species <- as.character(meta_2$Species)
+Stimulus <- as.character(meta_2$Drug)
+Response <- as.character(meta_2$Response)
+
+
+#define colors for my annotations
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
+resp_col <- readRDS("data/theme/response_category_color_palette.RDS")
+
+#create my annotations
+top_annotation_2 <- HeatmapAnnotation(
+  Individual = Individual, 
+  Stimulus = Stimulus,
+  Species = Species,
+  Response = Response,
+  col = list(
+    Individual = ind_col,
+    Stimulus = stim_col,
+    Species = spec_col,
+    Response = resp_col
+  )
+)
+
+#spearman heatmap for all samples
+heatmap_spearman_2 <- Heatmap(cor_matrix_spearman_2,
+                                name = "Spearman",
+                                col = col_fun,
+                                top_annotation = top_annotation_2,
+                                show_row_names = TRUE,
+                                show_column_names = TRUE,
+                                cluster_rows = TRUE,
+                                cluster_columns = TRUE,
+                                border = TRUE, 
+                                show_row_dend = FALSE,
+                                show_column_dend = FALSE,
+                                use_raster = TRUE,
+                                raster_quality = 2,
+                                raster_device = "CairoPNG",
+                                row_names_gp = gpar(fontsize = 8),
+                                column_names_gp = gpar(fontsize = 8),
+                                layer_fun = function(j, i, x, y, 
+                                                    width, 
+                                                    height, 
+                                                    fill) {
+          #draw a black border
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
+
+# draw(heatmap_spearman_2)
+
+# ---- Define subsets ----
+subsets <- list(
+  UPR = c("TUN", "THA", "DMSO"),
+  DDR = c("DOX", "NUTL", "DMSO"),
+  IMR = c("LPS", "TNFa", "H2O"),
+  MMR = c("BPA", "PFOA", "EtOH")
+)
+
+# ---- Loop through subsets ----
+subset_heatmaps_2 <- list()
+
+for (subset_name in names(subsets)) {
+  # Filter columns for this subset
+  cols_subset_2 <- meta_2$Sample_Tx_clean[meta_2$Drug %in% subsets[[subset_name]]]
+  mat_subset <- hc_matrix_2[, cols_subset_2, drop = FALSE]
+  
+  # Correlation
+  cor_subset_2 <- cor(mat_subset, method = "spearman", use = "everything")
+  
+  # Annotations for this subset
+  top_ann_subset_2 <- HeatmapAnnotation(
+    Individual = meta_2$Ind[meta_2$Sample_Tx_clean %in% cols_subset_2],
+    Stimulus = meta_2$Drug[meta_2$Sample_Tx_clean %in% cols_subset_2],
+    Species = meta_2$Species[meta_2$Sample_Tx_clean %in% cols_subset_2],
+    col = list(
+      Individual = ind_col,
+      Stimulus = stim_col,
+      Species = spec_col
+    )
+  )
+  
+  # Heatmap
+  heatmap_subset_2 <- Heatmap(cor_subset_2,
+                            name = paste0("Spearman_2_", subset_name),
+                            top_annotation = top_ann_subset_2,
+                            col = col_fun,
+                            show_row_names = TRUE,
+                            show_column_names = TRUE,
+                            cluster_rows = TRUE,
+                            cluster_columns = TRUE,
+                            border = TRUE,
+                            show_row_dend = FALSE,
+                            show_column_dend = FALSE,
+                            use_raster = TRUE,
+                            raster_quality = 2,
+                            raster_device = "CairoPNG",
+                            row_names_gp = gpar(fontsize = 8),
+                            column_names_gp = gpar(fontsize = 8), 
+                            layer_fun = function(j, i, 
+                                                x, y, 
+                                                width, height, fill) {
+          grid.rect(x = x, y = y, width = width, height = height,
+                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+        })
+  
+  
+  # draw(heatmap_subset_2)
+  subset_heatmaps_2[[subset_name]] <- heatmap_subset_2
+}
+
+#save my subset heatmaps
+for (nm in names(subset_heatmaps_2)) {
+  ht <- subset_heatmaps_2[[nm]]
+  save_complex_heatmap(
+    ht = ht,
+    filename = paste0("CorHM_Spearman_2_", nm, "_EMP"),
+    folder = output_folder,
+    height = 12,
+    width = 12
+  )
+  message("Saved subset heatmap: ", nm)
+}
+
+#save all samples heatmap
+save_complex_heatmap(
+  ht = heatmap_spearman_2,
+  filename = "CorHM_Spearman_24hr_EMP",
+  folder = output_folder,
+  height = 18,
+  width = 18
+)
+
+```
+
 
 
 #Perform Differential Expression Analysis
@@ -2529,11 +2965,6 @@ generate_volcano_plot <- function(toptable, title) {
   nsgenes <- sum(toptable$Significance == "Not Significant")
   downgenes <- sum(toptable$Significance == "Downregulated")
   
-  #skip the plot if there are no up and down genes
-  if(upgenes == 0 & downgenes == 0) {
-    message(paste("Skipping", title, "- no significant DEGs"))
-    return(NULL)
-  }
   
   #labels for legend
   legend_lab <- c(
@@ -2579,25 +3010,194 @@ for (plot_name in names(volcano_plots_sig)) {
 }
 
 #now save each of these as pdf and png files
-# for (plot_name in names(volcano_plots_sig)) {
-#   
-#   if (is.null(plot_name) || is.na(plot_name) || is.null(volcano_plots_sig[[plot_name]])) {
-#     message(paste("skipping", plot_name, "- plot does not have DEGs"))
-#     next
-#   }
-#   
-#   p <- volcano_plots_sig[[plot_name]]
-#   
-#   filename_base <- paste0("Volcano_Plot_", plot_name, "_EMP")
-#   
-#   save_plot(
-#     plot = p,
-#     filename = filename_base,
-#     folder = output_folder
-#   )
-# }
+for (plot_name in names(volcano_plots_sig)) {
+
+  p <- volcano_plots_sig[[plot_name]]
+
+  filename_base <- paste0("Volcano_Plot_", plot_name, "_EMP")
+
+  save_plot(
+    plot = p,
+    filename = filename_base,
+    folder = output_folder
+  )
+}
 
 ```
+
+
+```{r Volcano Plots 2 and 24hr}
+
+generate_volcano_plot <- function(toptable, title, xlim_all = c(-5, 5), ylim_all = NULL) {
+
+  #check for Entrez_ID
+  if(!"Entrez_ID" %in% colnames(toptable)) stop("Entrez_ID column not present")
+
+  #make significance labels
+  toptable <- toptable %>% 
+    mutate(Significance = case_when(
+      logFC > 0 & adj.P.Val < 0.05 ~ "Upregulated",
+      logFC < 0 & adj.P.Val < 0.05 ~ "Downregulated",
+      TRUE  ~ "Not Significant"
+    ))
+
+  #factor significance
+  toptable$Significance <- factor(
+    toptable$Significance, 
+    levels = c("Upregulated", "Not Significant", "Downregulated")
+  )
+
+  #count genes in each category
+  upgenes <- sum(toptable$Significance == "Upregulated")
+  nsgenes <- sum(toptable$Significance == "Not Significant")
+  downgenes <- sum(toptable$Significance == "Downregulated")
+
+  #colors 
+  color_map <- c("Upregulated" = "#003179",
+                 "Not Significant" = "grey70",
+                 "Downregulated" = "firebrick")
+
+
+  #generate volcano plot
+   p <- ggplot(toptable, aes(x = logFC, y = -log10(P.Value), color = Significance)) +
+    geom_point_rast(alpha = 0.7, size = 3) +
+    scale_color_manual(values = color_map) +
+    coord_cartesian(xlim = c(-5, 5), ylim = c(0, 70)) +
+    labs(title = title, x = expression("log"[2]*"FC"), 
+         y = expression("-log"[10]*"p-value")) +
+    theme_custom() +
+    theme(legend.position = "none") +
+    annotate("text", x = 4.8, y = 68, 
+             label = paste0("Up = ", upgenes),
+             color = "#003179", hjust = 1, size = 4) +
+    annotate("text", x = -4.8, y = 68, 
+             label = paste0("Down = ", downgenes), 
+             color = "firebrick", hjust = 0, size = 4) +
+    annotate("text", x = 0, y = 68, 
+             label = paste0("NS = ", nsgenes), color = "grey20",
+             hjust = 0.5, size = 4)
+  
+  return(p)
+}
+
+#print a separate legend
+# example_plot <- volcano_plots_sig[[1]] +
+#   theme(legend.position = "right")  # make sure it has a legend
+# 
+# shared_legend <- get_legend(example_plot)
+# 
+# # Save legend separately
+# legend_plot <- ggdraw(shared_legend)
+# ggsave("Volcano_24hr_Legend_EMP.png", legend_plot, width = 3, height = 4)
+
+# Generate volcano plots for all 24hr samples
+volcano_plots_sig <- lapply(names(toptable_list), function(nm) {
+  generate_volcano_plot(toptable_list[[nm]], title = nm)
+})
+names(volcano_plots_sig) <- names(toptable_list)
+
+
+# Display all plots
+for (plot_name in names(volcano_plots_sig)) {
+  print(volcano_plots_sig[[plot_name]])
+}
+
+# Save each plot as PDF/PNG
+for (plot_name in names(volcano_plots_sig)) {
+  p <- volcano_plots_sig[[plot_name]]
+  filename_base <- paste0("Volcano_Plot_", plot_name, "_AllTimes_EMP")
+  save_plot(plot = p, 
+            filename = filename_base,
+            height = 5, width = 5,
+            folder = output_folder)
+}
+
+# ### --- Arrange into patchwork grids --- ###
+# UPR <- c("V.TUN24_H", "V.TUN24_C", "V.THA24_H", "V.THA24_C")
+# DDR <- c("V.DOX24_H", "V.DOX24_C", "V.NUTL24_H", "V.NUTL24_C")
+# IMR <- c("V.LPS24_H", "V.LPS24_C", "V.TNFa24_H", "V.TNFa24_C")
+# MMR <- c("V.BPA24_H", "V.BPA24_C", "V.PFOA24_H", "V.PFOA24_C")
+# 
+# resp_groups <- split(names(response_vec), response_vec)
+# stim_order <- c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa", "BPA", "PFOA")
+
+
+#Step 2: Prepare ordered list of H/C plots
+# plots_ordered <- list()
+# for(resp in names(resp_groups)) {
+#   for(stim in stim_order) {
+#     h_name <- names(volcano_plots_sig)[grepl(paste0(stim, "24_H"),
+#                                              names(volcano_plots_sig))]
+#     c_name <- names(volcano_plots_sig)[grepl(paste0(stim, "24_C"),
+#                                              names(volcano_plots_sig))]
+#     # Only add existing plots
+#     plots_ordered <- c(plots_ordered,
+#                        list(volcano_plots_sig[[h_name]], volcano_plots_sig[[c_name]]))
+#   }
+# }
+
+
+# plots_ordered <- list()
+# for(resp in names(resp_groups)) {
+#   for(stim in resp_groups[[resp]]) {
+#     h_name <- names(volcano_plots_sig)[grepl(paste0(stim, "24_H"),
+#                                              names(volcano_plots_sig))]
+#     c_name <- names(volcano_plots_sig)[grepl(paste0(stim, "24_C"),
+#                                              names(volcano_plots_sig))]
+#     
+#     # Only append existing plots
+#     plots_ordered <- c(plots_ordered,
+#                        list(volcano_plots_sig[[h_name]], volcano_plots_sig[[c_name]]))
+#   }
+# }
+# 
+# # Step 2: Make grids using wrap_plots (no slicing)
+# square_grid <- wrap_plots(plots_ordered, ncol = 4, nrow = 4)   
+# # tall_grid   <- wrap_plots(plots_ordered, ncol = 8, nrow = 2)   
+# # wide_grid   <- wrap_plots(plots_ordered, ncol = 2, nrow = 8)   
+# 
+# # Step 3: Save
+# # save_plot(square_grid, "Volcano_24hr_4x4_EMP", folder = output_folder, width = 5*4, height = 5*4)
+# # save_plot(tall_grid,   "Volcano_24hr_2x8_EMP", folder = output_folder, width = 5*8, height = 5*2)
+# # save_plot(wide_grid,   "Volcano_24hr_8x2_EMP", folder = output_folder, width = 5*2, height = 5*8)
+# 
+# # Step 1: Make a temporary plot with legend only
+# example_plot <- volcano_plots_sig[[1]] +
+#   theme(legend.position = "right")  # show legend
+# 
+# shared_legend <- get_legend(example_plot)
+# 
+# # Step 2: Add shared legend below your grid
+# square_grid_with_legend <- plot_grid(
+#   square_grid,
+#   shared_legend,
+#   ncol = 1,  # stack vertically
+#   rel_heights = c(1, 0.1)  # adjust height ratio: 0.1 for legend
+# )
+# 
+# # tall_grid_with_legend <- plot_grid(
+# #   tall_grid,
+# #   shared_legend,
+# #   ncol = 1,
+# #   rel_heights = c(1, 0.1)
+# # )
+# # 
+# # wide_grid_with_legend <- plot_grid(
+# #   wide_grid,
+# #   shared_legend,
+# #   ncol = 1,
+# #   rel_heights = c(1, 0.1)
+# # )
+# # 
+# # # Step 3: Save grids with shared legend
+# # save_plot(square_grid_with_legend, "Volcano_24hr_4x4_EMP_fixed_legend", folder = output_folder, width = 5*4, height = 5*4 + 0.5)
+# # save_plot(tall_grid_with_legend,   "Volcano_24hr_2x8_EMP_fixed_legend", folder = output_folder, width = 5*8, height = 5*2 + 0.5)
+# # save_plot(wide_grid_with_legend,   "Volcano_24hr_8x2_EMP_fixed_legend", folder = output_folder, width = 5*2, height = 5*8 + 0.5)
+
+
+```
+
+
 
 #Add SYMBOL column
 ```{r Add HGNC Symbol to each toptable}
@@ -3048,29 +3648,35 @@ col_annot <- HeatmapAnnotation(
     Stimulus = ddr_col,
     Species = spec_col
   ),
-  annotation_height = unit(c(1, 1, 1), "cm")
+  annotation_height = unit(c(2, 2, 2), "cm")
 )
 
 #don't need row annotation for this set, no categories
 
 #plot the heatmap
 DIC_logFC_HM <- Heatmap(logFC_mat_dic,
-        name = "logFC",
+        name = "log2FC",
         top_annotation = col_annot,
         cluster_columns = FALSE,
         cluster_rows = TRUE,
         show_row_names = TRUE,
         show_column_names = FALSE,
-        row_names_gp = gpar(fontsize = 10),
+        show_row_dend = FALSE,
+        show_column_dend = FALSE,
+        row_names_gp = gpar(fontsize = 14),
         column_title = "DIC Genes logFC HM",
-        column_title_gp = gpar(fontsize = 12),
+        column_title_gp = gpar(fontsize = 14),
+        column_names_gp = gpar(fontsize = 14),
         cell_fun = function(j, i, x, y, width, height, fill) {
           #draw a black border
           grid.rect(x = x, y = y, width = width, height = height,
-                    gp = gpar(col = "black", lwd = 0.5, fill = fill))
+                    gp = gpar(col = "black", lwd = 1, fill = fill))
           #add significance for DEGs
-          grid.text(signif_mat_dic[i,j], x, y, gp = gpar(fontsize = 10))
-        })
+          grid.text(signif_mat_dic[i,j], x, y, gp = gpar(fontsize = 14))
+        },
+        width = unit(3, "in"), 
+        height = unit(8, "in")
+        )
 
 print(DIC_logFC_HM)
 
@@ -3086,10 +3692,12 @@ save_complex_heatmap(DIC_logFC_HM,
 
 #Treatment Comparisons
 ```{r Compare DEGs Venn Diagrams}
-#make comparisons across all 24hr pairwise treatment DEGs
+#make comparisons across all 2 + 24hr pairwise treatment DEGs
 #venn diagram 
 
-stimuli <- c("TUN24", "THA24", "DOX24", "NUTL24",
+stimuli <- c("TUN2", "THA2", "DOX2", "NUTL2",
+             "LPS2", "TNFa2", "BPA2", "PFOA2",
+             "TUN24", "THA24", "DOX24", "NUTL24",
              "LPS24", "TNFa24", "BPA24", "PFOA24")
 
 #loop through the defined treatments
@@ -3100,28 +3708,28 @@ for (st in stimuli) {
   nm_C <- paste0("V.", st, "_C")
   
   #skip if not in the toptable list for DEGs
-  if (!(nm_H %in% names(toptable_list_24)) & !(nm_C %in% names(toptable_list_24))) {
+  if (!(nm_H %in% names(toptable_list)) & !(nm_C %in% names(toptable_list))) {
     message("skipping", st, "- no DEGs H and C")
     next
   }
   
-  h_genes <- if (nm_H %in% names(toptable_list_24)) {
-    df_h <- toptable_list_24[[nm_H]]
+  h_genes <- if (nm_H %in% names(toptable_list)) {
+    df_h <- toptable_list[[nm_H]]
     df_h$Entrez_ID <- as.character(df_h$Entrez_ID)
     df_h$Entrez_ID[!is.na(df_h$adj.P.Val) & df_h$adj.P.Val < 0.05]
   } else character(0)
   
-  c_genes <- if (nm_C %in% names(toptable_list_24)) {
-    df_c <- toptable_list_24[[nm_C]]
+  c_genes <- if (nm_C %in% names(toptable_list)) {
+    df_c <- toptable_list[[nm_C]]
     df_c$Entrez_ID <- as.character(df_c$Entrez_ID)
     df_c$Entrez_ID[!is.na(df_c$adj.P.Val) & df_c$adj.P.Val < 0.05]
   }
   
   # #pull DEGs by filtering for adj.p < 0.05
-  deg_H <- toptable_list_24[[nm_H]] %>%
+  deg_H <- toptable_list[[nm_H]] %>%
     dplyr::filter(adj.P.Val < 0.05) %>%
     pull(Entrez_ID)
-  deg_C <- toptable_list_24[[nm_H]] %>%
+  deg_C <- toptable_list[[nm_H]] %>%
     dplyr::filter(adj.P.Val < 0.05) %>%
     pull(Entrez_ID)
 
@@ -3152,35 +3760,35 @@ for (st in stimuli) {
   print(p)
   
   # #save as png and pdf in my output_folder
-  # png_filename <- file.path(output_folder,
-  #                           paste0("PropVenn_", st, "_EMP_251002.png"))
-  # png(png_filename, width = 6, height = 6, units = "in", res = 300)
-  # print(
-  #   plot(fit,
-  #      fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
-  #      labels = TRUE,
-  #      quantities = TRUE,
-  #      main = plot_title
-  # )
-  # )
-  # dev.off()
-  # 
-  # pdf_filename <- file.path(output_folder,
-  #                           paste0("PropVenn_", st, "_EMP_251002.pdf"))
-  # cairo_pdf(pdf_filename, width = 6, height = 6)
-  # print(
-  #   plot(fit,
-  #      fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
-  #      labels = TRUE,
-  #      quantities = TRUE,
-  #      main = plot_title
-  # )
-  # )
-  # dev.off()
-  # 
-  # message("Saved Euler diagram for ", st)
-
-}
+#   png_filename <- file.path(output_folder,
+#                             paste0("PropVenn_", st, "_EMP_251010.png"))
+#   png(png_filename, width = 6, height = 6, units = "in", res = 300)
+#   print(
+#     plot(fit,
+#        fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+#        labels = TRUE,
+#        quantities = TRUE,
+#        main = plot_title
+#   )
+#   )
+#   dev.off()
+# 
+#   pdf_filename <- file.path(output_folder,
+#                             paste0("PropVenn_", st, "_EMP_251010.pdf"))
+#   cairo_pdf(pdf_filename, width = 6, height = 6)
+#   print(
+#     plot(fit,
+#        fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+#        labels = TRUE,
+#        quantities = TRUE,
+#        main = plot_title
+#   )
+#   )
+#   dev.off()
+# 
+#   message("Saved Euler diagram for ", st)
+# 
+# }
 
 
 ```
@@ -3520,11 +4128,10 @@ combined_plot <- plots[["DOX"]] + plots[["NUTL"]] +
 #Species Specific logFC Correlation Scatterplots - all stimuli
 ```{r Species Specific logFC Cor Scatter all}
 #define stimuli
-# stimuli <- c("TUN", "THA", "DOX", "NUTL",
-#              "LPS", "TNFa", "BPA", "PFOA")
-# saveRDS(stimuli, "data/theme/stimuli_abbrv_list.RDS")
-
-stimuli <- readRDS("data/theme/stimuli_abbrv_list.RDS")
+stim_all <- c("TUN2", "THA2", "DOX2", "NUTL2",
+             "LPS2", "TNFa2", "BPA2", "PFOA2",
+             "TUN24", "THA24", "DOX24", "NUTL24",
+             "LPS24", "TNFa24", "BPA24", "PFOA24")
 
 spearman_res_all <- data.frame(
   Stimulus = character(),
@@ -3535,40 +4142,42 @@ spearman_res_all <- data.frame(
 
 plots_all <- list()
 
-for (st in stimuli) {
+for (st in stim_all) {
   # Make object names
-  nm_H <- paste0("V.", st, "24_H")
-  nm_C <- paste0("V.", st, "24_C")
+  nm_H <- paste0("V.", st, "_H")
+  nm_C <- paste0("V.", st, "_C")
   
-  if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
+  if (!(nm_H %in% names(toptable_list)) | !(nm_C %in% names(toptable_list))) {
     message("Skipping ", st, " (missing H or C)")
     next
   }
   
-  df_h <- toptable_list_24[[nm_H]] %>% 
+  stim_name <- st
+  stim_color <- ifelse(stim_name %in% names(stim_col), 
+                       stim_col[stim_name], "black")
+  
+  df_h <- toptable_list[[nm_H]] %>% 
     mutate(Entrez_ID = as.character(Entrez_ID))
-  df_c <- toptable_list_24[[nm_C]] %>% 
+  df_c <- toptable_list[[nm_C]] %>% 
     mutate(Entrez_ID = as.character(Entrez_ID))
   
   # Merge by Entrez ID
-  merged_df <- data.frame(
-    Entrez_ID = df_h$Entrez_ID,
-    logFC_H = as.numeric(df_h$logFC),
-    logFC_C = as.numeric(df_c$logFC)
-  )
+  merged_df_all <- inner_join(df_h, df_c, by = "Entrez_ID",
+                              suffix = c("_H", "_C")) %>% 
+    dplyr::select(Entrez_ID, logFC_H = logFC_H, logFC_C = logFC_C)
   
   # Identify opposite-direction genes
-  merged_df <- merged_df %>%
+  merged_df_all <- merged_df_all %>%
     mutate(OppositeDir = case_when(
       logFC_H > 0 & logFC_C < 0 ~ "Opposite",
       logFC_H < 0 & logFC_C > 0 ~ "Opposite",
       TRUE ~ "Same"
     ))
   
-  n_opposite <- sum(merged_df$OppositeDir == "Opposite")
+  n_opposite <- sum(merged_df_all$OppositeDir == "Opposite")
   
   # Spearman correlation
-  cor_test <- cor.test(merged_df$logFC_H, merged_df$logFC_C, 
+  cor_test <- cor.test(merged_df_all$logFC_H, merged_df_all$logFC_C, 
                        method = "spearman")
   rho <- round(cor_test$estimate, 2)
   pval <- ifelse(cor_test$p.value < 0.001, "<0.001",
@@ -3580,15 +4189,14 @@ for (st in stimuli) {
                                        Rho = rho,
                                        pvalue = cor_test$p.value))
   
-  stim_name <- gsub("24$", "", st)
-  stim_color <- ifelse(stim_name %in% names(stim_col), stim_col[stim_name], "black")
-  
-  # Scatterplot
-  p <- ggplot(merged_df, aes(x = logFC_H, y = logFC_C)) +
-    rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Same"),
-                         color = "black", alpha = 0.5, size = 0.8), 
+  #scatterplots
+  p <- ggplot(merged_df_all, aes(x = logFC_H, y = logFC_C)) +
+    rasterise(geom_point(data = merged_df_all %>% 
+                           filter(OppositeDir == "Same"),
+                         color = "black", alpha = 0.5, 
+                         size = 0.8), 
               dpi = 300) +
-    rasterise(geom_point(data = merged_df %>% 
+    rasterise(geom_point(data = merged_df_all %>% 
                            filter(OppositeDir == "Opposite"),
                          color = stim_color, alpha = 0.9, 
                          size = 1.1), dpi = 300) +
@@ -3597,7 +4205,7 @@ for (st in stimuli) {
     geom_hline(yintercept = 0, linetype = "solid", color = "black") +
     geom_vline(xintercept = 0, linetype = "solid", color = "black") +
     coord_fixed(xlim = c(-5, 5), ylim = c(-5, 5)) +
-    labs(title = paste0("logFC H vs C - ", stim_name),
+    labs(title = paste0("logFC H vs C - ", st),
          x = expression(log[2]*"FC H"),
          y = expression(log[2]*"FC C")) +
     annotate("text", x = -4.5, y = 4.5, label = cor_label,
@@ -3614,12 +4222,13 @@ for (st in stimuli) {
 print(spearman_res_all)
 
 #print single plots
-# for (st in stimuli) {
-#   p <- plots_all[[st]]
-#   print(p)
-#   filename_base <- paste0("Species_logFC_Cor_scatter_", st, "_EMP")
-#   save_plot(plot = p, filename = filename_base, folder = output_folder, width = 5, height = 5)
-# }
+for (st in stim_all) {
+  p <- plots_all[[st]]
+  print(p)
+  filename_base <- paste0("Species_logFC_Cor_scatter_", st, "_EMP")
+  save_plot(plot = p, filename = filename_base, folder = output_folder,
+            width = 5, height = 5)
+}
 
 #save as 2x4 grid
 # combined_plot_2x4 <- wrap_plots(
@@ -3738,6 +4347,13 @@ merged_df_all <- readRDS("data/de/species_specific_classification_df.RDS")
 #   return(df_species_spec)
 # }))
 
+#now I want to add a column that denotes whether or not a gene is DE
+# all_gene_classified <- all_gene_classified %>%
+#   mutate(
+#     DE_H = ifelse(adj.P.Val_H < 0.05, TRUE, FALSE),
+#     DE_C = ifelse(adj.P.Val_C < 0.05, TRUE, FALSE)
+#   )
+
 # saveRDS(all_gene_classified, "data/de/specspec/all_classified_genes_df.RDS")
 
 #now pull the data to get the genes for each category
@@ -3745,7 +4361,7 @@ merged_df_all <- readRDS("data/de/species_specific_classification_df.RDS")
 # saveRDS(h_spec_genes, "data/de/specspec/human_specific_df.RDS")
 # h_spec_genes_list <- h_spec_genes$Entrez_ID
 # saveRDS(h_spec_genes_list, "data/de/specspec/human_specific_entrezid_list.RDS")
-
+#
 # c_spec_genes <- all_gene_classified %>% filter(Category == "Chimp-specific")
 # saveRDS(c_spec_genes, "data/de/specspec/chimp_specific_df.RDS")
 # c_spec_genes_list <- c_spec_genes$Entrez_ID
@@ -3797,39 +4413,55 @@ print(all_gene_classified_table)
 
 # saveRDS(species_gene_list, "data/de/specspec/species_categorized_genes_bystim_listofdf.RDS")
 
-species_gene_list <- readRDS("data/de/specspec/species_categorized_genes_bystim_listofdf.RDS")
+# species_gene_list <- readRDS("data/de/specspec/species_categorized_genes_bystim_listofdf.RDS")
+# 
+# dic_symbols <- dic_genes$SYMBOL
 
-dic_symbols <- dic_genes$SYMBOL
+# #check if genes are differentially expressed
+# de_specspec_dic <- all_gene_classified %>%
+#   filter(SYMBOL %in% dic_symbols,      # must be in your DDR gene list
+#          (Category == "Human-specific" & adj.P.Val_H < 0.05) |
+#          (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
+#          (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
+#   arrange(Category)
 
-#check if genes are differentially expressed
-de_specspec_dic <- all_gene_classified %>%
-  filter(SYMBOL %in% dic_symbols,      # must be in your DDR gene list
-         (Category == "Human-specific" & adj.P.Val_H < 0.05) |
-         (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
-         (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
-  arrange(Category)
+# de_specspec_all <- all_gene_classified %>%
+#   filter((Category == "Human-specific" & adj.P.Val_H < 0.05) |
+#          (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
+#          (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
+#   arrange(Category)
 
-de_specspec_all <- all_gene_classified %>%
-  filter((Category == "Human-specific" & adj.P.Val_H < 0.05) |
-         (Category == "Chimp-specific" & adj.P.Val_C < 0.05) |
-         (Category == "Shared" & (adj.P.Val_H < 0.05 | adj.P.Val_C < 0.05))) %>%
-  arrange(Category)
+# saveRDS(de_specspec_all, "data/de/specspec/degs_speciesspecific_all.RDS")
 
 #now I have filtered for DE genes within these two sets across categories
 
 ```
 
-```{r Plot log2cpm example genes across species}
+```{r Prep for log2cpm boxplots}
 #plot a human specific gene, chimp specific gene, and a shared gene
 #look first at those that are in your dic_ids list to see if any are present across stimuli and then plot
 
 #read in my filtered cpm matrix
-hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr.RDS")
-colnames(hc_cpm_mat_24) <- metadata_24$Final_sample_name
+# hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr.RDS")
+colnames(hc_cpm_mat_24) <- meta_bp_24$Samples_24
+# hc_cpm_mat_24 <- as.matrix(hc_cpm_mat_24)
+#add in symbol names
+# hc_cpm_24 <- hc_cpm_mat_24 %>% 
+#   as.data.frame() %>% 
+#   mutate(
+#     Entrez_ID = rownames(.),
+#     SYMBOL = mapIds(
+#       org.Hs.eg.db,
+#       keys = Entrez_ID,
+#       column = "SYMBOL",
+#       keytype = "ENTREZID",
+#       multiVals = "first"
+#     )
+#   )
 #change the column names to match my metadata
 
 #filter all_gene_classified to only have DOX and NUTL
-gene_classified_ddr <- de_specspec_all %>% 
+gene_classified_ddr <- all_gene_classified %>% 
   dplyr::filter(Stimulus %in% c("DOX", "NUTL")) %>% 
   arrange(Category)
 
@@ -3886,7 +4518,1227 @@ gene_groups <- list(
   shared_NUTL = shared_NUTL
 )
 
+#minimize my metadata sheet 
+meta_bp_24 <- meta_24 %>% 
+  mutate(
+    Samples_24 = paste(Stimulus, Ind_Num, Species, sep = "_")
+    ) %>% 
+  dplyr::select("Samples_24", "Drug", "Response", "Species", "Ind", "Ind_Num") %>% 
+  dplyr::rename(Stimulus = Drug)
+
+# saveRDS(meta_bp_24, "data/counts/metadata_24hr_boxplots_shortened.RDS")
+
+#read in my filtered cpm matrix
+# hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr.RDS")
+# colnames(hc_cpm_24) <- meta_bp_24$Samples_24
+ 
+# write.csv(hc_cpm_24, "data/counts/hc_cpm_filt_24hr_entrezsymbol.csv")
+
+#all_gene_classified subset
+all_gene_classified_set <- all_gene_classified %>% 
+  dplyr::select("Entrez_ID", "SYMBOL", "Category", "Stimulus", 
+                "DE_H", "DE_C")
+
+#now read in the above as my boxplot df with Entrez_ID and SYMBOL
+boxplot_df <- read.csv("data/counts/hc_cpm_filt_24hr_entrezsymbol.csv")
+
+#make sure Entrez_ID is a character
+boxplot_df$Entrez_ID <- as.character(boxplot_df$Entrez_ID)
+
+#make my boxplot_df into long format
+#add in gene classifications for easy comparisons
+boxplot_long <- boxplot_df %>% 
+  pivot_longer(
+    cols = -c(Entrez_ID, SYMBOL),
+    names_to = "Samples_24",
+    values_to = "log2cpm"
+  ) %>% 
+  mutate(
+    Stimulus = str_extract(Samples_24, "^[^_]+"),
+    Ind_Num = str_extract(Samples_24, "(?<=_)[0-9]+"),
+    Species = str_extract(Samples_24, "[HC]$")
+  ) %>% 
+  left_join(
+    all_gene_classified_set %>% 
+      dplyr::select(Entrez_ID, SYMBOL, Stimulus, Category, DE_H, DE_C),
+    by = c("Entrez_ID", "SYMBOL", "Stimulus")
+  ) %>% 
+  mutate(
+    DEG = case_when(
+      Species == "H" ~ DE_H,
+      Species == "C" ~ DE_C
+    )
+  ) %>% 
+  dplyr::select(Entrez_ID, SYMBOL, log2cpm, Samples_24, Stimulus, Species, Ind_Num, Category, DEG)
+
+#now select only the DDR stimuli and vehicle
+boxplot_long_ddr <- boxplot_long %>% 
+  dplyr::filter(Stimulus %in% c("DOX", "NUTL", "DMSO"))
 
 ```
 
+##plot log2cpm example genes
+```{r log2cpm example genes species specific}
+#now make a function to run through the data above and make boxplots
+
+# set.seed(9196)  # for reproducibility
+selected_genes <- boxplot_long_ddr %>%
+  filter(Stimulus %in% c("DOX", "NUTL"), DEG == TRUE) %>%
+  group_by(Category, Species, Stimulus) %>%
+  summarise(
+    Gene_pick = list(sample(unique(SYMBOL), 
+                            size = min(10, length(unique(SYMBOL))),
+                            replace = FALSE))
+  ) %>%
+  ungroup() %>%
+  pull(Gene_pick) %>%
+  unlist()
+
+#filter for randomly selected example genes (which are DE) 
+plot_data <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% selected_genes, 
+         Stimulus %in% c("DOX", "NUTL", "DMSO"))
+
+#map individual and stimulus colors 
+plot_data <- plot_data %>%
+  mutate(
+    Indv_name = ind_vec[as.character(Ind_Num)], 
+    Indv_col = ind_col[Indv_name],
+    Stim_col = stim_col[Stimulus],
+    Group = paste0(Stimulus, "_", Species)   
+  )
+
+#now make sure everything is factored to be in the correct order
+
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+plot_data <- plot_data %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+#plot gene data for example genes - 3 per condition
+
+for(gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), 
+               size = 2, alpha = 0.7, 
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2cpm Expression ", gene, " - ", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+```
+
+
+```{r}
+selected_genes <- boxplot_long_ddr %>%
+  filter(Stimulus %in% c("DOX", "NUTL")) %>%
+  group_by(Category, Species) %>%
+  summarise(
+    Gene_pick = list(
+      sample(unique(SYMBOL[DEG == TRUE]), 
+             size = min(2, sum(DEG == TRUE, na.rm = TRUE)),
+             replace = FALSE)
+    )
+  ) %>%
+  ungroup() %>%
+  pull(Gene_pick) %>%
+  unlist() %>%
+  na.omit()
+
+
+plot_data_selected <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% selected_genes, Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  mutate(
+    Indv_name = ind_vec[as.character(Ind_Num)],
+    Stim_col = stim_col[Stimulus],
+    Group = paste0(Stimulus, "_", Species)
+  )
+
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H", 
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+plot_data_selected <- plot_data_selected %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+for(gene in unique(plot_data_selected$SYMBOL)) {
+  gene_data <- plot_data_selected %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, 
+               alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste0("Log2CPM Expression of ", gene,
+                   " (", gene_category, ")")) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+# --- Step 5: Repeat for genes in dic_symbols ---
+plot_data_dic <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% dic_symbols, Stimulus %in% c("DOX", 
+                                                  "NUTL", 
+                                                  "DMSO")
+         ) %>%
+  mutate(
+    Indv_name = ind_vec[as.character(Ind_Num)],
+    Stim_col = stim_col[Stimulus],
+    Group = paste0(Stimulus, "_", Species)
+  ) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# Plot for dic_symbols genes
+for(gene in unique(plot_data_dic$SYMBOL)) {
+  gene_data <- plot_data_dic %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste0("Log2CPM Expression of ", gene, 
+                   " (", gene_category, ")")) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+
+```
+
+
+```{r}
+# (Category == "Human-specific" & Species == "H") |
+
+
+selected_genes <- boxplot_long_ddr %>%
+  filter(Stimulus == "DOX", DEG == TRUE) %>%
+  filter(Category == "Chimp-specific" & Species == "C") %>%
+  group_by(Category, Species) %>%
+  summarise(
+    Gene_pick = list(sample(unique(SYMBOL), 
+                            size = min(10, length(unique(SYMBOL))), 
+                            replace = FALSE))
+  ) %>%
+  ungroup() %>%
+  pull(Gene_pick) %>%
+  unlist()
+
+# --- Step 2: Prepare plotting dataframe including all three conditions ---
+plot_data_selected <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% selected_genes, Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  mutate(
+    Indv_name = ind_vec[as.character(Ind_Num)],
+    Stim_col = stim_col[Stimulus],
+    Group = paste0(Stimulus, "_", Species),
+    Group = factor(Group, levels = c("DOX_H","NUTL_H","DMSO_H",
+                                     "DOX_C","NUTL_C","DMSO_C")),
+    Stimulus = factor(Stimulus, levels = c("DOX","NUTL","DMSO"))
+  )
+
+# --- Step 3: Plotting loop ---
+for(gene in unique(plot_data_selected$SYMBOL)) {
+  gene_data <- plot_data_selected %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name),
+               size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste0("Log2CPM Expression of ", gene, 
+                   " (", gene_category, ")")) +
+    labs(x = "Condition", y = "log2cpm") +
+    theme_custom()
+  
+  print(p)
+}
+```
+
+
+```{r log2cpm example genes species specific plots}
+#change my workflow to DEGs in both species which are species specific
+
+
+get_species_specific_example <- function(df, stimulus, species, category) {
+  df_sub <- df %>% filter(Stimulus %in% c(stimulus, "DMSO"))
+  
+  candidate_genes <- df_sub %>%
+    group_by(SYMBOL, Category) %>%
+    summarise(
+      de_target = any(DEG[Species == species & Stimulus == stimulus],
+                      na.rm = TRUE),
+      de_other = any(DEG[!(Species == species & Stimulus == stimulus)],
+                     na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    filter(Category == category, de_target & !de_other)
+  
+  # Randomly pick 1 gene
+  sample(candidate_genes$SYMBOL, 2)
+}
+
+example_gene_dox_chimp <- get_species_specific_example(boxplot_long_ddr, "DOX", "C", "Chimp-specific")
+example_gene_dox_human <- get_species_specific_example(boxplot_long_ddr, "DOX", "H", "Human-specific")
+
+example_gene_nutl_chimp <- get_species_specific_example(boxplot_long_ddr, "NUTL", "C", "Chimp-specific")
+example_gene_nutl_human <- get_species_specific_example(boxplot_long_ddr, "NUTL", "H", "Human-specific")
+
+prepare_plot_data <- function(df, genes) {
+  df %>%
+    filter(SYMBOL %in% genes, Stimulus %in% c("DOX","NUTL","DMSO")) %>%
+    mutate(
+    Indv_name = ind_vec[as.character(Ind_Num)],
+    Stim_col = stim_col[Stimulus],
+    Group = paste0(Stimulus, "_", Species)
+    ) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+    )
+}
+
+plot_data <- prepare_plot_data(boxplot_long_ddr,
+                               c(example_gene_dox_chimp,
+                                 example_gene_dox_human,   
+                                 example_gene_nutl_chimp,
+                                 example_gene_nutl_human))
+
+
+plot_gene_example <- function(plot_data, gene) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, 
+               alpha = 0.7, position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    theme_custom() +
+    ggtitle(paste0(gene, " (", gene_category, ")"))
+}
+
+for(gene in unique(plot_data$SYMBOL)) {
+  print(plot_gene_example(plot_data, gene))
+}
+
+```
+
+
+
+```{r try again to get species specific genes}
+select_species_specific_genes <- function(df, stimulus, n_genes = 3) {
+  df_sub <- df %>% filter(Stimulus == stimulus)
+  
+  # Human-specific genes that are DE in H
+  human_genes <- df_sub %>%
+    filter(Category == "Human-specific", DE_H == TRUE) %>%
+    distinct(SYMBOL) %>%
+    slice_sample(n = n_genes) %>%
+    pull(SYMBOL)
+  
+  # Chimp-specific genes that are DE in C
+  chimp_genes <- df_sub %>%
+    filter(Category == "Chimp-specific", DE_C == TRUE) %>%
+    distinct(SYMBOL) %>%
+    slice_sample(n = n_genes) %>%
+    pull(SYMBOL)
+  
+  c(human_genes, chimp_genes)
+}
+
+
+selected_genes_dox <- select_species_specific_genes(de_specspec_all, "DOX", 3)
+selected_genes_nutl <- select_species_specific_genes(de_specspec_all, "NUTL", 3)
+selected_genes <- c(selected_genes_dox, selected_genes_nutl)
+
+
+plot_data <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% selected_genes, Stimulus %in% c("DOX","NUTL","DMSO")) %>%
+  mutate(
+    Indv_name = paste0("Ind", Ind_Num),
+    Indv_name = factor(Indv_name, levels = paste0("Ind", 1:14)),
+    Group = paste0(Stimulus, "_", Species),
+    Group = factor(Group, levels = c("DOX_H","NUTL_H","DMSO_H","DOX_C","NUTL_C","DMSO_C")),
+    Stimulus = factor(Stimulus, levels = c("DOX","NUTL","DMSO"))
+  )
+
+plot_species_specific_gene <- function(df, gene) {
+  gene_data <- df %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.8, position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    theme_custom() +
+    ggtitle(paste0(gene, " (", gene_category, ")"))
+}
+
+# --- Step 5: Loop through genes and plot ---
+for(gene in selected_genes) {
+  print(plot_species_specific_gene(plot_data, gene))
+}
+
+```
+
+
+```{r DIC genes log2cpm examples}
+#try and plot the ones that are species specific in DIC
+
+dic_plot_genes <- de_specspec_all %>%
+  filter(SYMBOL %in% dic_symbols, 
+         Category %in% c("Human-specific","Chimp-specific")) %>%
+  distinct(SYMBOL, Category)  # keep track of category too
+
+# --- Step 2: Prepare plotting dataframe ---
+plot_data_dic <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% dic_plot_genes$SYMBOL, Stimulus %in% c("DOX","NUTL","DMSO")) %>%
+  left_join(dic_plot_genes %>% select(SYMBOL, Category), by = "SYMBOL") %>%  # add category
+  mutate(
+    Indv_name = paste0("Ind", Ind_Num),
+    Indv_name = factor(Indv_name, levels = paste0("Ind", 1:14)),
+    Group = paste0(Stimulus, "_", Species),
+    Group = factor(Group, levels = c("DOX_H","NUTL_H","DMSO_H","DOX_C","NUTL_C","DMSO_C")),
+    Stimulus = factor(Stimulus, levels = c("DOX","NUTL","DMSO"))
+  )
+
+# --- Step 3: Plotting function ---
+plot_species_specific_gene <- function(df, gene) {
+  gene_data <- df %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.8, position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    theme_custom() +
+    ggtitle(paste0(gene, " (", gene_category, ")"))
+}
+
+# --- Step 4: Loop through all DIC species-specific genes ---
+for(gene in dic_plot_genes$SYMBOL) {
+  print(plot_species_specific_gene(plot_data_dic, gene))
+}
+```
+
+```{r}
+
+dic_de_genes <- de_specspec_all %>%
+  filter(SYMBOL %in% dic_symbols, DE_H == TRUE, DE_C == TRUE) %>%
+  select(Entrez_ID, Category) %>%  # only bring Category
+  distinct()
+
+# --- Step 2: Remove Category from boxplot_long_ddr to prevent column collision ---
+boxplot_long_ddr <- boxplot_long_ddr %>% select(-Category)
+
+# --- Step 3: Join Category from dic_de_genes ---
+plot_data_dic <- boxplot_long_ddr %>%
+  filter(SYMBOL %in% dic_symbols, Stimulus %in% c("DOX","NUTL","DMSO")) %>%
+  left_join(dic_de_genes, by = "Entrez_ID") %>%
+  mutate(
+    Indv_name = paste0("Ind", Ind_Num),
+    Indv_name = factor(Indv_name, levels = paste0("Ind", 1:14)),
+    Group = paste0(Stimulus, "_", Species),
+    Group = factor(Group, levels = c("DOX_H","NUTL_H","DMSO_H","DOX_C","NUTL_C","DMSO_C")),
+    Stimulus = factor(Stimulus, levels = c("DOX","NUTL","DMSO"))
+  )
+
+# --- Step 4: Plotting function ---
+plot_de_gene <- function(df, gene) {
+  gene_data <- df %>% filter(SYMBOL == gene)
+  gene_category <- unique(gene_data$Category)
+  
+  ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.8, position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    theme_custom() +
+    ggtitle(paste0(gene, " (", gene_category, ")"))
+}
+
+# --- Step 5: Loop through all DIC DE genes ---
+for(gene in plot_data_dic$SYMBOL %>% unique()) {
+  print(plot_de_gene(plot_data_dic, gene))
+}
+```
+#simplify 
+```{r Simplify log2cpm example genes}
+#I want to just take the colored points from the scatterplots and categorize those
+
+stim_ddr <- c("DOX", "NUTL", "DMSO")
+
+# --- Step 1: Extract human-specific and chimp-specific genes from scatterplots ---
+scatter_genes <- purrr::map_dfr(stim_ddr, function(st) {
+  nm_H <- paste0("V.", st, "24_H")
+  nm_C <- paste0("V.", st, "24_C")
+  
+  if (!(nm_H %in% names(toptable_list_24)) | !(nm_C %in% names(toptable_list_24))) {
+    return(NULL)
+  }
+  
+  df_h <- toptable_list_24[[nm_H]] %>% mutate(Entrez_ID = as.character(Entrez_ID))
+  df_c <- toptable_list_24[[nm_C]] %>% mutate(Entrez_ID = as.character(Entrez_ID))
+  
+  merged_df <- data.frame(
+    Entrez_ID = df_h$Entrez_ID,
+    SYMBOL = if("SYMBOL" %in% colnames(df_h)) df_h$SYMBOL else NA_character_,
+    logFC_H = as.numeric(df_h$logFC),
+    logFC_C = as.numeric(df_c$logFC)
+  )
+  
+  merged_df <- merged_df %>%
+    mutate(Category = case_when(
+      logFC_H > 0 & logFC_C < 0 ~ "Human-specific",
+      logFC_H < 0 & logFC_C > 0 ~ "Chimp-specific",
+      sign(logFC_H) == sign(logFC_C) ~ "Shared",
+      TRUE ~ NA_character_
+    )) %>%
+    filter(!is.na(Category)) %>%
+    mutate(Stimulus = st)
+  
+  return(merged_df)
+})
+
+# --- Step 2: Subset boxplot_df to only these genes ---
+boxplot_subset <- boxplot_df %>%
+  filter(Entrez_ID %in% scatter_genes$Entrez_ID)
+
+# --- Step 3: Join in Category ---
+boxplot_subset <- boxplot_subset %>%
+  left_join(
+    scatter_genes %>% dplyr::select(Entrez_ID, Category),
+    by = "Entrez_ID"
+  )
+
+# --- Step 4: Pivot longer for plotting ---
+bp_long_ddr <- boxplot_subset %>%
+  pivot_longer(
+    cols = -c(Entrez_ID, SYMBOL, Category),
+    names_to = "Samples_24",
+    values_to = "log2cpm"
+  ) %>%
+  mutate(
+    Stimulus = case_when(
+      grepl("DOX", Samples_24) ~ "DOX",
+      grepl("NUTL", Samples_24) ~ "NUTL",
+      grepl("DMSO", Samples_24) ~ "DMSO"
+    ),
+    Species = case_when(
+      grepl("_H$", Samples_24) ~ "H",
+      grepl("_C$", Samples_24) ~ "C"
+    ),
+    Group = paste0(Stimulus, "_", Species)
+  )
+
+bp_long_ddr <- bp_long_ddr %>%
+  filter(grepl("DOX|NUTL|DMSO", Samples_24)) %>%
+  mutate(
+    # Extract species
+    Species = case_when(
+      grepl("_H$", Samples_24) ~ "H",
+      grepl("_C$", Samples_24) ~ "C"
+    ),
+    # Extract stimulus
+    Stimulus = case_when(
+      grepl("DOX", Samples_24) ~ "DOX",
+      grepl("NUTL", Samples_24) ~ "NUTL",
+      grepl("DMSO", Samples_24) ~ "DMSO"
+    ),
+    # Extract individual number
+    Ind_Num = as.numeric(gsub(".*_(\\d+)_.*", "\\1", Samples_24)),
+    Indv_name = paste0("Ind", Ind_Num),
+    Group = paste0(Stimulus, "_", Species)
+  ) %>%
+  filter(!is.na(Ind_Num))
+
+# --- Step 5: Factor levels for plotting ---
+ind_levels <- paste0("Ind", 1:14) 
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+bp_long_ddr <- bp_long_ddr %>%
+  mutate(
+    Ind_Num = case_when(
+      grepl("_1_", Samples_24) ~ 1,
+      grepl("_2_", Samples_24) ~ 2,
+      grepl("_3_", Samples_24) ~ 3,
+      grepl("_4_", Samples_24) ~ 4,
+      grepl("_5_", Samples_24) ~ 5,
+      grepl("_6_", Samples_24) ~ 6,
+      grepl("_7_", Samples_24) ~ 7,
+      grepl("_8_", Samples_24) ~ 8,
+      grepl("_9_", Samples_24) ~ 9,
+      grepl("_10_", Samples_24) ~ 10,
+      grepl("_11_", Samples_24) ~ 11,
+      grepl("_12_", Samples_24) ~ 12,
+      grepl("_13_", Samples_24) ~ 13,
+      grepl("_14_", Samples_24) ~ 14,
+      TRUE ~ NA_real_
+    ),
+    Indv_name = paste0("Ind", Ind_Num)
+  )
+
+bp_long_ddr <- bp_long_ddr %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = paste0("Ind", 1:14)),
+    Group = factor(Group, levels = c("DOX_H", "NUTL_H", "DMSO_H",
+                                     "DOX_C", "NUTL_C", "DMSO_C")),
+    Stimulus = factor(Stimulus, levels = c("DOX", "NUTL", "DMSO"))
+  )
+
+
+# --- Step 6: Randomly select 3 genes per category ---
+set.seed(9196)  # For reproducibility
+selected_genes <- bp_long_ddr %>%
+  group_by(Category) %>%
+  reframe(GENE_PICK = sample(unique(SYMBOL), 10)) %>%
+  pull(GENE_PICK)
+
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% selected_genes)
+
+#plot
+for(gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), 
+               size = 2, alpha = 0.7, 
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2cpm Expression ", gene, " - ", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+
+```
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# --- Factor levels for plotting ---
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+# --- Filter bp_long_ddr to only relevant stimuli ---
+bp_long_ddr <- bp_long_ddr %>%
+  filter(grepl("DOX|NUTL|DMSO", Samples_24)) %>%
+  mutate(
+    Stimulus = case_when(
+      grepl("DOX", Samples_24) ~ "DOX",
+      grepl("NUTL", Samples_24) ~ "NUTL",
+      grepl("DMSO", Samples_24) ~ "DMSO"
+    ),
+    Species = case_when(
+      grepl("_H$", Samples_24) ~ "H",
+      grepl("_C$", Samples_24) ~ "C"
+    ),
+    Group = paste0(Stimulus, "_", Species),
+    Ind_Num = as.numeric(gsub(".*_(\\d+)_.*", "\\1", Samples_24)),
+    Indv_name = paste0("Ind", Ind_Num)
+  ) %>%
+  filter(!is.na(Ind_Num)) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# --- Prepare gene summary from DE + logFC info ---
+gene_summary <- de_specspec_all %>%
+  filter(Stimulus %in% c("DOX", "NUTL")) %>%
+  filter(DE_H == TRUE & DE_C == TRUE) %>%  # only genes DE in both species
+  select(SYMBOL, Category, logFC_H, logFC_C)
+
+# --- Pick genes ---
+top_genes <- bind_rows(
+  gene_summary %>%
+    filter(Category == "Human-specific") %>%
+    slice_max(order_by = logFC_H, n = 1),
+  gene_summary %>%
+    filter(Category == "Chimp-specific") %>%
+    slice_max(order_by = logFC_C, n = 1),
+  gene_summary %>%
+    filter(Category == "Shared") %>%
+    slice_sample(n = 15)
+) %>%
+  pull(SYMBOL)
+
+# --- Filter plotting data ---
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% top_genes)
+
+# --- Plot each gene ---
+for (gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), 
+               size = 2, alpha = 0.7, 
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2cpm Expression ", gene, " - ", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+
+```
+
+```{r}
+# --- Pick top genes per your criteria ---
+top_genes <- bind_rows(
+  gene_summary %>%
+    filter(Category == "Human-specific", logFC_H > 0, logFC_C < 0) %>%
+    slice_max(order_by = logFC_H, n = 1),
+  
+  gene_summary %>%
+    filter(Category == "Chimp-specific", logFC_H < 0, logFC_C > 0) %>%
+    slice_max(order_by = logFC_C, n = 1),
+  
+  gene_summary %>%
+    filter(Category == "Shared") %>%
+    slice_sample(n = 15)
+) %>% pull(SYMBOL)
+
+# --- Filter plotting data ---
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% top_genes)
+
+# --- Plot each gene with all stimuli but highlighting species-specific effect ---
+for (gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), 
+               size = 2, alpha = 0.7, 
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2cpm Expression ", gene, " - ", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+```
+
+```{r}
+# ---- Define plotting parameters ----
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+# ---- Select genes ----
+top_human <- de_specspec_all %>%
+  filter(Category == "Human-specific", Stimulus == "DOX", DE_H == TRUE & DE_C == TRUE) %>%
+  arrange(desc(logFC_H)) %>%
+  slice_head(n = 1)
+
+top_chimp <- de_specspec_all %>%
+  filter(Category == "Chimp-specific", Stimulus == "DOX", DE_H == TRUE & DE_C == TRUE) %>%
+  arrange(desc(logFC_C)) %>%
+  slice_head(n = 1)
+
+top_shared <- de_specspec_all %>%
+  filter(Category == "Shared", Stimulus == "DOX", DE_H == TRUE & DE_C == TRUE) %>%
+  slice_sample(n = 20)
+
+selected_genes <- c(top_human$SYMBOL, top_chimp$SYMBOL, top_shared$SYMBOL)
+
+# ---- Prepare plotting dataframe ----
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% selected_genes,
+         Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# ---- Plot loop ----
+for (gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2CPM Expression:", gene, "-", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"CPM")) +
+    theme_custom()
+  
+  print(p)
+}
+
+```
+
+
+```{r}
+# ---- Define plotting parameters ----
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+# ---- Summarize log2CPM by gene/species/stimulus ----
+gene_summary <- bp_long_ddr %>%
+  filter(Stimulus %in% c("DOX", "DMSO")) %>%
+  group_by(SYMBOL, Category, Stimulus, Species) %>%
+  summarise(mean_log2cpm = mean(log2cpm, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = c(Stimulus, Species), values_from = mean_log2cpm)  # columns: DOX_H, DOX_C, DMSO_H, DMSO_C
+
+# ---- Select top 3 human-specific genes ----
+top_human <- gene_summary %>%
+  filter(Category == "Human-specific") %>%
+  filter(DOX_H > DMSO_H & DOX_C < DMSO_C) %>%  # ensure opposite direction
+  arrange(desc(DOX_H - DMSO_H)) %>%
+  slice_head(n = 1)
+
+# ---- Select top 3 chimp-specific genes ----
+top_chimp <- gene_summary %>%
+  filter(Category == "Chimp-specific") %>%
+  filter(DOX_C > DMSO_C & DOX_H < DMSO_H) %>%  # ensure opposite direction
+  arrange(desc(DOX_C - DMSO_C)) %>%
+  slice_head(n = 1)
+
+# ---- Select 3 random shared genes ----
+top_shared <- gene_summary %>%
+  filter(Category == "Shared") %>%
+  filter((DOX_H - DMSO_H) * (DOX_C - DMSO_C) > 0) %>% # both up or both down
+  slice_sample(n = 15)
+
+selected_genes <- c(top_human$SYMBOL, top_chimp$SYMBOL, top_shared$SYMBOL)
+
+# ---- Prepare plotting dataframe ----
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% selected_genes,
+         Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# ---- Plot loop ----
+for (gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2CPM Expression:", gene, "-", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"CPM")) +
+    theme_custom()
+  
+  print(p)
+}
+
+```
+
+```{r}
+# ---- Define plotting parameters ----
+ind_levels <- paste0("Ind", 1:14)
+group_levels <- c("DOX_H", "NUTL_H", "DMSO_H",
+                  "DOX_C", "NUTL_C", "DMSO_C")
+stim_levels <- c("DOX", "NUTL", "DMSO")
+
+# ---- Summarize log2CPM by gene/species/stimulus ----
+gene_summary <- bp_long_ddr %>%
+  filter(Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  group_by(SYMBOL, Category, Stimulus, Species) %>%
+  summarise(mean_log2cpm = mean(log2cpm, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = c(Stimulus, Species), values_from = mean_log2cpm)
+# Columns: DOX_H, DOX_C, NUTL_H, NUTL_C, DMSO_H, DMSO_C
+
+# ---- Filter for opposite-direction DOX behavior ----
+# Human-specific: DOX_H > DMSO_H and DOX_C < DMSO_C OR DOX_H < DMSO_H and DOX_C > DMSO_C
+top_human <- gene_summary %>%
+  filter(Category == "Human-specific") %>%
+  filter((DOX_H - DMSO_H)*(DOX_C - DMSO_C) < 0) %>%  # opposite direction
+  filter(abs(NUTL_H - DMSO_H) < 0.3 & abs(NUTL_C - DMSO_C) < 0.3) %>%
+  arrange(desc(abs(DOX_H - DMSO_H))) %>%
+  slice_head(n = 3)
+
+# Chimp-specific: DOX_C > DMSO_C and DOX_H < DMSO_H OR DOX_C < DMSO_C and DOX_H > DMSO_H
+top_chimp <- gene_summary %>%
+  filter(Category == "Chimp-specific") %>%
+  filter((DOX_H - DMSO_H)*(DOX_C - DMSO_C) < 0) %>%  # opposite direction
+  filter(abs(NUTL_H - DMSO_H) < 0.3 & abs(NUTL_C - DMSO_C) < 0.3) %>%
+  arrange(desc(abs(DOX_C - DMSO_C))) %>%
+  slice_head(n = 3)
+
+# Shared: pick random 3 genes
+top_shared <- gene_summary %>%
+  filter(Category == "Shared") %>%
+  filter(abs(NUTL_H - DMSO_H) < 0.3 & abs(NUTL_C - DMSO_C) < 0.3) %>%
+  slice_sample(n = 3)
+
+selected_genes <- c(top_human$SYMBOL, top_chimp$SYMBOL, top_shared$SYMBOL)
+
+# ---- Prepare plotting dataframe ----
+plot_data <- bp_long_ddr %>%
+  filter(SYMBOL %in% selected_genes,
+         Stimulus %in% c("DOX", "NUTL", "DMSO")) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# ---- Plot loop ----
+for (gene in unique(plot_data$SYMBOL)) {
+  gene_data <- plot_data %>% filter(SYMBOL == gene)
+  gene_cat <- unique(gene_data$Category)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot() +
+    geom_point(aes(color = Indv_name), size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("log2CPM Expression:", gene, "-", gene_cat)) +
+    labs(x = "Condition", y = expression("log"[2]*"CPM")) +
+    theme_custom()
+  
+  print(p)
+}
+
+```
+
+```{r}
+# ---- 1. Identify candidate non-response genes ----
+nonresponse_genes <- merged_df_24 %>%
+  filter(!Category %in% c("Chimp-specific", "Human-specific", "Shared")) %>%
+  distinct(Entrez_ID, SYMBOL, .keep_all = TRUE)
+
+# ---- 1a. Subset based on DOX vs DMSO and NUTL vs DMSO consistency ----
+# calculate max log2cpm difference between stimulus and DMSO per species
+stable_genes <- bp_long_ddr %>%
+  filter(SYMBOL %in% nonresponse_genes$SYMBOL) %>%
+  filter(grepl("DOX|NUTL|DMSO", Samples_24)) %>%
+  mutate(
+    Stimulus = case_when(
+      grepl("DOX", Samples_24) ~ "DOX",
+      grepl("NUTL", Samples_24) ~ "NUTL",
+      grepl("DMSO", Samples_24) ~ "DMSO"
+    ),
+    Species = case_when(
+      grepl("_H$", Samples_24) ~ "H",
+      grepl("_C$", Samples_24) ~ "C"
+    )
+  ) %>%
+  group_by(SYMBOL, Species, Stimulus) %>%
+  summarise(mean_log2cpm = mean(log2cpm, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Stimulus, values_from = mean_log2cpm) %>%
+  # keep only genes where DOX-DMSO and NUTL-DMSO differences are small (<0.5 log2CPM)
+  filter(abs(DOX - DMSO) < 0.5, abs(NUTL - DMSO) < 0.5) %>%
+  distinct(SYMBOL)
+
+# ---- 1b. Sample top 15 just in case ----
+nonresponse_genes_subset <- stable_genes %>% slice_sample(n = 20)
+
+message("Selected ", nrow(nonresponse_genes_subset), " non-response genes.")
+
+# ---- 2. Prepare long-format log2CPM data ----
+bp_long_ddr <- bp_long_ddr %>%
+  filter(grepl("DOX|NUTL|DMSO", Samples_24)) %>%
+  mutate(
+    Stimulus = case_when(
+      grepl("DOX", Samples_24) ~ "DOX",
+      grepl("NUTL", Samples_24) ~ "NUTL",
+      grepl("DMSO", Samples_24) ~ "DMSO"
+    ),
+    Species = case_when(
+      grepl("_H$", Samples_24) ~ "H",
+      grepl("_C$", Samples_24) ~ "C"
+    ),
+    Group = paste0(Stimulus, "_", Species),
+    Ind_Num = as.numeric(gsub(".*_(\\d+)_.*", "\\1", Samples_24)),
+    Indv_name = paste0("Ind", Ind_Num)
+  ) %>%
+  filter(!is.na(Ind_Num)) %>%
+  mutate(
+    Indv_name = factor(Indv_name, levels = ind_levels),
+    Group = factor(Group, levels = group_levels),
+    Stimulus = factor(Stimulus, levels = stim_levels)
+  )
+
+# ---- 3. Join with selected genes ----
+plot_data_nonresp <- bp_long_ddr %>%
+  inner_join(nonresponse_genes_subset %>% select(SYMBOL), by = "SYMBOL")
+
+# ---- 4. Plot each gene ----
+for (gene in unique(plot_data_nonresp$SYMBOL)) {
+  gene_data <- plot_data_nonresp %>% filter(SYMBOL == gene)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Indv_name),
+               size = 2, alpha = 0.7,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    ggtitle(paste("Non-response gene:", gene)) +
+    labs(x = "Condition", y = expression("log"[2]*"cpm")) +
+    theme_custom()
+  
+  print(p)
+}
+
+```
+
+
+
+```{r legend separate log2cpm boxplots}
+
+
+ 
+example_gene <- unique(plot_data_nonresp$SYMBOL)[1]
+
+ex_plot <- plot_data_nonresp %>%
+  filter(SYMBOL == example_gene) %>%
+  ggplot(aes(x = Group, y = log2cpm)) +
+  geom_boxplot(aes(fill = Stimulus), outlier.shape = NA, alpha = 0.7) +
+  geom_point(aes(color = Indv_name),
+             size = 2, alpha = 0.8,
+             position = position_jitter(width = 0.15)) +
+  scale_fill_manual(values = stim_col, name = "Stimulus") +
+  scale_color_manual(values = ind_col, name = "Individual") +
+  labs(x = "Condition", y = expression("log"[2]*"CPM")) +
+  theme_custom() +
+  theme(
+    legend.position = "right",
+    legend.box = "vertical"
+  )
+
+
+shared_legend <- get_legend(explot)
+
+legend_plot <- ggdraw(shared_legend)
+ggsave(
+  filename = file.path(output_folder, "Nonresponse_Legend.png"),
+  plot = legend_plot,
+  width = 5,
+  height = 6
+)
+
+
+
+```
+
+
+```{r Subset Genes of Interest log2cpm species specific}
+# ---- 1. Define genes of interest ----
+example_genes <- c("ABCF3", "NCAPD2P1", "PER3", "CCDC93", "ZNF606-AS1", "LGI4", "RADIL", "SDHAF1", "AKAP17A", "RARG", "LPL", "MDM2", "LGALS3", "PELI2", "GPSM2", "SLC28A3")
+
+# ---- 2. Prepare data subset ----
+plot_data_examples <- bp_long_ddr %>%
+  filter(SYMBOL %in% example_genes)
+
+# ---- 3. Plot each gene ----
+for (gene in example_genes) {
+  gene_data <- plot_data_examples %>% filter(SYMBOL == gene)
+  
+  p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA, linewidth = 0.5) +
+    geom_point(aes(color = Indv_name),
+               size = 1.25, alpha = 0.6,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+    coord_cartesian(ylim = c(0, 8)) +
+    ggtitle(gene) +
+    labs(x = "Condition", y = expression("log"[2]*"CPM")) +
+    theme_custom() +
+    theme(
+      plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
+      axis.title = element_text(size = 9),
+      axis.text = element_text(size = 8),
+      legend.text = element_text(size = 7),
+      legend.title = element_text(size = 8)
+    )
+  
+  # Print to view
+  print(p)
+  
+  # Save to output folder
+  filename_base <- paste0("ExampleGene_", gene, "_Boxplot")
+  save_plot(plot = p,
+            filename = filename_base,
+            width = 5, height = 3,
+            folder = output_folder)
+}
+
+```
+
+
+
+```{r Simplified dataframe for species specific }
+#make a function to find the opposite genes for all of my stimuli based on the above logFC scatterplots across species
+
+adj_cutoff <- 0.05
+stimuli <- readRDS("data/theme/stimuli_abbrv_list.RDS")
+
+# ---- Function to process one stimulus ----
+process_stimulus <- function(stim, toptable_list, adj_cutoff = 0.05) {
+  species <- c("H", "C")
+  
+  # Extract tables
+  extract_df <- function(stim, sp) {
+    nm <- paste0("V.", stim, "24_", sp)
+    if (!nm %in% names(toptable_list)) return(NULL)
+    df <- toptable_list[[nm]] %>%
+      dplyr::select(Entrez_ID, SYMBOL, 
+                    logFC, adj.P.Val) %>%
+      mutate(
+        Entrez_ID = as.character(Entrez_ID),
+        Condition = paste0(stim, "_", sp)
+      )
+    colnames(df)[3:4] <- paste0(c("logFC", 
+                                  "adj.P.Val"), "_", sp)
+    return(df)
+  }
+  
+  df_H <- extract_df(stim, "H")
+  df_C <- extract_df(stim, "C")
+  
+  if (is.null(df_H) | is.null(df_C)) return(NULL)
+  
+  # Merge H and C
+  merged_df <- df_H %>%
+    left_join(df_C, by = c("Entrez_ID", "SYMBOL"))
+  
+  # Mark DEGs
+  merged_df <- merged_df %>%
+    mutate(
+      DEG_H = adj.P.Val_H < adj_cutoff,
+      DEG_C = adj.P.Val_C < adj_cutoff,
+      DEG_both = DEG_H & DEG_C
+    )
+  
+  # Identify opposite-direction genes
+  merged_df <- merged_df %>%
+    mutate(
+      OppositeDir = case_when(
+        logFC_H > 0 & logFC_C < 0 ~ "Human-specific",
+        logFC_H < 0 & logFC_C > 0 ~ "Chimp-specific",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # Subset only true DEGs in both species and opposite-direction
+  opposite_gene_df <- merged_df %>%
+    filter(DEG_both, !is.na(OppositeDir)) %>%
+    arrange(OppositeDir, desc(logFC_H))
+  
+  # Summary table
+  sum_tab_specspec <- opposite_gene_df %>%
+    group_by(OppositeDir) %>%
+    summarise(
+      n_genes = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(Total_genes = sum(n_genes))
+  
+  return(list(
+    gene_df = opposite_gene_df,
+    summary_table = sum_tab_specspec
+  ))
+}
+
+# ---- Apply to all stimuli ----
+results_list <- map(stimuli, ~ process_stimulus(.x, toptable_list_24, adj_cutoff))
+names(results_list) <- stimuli
+
+
+#save results
+# saveRDS(sum_tab_specspec, "data/de/specspec/Summary_table_SpecSpecGenes_DEG.RDS")
+
+# write.csv(sum_tab_specspec, "data/de/specspec/Summary_table_SpecSpecGenes_DEG.csv")
+
+```
+
+```{r DE NUTL Spec Spec gene}
+nutl_results <- results_list[["NUTL"]]
+
+# Filter for the gene that is "species-specific" but also DE in both species
+species_specific_both_deg <- nutl_results %>%
+  filter(Species_Specific %in% c("Human-specific", "Chimp-specific"),
+         DEG_H == TRUE,
+         DEG_C == TRUE)
+
+# Show it
+species_specific_both_deg
+
+```
 
