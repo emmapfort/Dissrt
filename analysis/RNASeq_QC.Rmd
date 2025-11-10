@@ -4,7 +4,7 @@ author: "Emma M Pfortmiller"
 date: "2025-09-26"
 output: html_document
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -201,20 +201,20 @@ time_vec <- readRDS("data/theme/time_vector.RDS")
 
 ####INDIVIDUAL####
 # ind_list <- list(
-#   Ind1 = "1",
-#   Ind2 = "2",
-#   Ind3 = "3",
-#   Ind4 = "4",
-#   Ind5 = "5",
-#   Ind6 = "6",
-#   Ind7 = "7",
-#   Ind8 = "8",
-#   Ind9 = "9",
-#   Ind10 = "10",
-#   Ind11 = "11",
-#   Ind12 = "12",
-#   Ind13 = "13",
-#   Ind14 = "14"
+#   H24280 = "H1",
+#   H28126 = "H2",
+#   "84-1" = "H3",
+#   H21792 = "H4",
+#   H20682 = "H5",
+#   H22422 = "H6",
+#   "78-1" = "H7",
+#   C3647 = "C1",
+#   C8861 = "C2",
+#   C4020 = "C3",
+#   C3649 = "C4",
+#   C3651 = "C5",
+#   C40280 = "C6",
+#   C4955 = "C7"
 # )
 # ind_vec <- unlist(lapply(names(ind_list), function (cat) {
 #   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
@@ -341,15 +341,17 @@ hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 ```{r Mapping and Counts Stats}
 #read in my excel file with all of this information
 # map_align_stats <- read_excel("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx",
-#     sheet = "Map_Align_all", col_types = c("skip",
-#         "text", "numeric", "text" , "text", "text",
+#     sheet = "Map_Align_all", col_types = c("text",
+#         "text", "skip", "text", "text", "text",
 #         "text", "numeric", "text", "text",
-#         "text", "text", "text", "numeric",
+#         "numeric", "text", "skip", "text",
+#         "skip", "text", "skip", "text", "text",
 #         "text", "numeric", "numeric", "numeric",
 #         "numeric", "numeric", "numeric",
 #         "numeric", "numeric", "numeric",
 #         "numeric", "numeric", "numeric",
-#         "numeric"))
+#         "numeric", "numeric", "numeric",
+#         "numeric", "numeric", "numeric"))
 # View(map_align_stats)
 
 #save as a csv for later
@@ -362,17 +364,18 @@ map_align_stats <- readRDS("data/counts/mapping_alignment_stats_sheet.RDS")
 
 Individual <- as.character(map_align_stats$Ind)
 Species <- as.character(map_align_stats$Species)
-Time <- as.character(map_align_stats$Time)
+Time <- as.character(map_align_stats$Time_Num)
 Stimulus <- as.character(map_align_stats$Stimulus)
 
 ind_col <- setNames(rainbow(length(unique(Individual))), unique(Individual))
 
 
+
 time_col <- c("2" = "#392344",
               "24" = "#457291")
 
-species_col <- c("C" = "#E56473",
-                 "H" = "#EE4902")
+species_col <- c("H" = "#E56473",
+                 "C" = "#EE4902")
 
 ####Reads by Sample####
 reads_by_sample <- c(
@@ -397,19 +400,19 @@ map_align_stats$Stimulus <- factor(
 
 map_align_stats$Ind <- factor(
   map_align_stats$Ind,
-  levels = c("Ind1", "Ind2", "Ind3", "Ind4", "Ind5", 
-             "Ind6", "Ind7", "Ind8", "Ind9", "Ind10", 
-             "Ind11", "Ind12", "Ind13", "Ind14")
+  levels = c("H1", "H2", "H3", "H4", "H5", 
+             "H6", "H7", "C1", "C2", "C3", 
+             "C4", "C5", "C6", "C7")
 )
 
 #Total Reads per Sample
 total_reads_sample_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y = Total_Reads, 
+  ggplot(., aes (x = Sample_Tx, y = Total_Reads_Paired, 
                  fill = Stimulus, 
                  group_by = Sample_Tx))+
   geom_col()+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of reads by sample"))+
+  ggtitle(expression("Total reads by sample"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -423,13 +426,13 @@ total_reads_sample_plot <- map_align_stats %>%
 
 #Total Mapped Reads per Sample
 map_reads_sample_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y = Mapped, 
+  ggplot(., aes (x = Sample_Tx, y = Mapped_Paired, 
                  fill = Stimulus, 
                  group_by = Sample_Tx))+
   geom_col()+
  # geom_hline(aes(yintercept=20000000))+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of mapped reads by sample"))+
+  ggtitle(expression("Mapped reads by sample"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -443,10 +446,10 @@ map_reads_sample_plot <- map_align_stats %>%
 
 ####Total Reads by Sample Boxplot####
 total_reads_sample_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y= Total_Reads, fill = Stimulus))+
+  ggplot(., aes (x = Sample_Tx, y= Total_Reads_Paired, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of reads by sample"))+
+  ggtitle(expression("Total reads by sample"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -460,10 +463,10 @@ total_reads_sample_boxplot <- map_align_stats %>%
 
 ####Total Mapped Reads by Sample Boxplot####
 map_reads_sample_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y= Mapped, fill = Stimulus))+
+  ggplot(., aes (x = Sample_Tx, y= Mapped_Paired, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of mapped reads by sample"))+
+  ggtitle(expression("Mapped reads by sample"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -478,10 +481,10 @@ map_reads_sample_boxplot <- map_align_stats %>%
 
 ####Total Reads by Stimulus####
 total_reads_stimulus_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Stimulus, y= Total_Reads, fill = Stimulus))+
+  ggplot(., aes (x = Stimulus, y= Total_Reads_Paired, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of reads by stimulus"))+
+  ggtitle(expression("Total reads by stimulus"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -495,10 +498,10 @@ total_reads_stimulus_plot <- map_align_stats %>%
 
 ####Mapped Reads by Stimulus####
 map_reads_stimulus_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Stimulus, y= Mapped, fill = Stimulus))+
+  ggplot(., aes (x = Stimulus, y= Mapped_Paired, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_sample)+
-  ggtitle(expression("Total number of mapped reads by stimulus"))+
+  ggtitle(expression("Mapped reads by stimulus"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -513,10 +516,10 @@ map_reads_stimulus_plot <- map_align_stats %>%
 
 ####Total Reads Per Individual####
 total_reads_ind_plot <- map_align_stats %>% 
-  ggplot(., aes (x =as.factor(Line), y = Total_Reads))+
+  ggplot(., aes (x =as.factor(Ind), y = Total_Reads_Paired))+
   geom_boxplot(aes(fill= Ind))+
  scale_fill_manual(values = ind_col)+
-  ggtitle(expression("Total number of reads by individual"))+
+  ggtitle(expression("Total reads by individual"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -531,10 +534,10 @@ total_reads_ind_plot <- map_align_stats %>%
 
 ####Total Mapped Reads Per Individual####
 map_reads_ind_plot <- map_align_stats %>% 
-  ggplot(., aes (x =as.factor(Line), y = Mapped))+
+  ggplot(., aes (x =as.factor(Ind), y = Mapped_Paired))+
   geom_boxplot(aes(fill=Ind))+
  scale_fill_manual(values = c(ind_col))+
-  ggtitle(expression("Total number of mapped reads by individual"))+
+  ggtitle(expression("Mapped reads by individual"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -549,17 +552,35 @@ map_reads_ind_plot <- map_align_stats %>%
 
 
 ####Total Reads Per Timepoint####
-map_align_stats$Time <- factor(map_align_stats$Time, 
+map_align_stats$Time_Num <- factor(map_align_stats$Time_Num, 
                             levels = c("2", "24"))
 
 reads_by_time <- c("2" = "#392344", "24" = "#457291")
 
 total_reads_time_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_ID, y = Total_Reads, fill = Time, group_by = Ind))+
+  ggplot(., aes (x = Sample_ID, y = Total_Reads_Paired, fill = Time_Num, group_by = Ind))+
   geom_col()+
  # geom_hline(aes(yintercept=20000000))+
  scale_fill_manual(values = reads_by_time)+
-  ggtitle(expression("Total number of reads by timepoint"))+
+  ggtitle(expression("Total reads by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing reads"))+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        #strip.text.x = element_text(size = 15, color = "black", face = "bold"),
+        strip.text.y = element_text(color = "white"))
+
+####Mapped Reads Per Timepoint####
+map_reads_time_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_ID, y = Mapped_Paired, fill = Time_Num, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression("Mapped reads by timepoint"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -572,12 +593,13 @@ total_reads_time_plot <- map_align_stats %>%
         strip.text.y = element_text(color = "white"))
 
 
+
 ####Total Reads Per Timepoint Boxplot####
 total_reads_time_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Time, y= Total_Reads, fill = Time))+
+  ggplot(., aes (x = Time_Num, y= Total_Reads_Paired, fill = Time_Num))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_time)+
-  ggtitle(expression("Total number of reads by timepoint"))+
+  ggtitle(expression("Total reads by timepoint"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -590,11 +612,11 @@ total_reads_time_boxplot <- map_align_stats %>%
         strip.text.y = element_text(color = "white"))
 
 ####Total Mapped Reads Per Timepoint####
-map_reads_time_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Time, y= Mapped, fill = Time))+
+map_reads_time_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Time_Num, y= Mapped_Paired, fill = Time_Num))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_time)+
-  ggtitle(expression("Total number of mapped reads by timepoint"))+
+  ggtitle(expression("Mapped reads by timepoint"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -608,12 +630,12 @@ map_reads_time_plot <- map_align_stats %>%
 
 
 ####Total Reads Per Species####
-reads_by_species <- c("C" = "#E56473", "H" = "#EE4902")
+reads_by_species <- c("H" = "#E56473", "C" = "#EE4902")
 total_reads_species_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Line, y = Total_Reads, fill = Species, group_by = Line))+
+  ggplot(., aes (x = Ind, y = Total_Reads_Paired, fill = Species, group_by = Ind))+
   geom_col()+
  scale_fill_manual(values=reads_by_species)+
-  ggtitle(expression("Total number of reads by species"))+
+  ggtitle(expression("Total reads by species"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -627,10 +649,10 @@ total_reads_species_plot <- map_align_stats %>%
 
 ####Total Mapped Reads by Species####
 total_reads_species_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Line, y= Total_Reads, fill = Species))+
+  ggplot(., aes (x = Ind, y= Total_Reads_Paired, fill = Species))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_species)+
-  ggtitle(expression("Total number of reads by species"))+
+  ggtitle(expression("Total reads by species"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -644,10 +666,10 @@ total_reads_species_boxplot <- map_align_stats %>%
 
 ####Total Mapped Reads by Species####
 map_reads_species_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Line, y= Mapped, fill = Species))+
+  ggplot(., aes (x = Ind, y= Mapped_Paired, fill = Species))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_species)+
-  ggtitle(expression("Total number of mapped reads by species"))+
+  ggtitle(expression("Mapped reads by species"))+
   xlab("")+
   ylab(expression("RNA-sequencing reads"))+
   theme_bw()+
@@ -660,54 +682,56 @@ map_reads_species_plot <- map_align_stats %>%
         strip.text.y = element_text(color = "white"))
 
 #make a list so I can save all of these plots
-# qc_map_plots_list <- list(
-#   total_reads_sample_plot,
-#   map_reads_sample_plot,
-#   total_reads_sample_boxplot,
-#   map_reads_sample_boxplot,
-#   total_reads_ind_plot,
-#   map_reads_ind_plot,
-#   total_reads_species_plot,
-#   total_reads_species_boxplot,
-#   map_reads_species_plot,
-#   total_reads_stimulus_plot,
-#   map_reads_stimulus_plot,
-#   total_reads_time_plot,
-#   total_reads_time_boxplot,
-#   map_reads_time_plot
-# )
-# 
-# qc_map_plots_names <- list(
-#   "total_reads_sample",
-#   "map_reads_sample",
-#   "total_reads_sample_boxplot",
-#   "map_reads_sample_boxplot",
-#   "total_reads_ind",
-#   "map_reads_ind",
-#   "total_reads_species",
-#   "total_reads_species_boxplot",
-#   "map_reads_species",
-#   "total_reads_stimulus",
-#   "map_reads_stimulus",
-#   "total_reads_time_plot",
-#   "total_reads_time_boxplot",
-#   "map_reads_time"
-# )
-# 
-# qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
-# 
-# 
+qc_map_plots_list <- list(
+  total_reads_sample_plot,
+  map_reads_sample_plot,
+  total_reads_sample_boxplot,
+  map_reads_sample_boxplot,
+  total_reads_ind_plot,
+  map_reads_ind_plot,
+  total_reads_species_plot,
+  total_reads_species_boxplot,
+  map_reads_species_plot,
+  total_reads_stimulus_plot,
+  map_reads_stimulus_plot,
+  total_reads_time_plot,
+  total_reads_time_boxplot,
+  map_reads_time_plot,
+  map_reads_time_boxplot
+)
+
+qc_map_plots_names <- list(
+  "total_reads_sample",
+  "map_reads_sample",
+  "total_reads_sample_boxplot",
+  "map_reads_sample_boxplot",
+  "total_reads_ind",
+  "map_reads_ind",
+  "total_reads_species",
+  "total_reads_species_boxplot",
+  "map_reads_species",
+  "total_reads_stimulus",
+  "map_reads_stimulus",
+  "total_reads_time_plot",
+  "total_reads_time_boxplot",
+  "map_reads_time_plot",
+  "map_reads_time_boxplot"
+)
+
+qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
+
+
 # stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
 
 #save all of these plots to my designated folder
 
-# for (i in seq_along(qc_map_plots_list)) {
-#   save_plot(
-#     plot = qc_map_plots_list[[i]],
-#     filename = qc_map_plots_names[i],
-#     folder = output_folder
-#   )
-# }
+for (i in seq_along(qc_map_plots_list)) {
+  save_plot(
+    plot = qc_map_plots_list[[i]],
+    filename = qc_map_plots_names[i],
+    folder = output_folder
+  )
+}
 
 ```
 
@@ -3199,6 +3223,135 @@ for (plot_name in names(volcano_plots_sig)) {
 
 
 
+```{r Stacked Barplots DEGs vs nonDEGs}
+#now I want to take the above data for 24hr only and make stacked barplots
+#integrate these with my venn diagrams underneath too?
+
+
+#pull out DEGs vs nonDEGs
+degs_all_summary <- degs_all_bp %>%
+  mutate(DE_status = ifelse(adj.P.Val < 0.05, "DE", "Not DE")) %>%
+  group_by(Stimulus, DE_status) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  ungroup() %>%
+  mutate(
+    fill_color = ifelse(DE_status == "DE", "#377eb8", "grey60"),
+    Species = ifelse(grepl("_H$", Stimulus), "H", "C"),
+    Stim = sub("_(H|C)$", "", Stimulus)
+  )
+
+#make sure species and stim is in the correct order
+stim_order <- c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa", "BPA", "PFOA")
+degs_all_summary$Stim <- factor(degs_all_summary$Stim, levels = stim_order)
+degs_all_summary$Species <- factor(degs_all_summary$Species, levels = c("H", "C"))
+
+#plot all of these faceted barplots with the same x and y axis
+deg_barplot_stim <- ggplot(degs_all_summary, aes(x = Species, y = Count, fill = DE_status)) +
+  geom_bar(stat = "identity", color = "black", width = 0.9) +
+  scale_fill_manual(
+    values = c("DE" = "#377eb8", "Not DE" = "grey60"),
+    name = "Gene Status"
+  ) +
+  facet_wrap(~Stim, nrow = 1, scales = "free_x") +
+  theme_minimal(base_size = 14) +
+  labs(
+    x = "",
+    y = "Total genes",
+    title = " "
+  ) +
+  theme(
+    strip.background = element_blank(),
+    strip.text = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(size = 11),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(hjust = 0.5),
+    panel.spacing = unit(1.2, "lines"),
+    axis.text.y = element_text(),
+    axis.ticks.y = element_line(),
+    axis.line.y = element_line()
+  )
+
+#check all of the numbers of DEGs so I can manually add later
+total_DEGs_table <- degs_all_summary %>%
+  filter(DE_status == "DE") %>%
+  group_by(Stim, Species) %>%
+  summarise(DEGs = sum(Count), .groups = "drop") %>%
+  arrange(factor(Stim, levels = stim_order), Species)
+
+
+# Print table
+print(total_DEGs_table)
+
+save_plot(plot = deg_barplot_stim,
+          filename = "Stacked_Barplot_DEGs_EMP_",
+          folder = output_folder,
+          height = 6, 
+          width = 12)
+
+```
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Summarize DE vs Not DE counts
+degs_all_summary <- degs_all_bp %>%
+  mutate(DE_status = ifelse(adj.P.Val < 0.05, "DE", "Not DE")) %>%
+  group_by(Stimulus, Stim, Species, DE_status) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  ungroup() %>%
+  mutate(
+    # For fill: DE = stimulus color, Not DE = gray
+    fill_color = ifelse(DE_status == "DE", stim_col[Stim], "grey60")
+  )
+
+# Factor ordering
+stimspec_order <- c("TUN_H", "TUN_C", 
+                    "THA_H", "THA_C",
+                    "DOX_H", "DOX_C",
+                    "NUTL_H", "NUTL_C",
+                    "LPS_H", "LPS_C",
+                    "TNFa_H", "TNFa_C",
+                    "BPA_H", "BPA_C",
+                    "PFOA_H", "PFOA_C")
+degs_all_summary$Stimulus <- factor(degs_all_summary$Stimulus, levels = stimspec_order)
+
+# Create a separate column for stimulus legend
+degs_all_summary$Stim_for_legend <- factor(degs_all_summary$Stim, levels = names(stim_col))
+
+# Plot
+ggplot(degs_all_summary, aes(x = Stimulus, y = Count, fill = fill_color)) +
+  geom_bar(stat = "identity", position = "stack", color = "black") +
+  # Add DE counts on top of DE bars
+  geom_text(
+    data = degs_all_summary %>% filter(DE_status == "DE"),
+    aes(label = Count),
+    position = position_stack(vjust = 0.5),
+    color = "white",
+    size = 3.5
+  ) +
+  # Custom fill scale with identity for actual colors
+  scale_fill_identity(
+    name = "Status / Stimulus",
+    guide = "legend",
+    labels = c("Not DE", names(stim_col)),
+    breaks = c("grey60", stim_col)
+  ) +
+  theme_custom() +
+  labs(
+    x = "Stimulus",
+    y = "# of genes",
+    title = "DE (significant) vs Not DE genes"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
 #Add SYMBOL column
 ```{r Add HGNC Symbol to each toptable}
 #in order to plot the logFC heatmaps, I want to add a SYMBOL column to each of my toptables based on their Entrez_ID
@@ -3258,7 +3411,7 @@ load_deg <- function(name, folder = "data/de/DEGs") {
 #here is the set with categories, symbol, and entrezid
 fonoudi_genes <- readRDS("data/genesets/Fonoudi_gene_set.RDS")
 ddr_genes <- readRDS("data/genesets/DDR_gene_set.RDS")
-dic_genes <- readRDS("data/genesets/DIC_gene_set.RDS")
+dic_genes <- readRDS("data/genesets/DIC_genes_set.RDS")
 
 #here are the ids where it's only a vector of Entrez_ID
 fonoudi_ids <- readRDS("data/genesets/Fonoudi_genes_entrezid.RDS")
@@ -4278,6 +4431,112 @@ for (st in stim_all) {
 
 
 ```
+#Timepoint Comparisons
+```{r Compare timepoints across species}
+#instead of species comparisons, make timepoint comparisons
+
+# Define all stimuli
+stimuli <- c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa", "BPA", "PFOA")
+
+# Initialize result table and plot list
+spearman_res_time <- data.frame(
+  Stimulus = character(),
+  Species = character(),
+  Rho = numeric(),
+  pvalue = numeric(),
+  stringsAsFactors = FALSE
+)
+
+plots_time <- list()
+
+# Loop through each stimulus and species
+for (st in stimuli) {
+  for (sp in c("H", "C")) {
+    
+    nm_t2 <- paste0("V.", st, "2_", sp)
+    nm_t24 <- paste0("V.", st, "24_", sp)
+    
+    # Check for missing data
+    if (!(nm_t2 %in% names(toptable_list)) | !(nm_t24 %in% names(toptable_list))) {
+      message("Skipping ", st, " - ", sp, " (missing 2h or 24h data)")
+      next
+    }
+    
+    # Color for each stimulus
+    stim_color <- ifelse(st %in% names(stim_col), stim_col[st], "black")
+    
+    # Load data
+    df_t2 <- toptable_list[[nm_t2]] %>% mutate(Entrez_ID = as.character(Entrez_ID))
+    df_t24 <- toptable_list[[nm_t24]] %>% mutate(Entrez_ID = as.character(Entrez_ID))
+    
+    # Merge on Entrez ID
+    merged_df <- inner_join(df_t2, df_t24, by = "Entrez_ID",
+                            suffix = c("_2", "_24")) %>%
+      dplyr::select(Entrez_ID, logFC_2 = logFC_2, logFC_24 = logFC_24)
+    
+    # Identify opposite direction genes
+    merged_df <- merged_df %>%
+      mutate(OppositeDir = case_when(
+        logFC_2 > 0 & logFC_24 < 0 ~ "Opposite",
+        logFC_2 < 0 & logFC_24 > 0 ~ "Opposite",
+        TRUE ~ "Same"
+      ))
+    
+    n_opposite <- sum(merged_df$OppositeDir == "Opposite")
+    
+    # Spearman correlation
+    cor_test <- cor.test(merged_df$logFC_2, merged_df$logFC_24, method = "spearman")
+    rho <- round(cor_test$estimate, 2)
+    pval <- ifelse(cor_test$p.value < 0.001, "<0.001", round(cor_test$p.value, 3))
+    cor_label <- paste0("rho = ", rho, "\n", "p = ", pval)
+    
+    # Store correlation results
+    spearman_res_time <- rbind(
+      spearman_res_time,
+      data.frame(Stimulus = st, Species = sp,
+                 Rho = rho, pvalue = cor_test$p.value)
+    )
+    
+    # Scatterplot: log2FC 2h vs 24h
+    p <- ggplot(merged_df, aes(x = logFC_2, y = logFC_24)) +
+      rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Same"),
+                           color = "black", alpha = 0.5, size = 0.8), dpi = 300) +
+      rasterise(geom_point(data = merged_df %>% filter(OppositeDir == "Opposite"),
+                           color = stim_color, alpha = 0.9, size = 1.1), dpi = 300) +
+      geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray30") +
+      geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+      geom_vline(xintercept = 0, linetype = "solid", color = "black") +
+      coord_fixed(xlim = c(-5, 5), ylim = c(-5, 5)) +
+      labs(title = paste0(sp, ": ", st, " 2h vs 24h"),
+           x = expression(log[2]*"FC 2h"),
+           y = expression(log[2]*"FC 24h")) +
+      annotate("text", x = -4.5, y = 4.5, label = cor_label,
+               hjust = 0, vjust = 1, size = 4) +
+      annotate("text", x = 4.5, y = -4.5,
+               label = paste0("n = ", n_opposite),
+               hjust = 1, vjust = 0, size = 4, color = stim_color) +
+      theme_custom()
+    
+    # Store and print
+    plots_time[[paste0(st, "_", sp)]] <- p
+    print(p)
+  }
+}
+
+# Print summary table
+print(spearman_res_time)
+
+# Save plots
+for (nm in names(plots_time)) {
+  p <- plots_time[[nm]]
+  filename_base <- paste0("Timepoint_logFC_Cor_scatter_", nm, "_EMP")
+  save_plot(plot = p, filename = filename_base, folder = output_folder,
+            width = 5, height = 5)
+}
+
+
+```
+
 
 #Pull out Species Specific Genes
 ```{r Species Specific Genes List}
@@ -4519,14 +4778,16 @@ gene_groups <- list(
 )
 
 #minimize my metadata sheet 
-meta_bp_24 <- meta_24 %>% 
-  mutate(
-    Samples_24 = paste(Stimulus, Ind_Num, Species, sep = "_")
-    ) %>% 
-  dplyr::select("Samples_24", "Drug", "Response", "Species", "Ind", "Ind_Num") %>% 
-  dplyr::rename(Stimulus = Drug)
+# meta_bp_24 <- meta_24 %>% 
+#   mutate(
+#     Samples_24 = paste(Stimulus, Ind_Num, Species, sep = "_")
+#     ) %>% 
+#   dplyr::select("Samples_24", "Drug", "Response", "Species", "Ind", "Ind_Num") %>% 
+#   dplyr::rename(Stimulus = Drug)
 
 # saveRDS(meta_bp_24, "data/counts/metadata_24hr_boxplots_shortened.RDS")
+
+meta_bp_24 <- readRDS("data/counts/metadata_24hr_boxplots_shortened.RDS")
 
 #read in my filtered cpm matrix
 # hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr.RDS")
@@ -5599,7 +5860,9 @@ ggsave(
 
 ```{r Subset Genes of Interest log2cpm species specific}
 # ---- 1. Define genes of interest ----
-example_genes <- c("ABCF3", "NCAPD2P1", "PER3", "CCDC93", "ZNF606-AS1", "LGI4", "RADIL", "SDHAF1", "AKAP17A", "RARG", "LPL", "MDM2", "LGALS3", "PELI2", "GPSM2", "SLC28A3")
+example_genes <- c("PPIP5K2")
+
+#"ABCF3", "NCAPD2P1", "PER3", "CCDC93", "ZNF606-AS1", "LGI4", "RADIL", "SDHAF1", "AKAP17A", "RARG", "LPL", "MDM2", "LGALS3", "PELI2", "GPSM2", "SLC28A3", "RARG", "PELI2", "SLC28A3", "LRRTM4"
 
 # ---- 2. Prepare data subset ----
 plot_data_examples <- bp_long_ddr %>%
@@ -5616,7 +5879,7 @@ for (gene in example_genes) {
                position = position_identity()) +
     scale_fill_manual(values = stim_col) +
     scale_color_manual(values = ind_col) +
-    coord_cartesian(ylim = c(0, 8)) +
+    coord_cartesian(ylim = c(0, 10)) +
     ggtitle(gene) +
     labs(x = "Condition", y = expression("log"[2]*"CPM")) +
     theme_custom() +
