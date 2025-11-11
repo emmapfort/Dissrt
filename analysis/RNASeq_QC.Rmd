@@ -1853,10 +1853,10 @@ colnames(hc_matrix) <- metadata$Sample_Tx  # Ensure column names match metadata
 cor_matrix_spearman <- cor(hc_matrix, method = "spearman", use = "everything")
 
 #define a standard color scale where 0 = white
-col_fun <- colorRamp2(
-  breaks = c(-1,0,1),
-  colors = c("blue", "white", "red")
-)
+# col_fun <- colorRamp2(
+#   breaks = c(-1,0,1),
+#   colors = c("blue", "white", "red")
+# )
 
 #extract metadata for annotations
 Individual <- as.character(metadata$Ind)
@@ -1887,7 +1887,6 @@ top_annotation <- HeatmapAnnotation(
 # ---- Spearman heatmap for all samples ----
 heatmap_spearman_all <- Heatmap(cor_matrix_spearman,
                                 name = "Spearman",
-                                col = col_fun,
                                 top_annotation = top_annotation,
                                 show_row_names = TRUE,
                                 show_column_names = TRUE,
@@ -1949,7 +1948,6 @@ for (subset_name in names(subsets)) {
   heatmap_subset <- Heatmap(cor_subset,
                             name = paste0("Spearman_", subset_name),
                             top_annotation = top_ann_subset,
-                            col = col_fun,
                             show_row_names = TRUE,
                             show_column_names = TRUE,
                             cluster_rows = TRUE,
@@ -2031,10 +2029,10 @@ colnames(hc_matrix_24) <- meta_24$Sample_Tx_clean
 cor_matrix_spearman_24 <- cor(hc_matrix_24, method = "spearman", use = "everything")
 
 #define a standard color scale where 0 = white
-col_fun <- colorRamp2(
-  breaks = c(-1,0,1),
-  colors = c("blue", "white", "red")
-)
+# col_fun <- colorRamp2(
+#   breaks = c(-1,0,1),
+#   colors = c("blue", "white", "red")
+# )
 
 #extract metadata for annotations
 Individual <- as.character(meta_24$Ind)
@@ -2066,7 +2064,6 @@ top_annotation_24 <- HeatmapAnnotation(
 #spearman heatmap for all samples
 heatmap_spearman_24 <- Heatmap(cor_matrix_spearman_24,
                                 name = "Spearman",
-                                col = col_fun,
                                 top_annotation = top_annotation_24,
                                 show_row_names = TRUE,
                                 show_column_names = TRUE,
@@ -2126,7 +2123,6 @@ for (subset_name in names(subsets)) {
   heatmap_subset_24 <- Heatmap(cor_subset_24,
                             name = paste0("Spearman_24_", subset_name),
                             top_annotation = top_ann_subset_24,
-                            col = col_fun,
                             show_row_names = TRUE,
                             show_column_names = TRUE,
                             cluster_rows = TRUE,
@@ -3842,7 +3838,6 @@ save_complex_heatmap(DIC_logFC_HM,
 ```
 
 
-
 #Treatment Comparisons
 ```{r Compare DEGs Venn Diagrams}
 #make comparisons across all 2 + 24hr pairwise treatment DEGs
@@ -3912,6 +3907,8 @@ for (st in stimuli) {
   
   print(p)
   
+}
+  
   # #save as png and pdf in my output_folder
 #   png_filename <- file.path(output_folder,
 #                             paste0("PropVenn_", st, "_EMP_251010.png"))
@@ -3945,6 +3942,114 @@ for (st in stimuli) {
 
 
 ```
+
+#Timepoint Comparison Venn
+```{r Timepoint comparison Venn Diagrams}
+#now use the same workflow as above to create Venn diagrams to compare DEGs by timepoint within a species and stimulus
+
+stimuli <- c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa", "BPA", "PFOA")
+timepoints <- c("2", "24")
+
+#make a loop to go through all stimuli per timepoint
+for (stim in stimuli) {
+  for (sp in c("H", "C")) {
+    
+    # Define timepoint object names
+    nm_2hr  <- paste0("V.", stim, "2", "_", sp)
+    nm_24hr <- paste0("V.", stim, "24", "_", sp)
+    
+    # Skip if neither timepoint exists
+    if (!(nm_2hr %in% names(toptable_list)) &
+        !(nm_24hr %in% names(toptable_list))) {
+      message("Skipping ", stim, " (", sp, ") — no DEGs for either timepoint.")
+      next
+    }
+    
+    # Pull DEGs for each timepoint
+    genes_2hr <- if (nm_2hr %in% names(toptable_list)) {
+      toptable_list[[nm_2hr]] %>%
+        filter(!is.na(adj.P.Val) & adj.P.Val < 0.05) %>%
+        pull(Entrez_ID) %>%
+        as.character()
+    } else character(0)
+    
+    genes_24hr <- if (nm_24hr %in% names(toptable_list)) {
+      toptable_list[[nm_24hr]] %>%
+        filter(!is.na(adj.P.Val) & adj.P.Val < 0.05) %>%
+        pull(Entrez_ID) %>%
+        as.character()
+    } else character(0)
+    
+    # Skip if both empty
+    if (length(genes_2hr) == 0 & length(genes_24hr) == 0) {
+      message("Skipping ", stim, " (", sp, ") — no DEGs for 2hr or 24hr.")
+      next
+    }
+    
+    # Create venn list
+    venn_list <- list(
+      "2hr" = genes_2hr,
+      "24hr" = genes_24hr
+    )
+    
+    # Fit and plot
+    fit <- euler(venn_list, shape = "ellipse")
+    plot_title <- paste0(stim, " (", sp, ") — 2hr vs 24hr DEGs")
+    
+    p <- plot(fit,
+              fills = list(fill = c("#F6B4B4", "#9DC4E4"), alpha = 0.6),
+              labels = list(font = 1),
+              quantities = TRUE,
+              main = plot_title)
+    
+    # Define filenames
+png_filename <- file.path(output_folder,
+                          paste0("PropVenn_Timepoint_", stim, "_", sp, "_EMP_251111.png"))
+pdf_filename <- file.path(output_folder,
+                          paste0("PropVenn_Timepoint_", stim, "_", sp, "_EMP_251111.pdf"))
+
+# Recreate the plot object
+plot_title <- paste0(stim, " — 2hr vs 24hr DEGs (", sp, ")")
+p <- plot(
+  fit,
+  fills = list(fill = c("pink", "blue"), alpha = 0.6),
+  labels = TRUE,
+  quantities = TRUE,
+  main = plot_title
+)
+
+# Save as PNG
+png(png_filename, width = 6, height = 6, units = "in", res = 300)
+plot(
+  fit,
+  fills = list(fill = c("pink", "blue"), alpha = 0.6),
+  labels = TRUE,
+  quantities = TRUE,
+  main = plot_title
+)
+dev.off()
+
+# Save as PDF (using cairo for text rendering)
+cairo_pdf(pdf_filename, width = 6, height = 6)
+plot(
+  fit,
+  fills = list(fill = c("pink", "blue"), alpha = 0.6),
+  labels = TRUE,
+  quantities = TRUE,
+  main = plot_title
+)
+dev.off()
+
+message("saved venn for ", stim, " (", sp, ") at 2hr and 24hr.")
+
+  }
+}
+
+
+
+
+```
+
 
 ```{r Scatterplots logFC All Treatments 24hr}
 #read in my toptable_list_24
