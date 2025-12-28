@@ -1,0 +1,3990 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Emma M Pfortmiller" />
+
+<meta name="date" content="2025-12-27" />
+
+<title>QC</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Dissrt</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">QC</h1>
+<h4 class="author">Emma M Pfortmiller</h4>
+<h4 class="date">2025-12-27</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-12-27
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Dissrt/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250926code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250926)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250926code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250926)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttree988100a3b30bd5b307dcbb2a0a6b4175d70f40b8targetblank988100aa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/emmapfort/Dissrt/tree/988100a3b30bd5b307dcbb2a0a6b4175d70f40b8" target="_blank">988100a</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttree988100a3b30bd5b307dcbb2a0a6b4175d70f40b8targetblank988100aa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/emmapfort/Dissrt/tree/988100a3b30bd5b307dcbb2a0a6b4175d70f40b8" target="_blank">988100a</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/figure/
+    Ignored:    data/counts/
+    Ignored:    data/de/
+    Ignored:    data/genesets/
+    Ignored:    data/theme/
+
+Untracked files:
+    Untracked:  DDR_DEGs_direction.RDS
+    Untracked:  DOX_vs_NUTL_logFC_correlation.pdf_251003.pdf
+    Untracked:  DOX_vs_NUTL_logFC_correlation.pdf_251003.png
+    Untracked:  PCA_2hr_HC_filt2_PC1_PC2_EMP_251010.png, folder = output_folder, height = 5, width = 5_251010.pdf
+    Untracked:  PCA_2hr_HC_filt2_PC1_PC2_EMP_251010.png, folder = output_folder, height = 5, width = 5_251010.png
+    Untracked:  PCA_2hr_HC_filt2_PC1_PC2_EMP_251010.png, folder = output_folder, height =5, width = 5_251010.pdf
+    Untracked:  PCA_2hr_HC_filt2_PC1_PC2_EMP_251010.png, folder = output_folder, height =5, width = 5_251010.png
+    Untracked:  Volcano_24hr_Legend_EMP.png
+    Untracked:  analysis/QC_Subset.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<style type="text/css">
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+</style>
+<div id="load-libraries" class="section level1">
+<h1>Load Libraries</h1>
+</div>
+<div id="define-plot-theme" class="section level1">
+<h1>Define plot theme</h1>
+<pre class="r"><code># Define the custom theme
+# plot_theme_custom &lt;- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = &quot;black&quot;),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, &quot;in&quot;),
+# 
+#       #text and font
+#       axis.text = element_text(color = &quot;black&quot;,
+#                                family = &quot;Arial&quot;,
+#                                size = 8),
+#       axis.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 10),
+#       legend.text = element_text(color = &quot;black&quot;,
+#                                  family = &quot;Arial&quot;,
+#                                  size = 8),
+#       legend.title = element_text(color = &quot;black&quot;,
+#                                   family = &quot;Arial&quot;,
+#                                   size = 10),
+#       plot.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = &quot;grey80&quot;, linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = &quot;grey90&quot;, linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, &quot;data/plot_theme_custom.RDS&quot;)
+
+theme_custom &lt;- readRDS(&quot;data/plot_theme_custom.RDS&quot;)</code></pre>
+</div>
+<div id="define-saving-plots-as-pdfs" class="section level1">
+<h1>Define saving plots as pdfs</h1>
+<pre class="r"><code>save_plot &lt;- function(plot, filename, 
+                      folder = &quot;.&quot;, 
+                      width = 8, 
+                      height = 6, 
+                      units = &quot;in&quot;, 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop(&quot;Please provide a filename (without extension) for the plot.&quot;)
+
+  date_str &lt;- if (add_date) paste0(&quot;_&quot;, format(Sys.Date(), &quot;%y%m%d&quot;)) else &quot;&quot;
+  pdf_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.pdf&quot;))
+  png_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.png&quot;))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = &quot;transparent&quot;)
+  ggsave(filename = png_file, plot = plot, device = &quot;png&quot;, width = width, height = height, units = units, dpi = dpi, bg = &quot;transparent&quot;)
+  message(&quot;Saved plot as Cairo PDF: &quot;, pdf_file)
+  message(&quot;Saved plot as PNG: &quot;, png_file)
+}
+
+output_folder &lt;- &quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots&quot;
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height</code></pre>
+</div>
+<div id="complex-heatmap-saving-script" class="section level1">
+<h1>Complex Heatmap Saving Script</h1>
+<pre class="r"><code>save_complex_heatmap &lt;- function(ht, filename, folder = &quot;.&quot;, width = 6, height = 10, dpi = 300, add_date = TRUE) {
+  if (missing(filename)) stop(&quot;Please provide a filename (without extension) for the plot.&quot;)
+  
+  date_str &lt;- if (add_date) paste0(&quot;_&quot;, format(Sys.Date(), &quot;%y%m%d&quot;)) else &quot;&quot;
+  
+  pdf_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.pdf&quot;))
+  png_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.png&quot;))
+  
+  # Save PDF
+  cairo_pdf(pdf_file, width = width, height = height)
+  draw(ht)
+  dev.off()
+  message(&quot;Saved PDF: &quot;, pdf_file)
+  
+  # Save PNG
+  png(png_file, width = width, height = height, units = &quot;in&quot;, res = dpi)
+  draw(ht)
+  dev.off()
+  message(&quot;Saved PNG: &quot;, png_file)
+}</code></pre>
+</div>
+<div id="define-colors-and-factors" class="section level1">
+<h1>Define colors and factors</h1>
+<pre class="r"><code>#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+# stim_list &lt;- list(
+#   &quot;Tunicamycin&quot; = &quot;TUN&quot;,
+#   &quot;Thapsigargin&quot; = &quot;THA&quot;,
+#   &quot;Doxorubicin&quot; = &quot;DOX&quot;,
+#   &quot;Nutlin-3&quot; = &quot;NUTL&quot;,
+#   &quot;Lipopolysaccharides&quot; = &quot;LPS&quot;,
+#   &quot;Tumor Necrosis Factor alpha&quot; = &quot;TNFa&quot;,
+#   &quot;Bisphenol A&quot; = &quot;BPA&quot;,
+#   &quot;Perfluorooctanoic Acid&quot; = &quot;PFOA&quot;
+# )
+# stimuli_vec &lt;- unlist(lapply(names(stim_list), function(cat) {
+#   setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+# }))
+# saveRDS(stimuli_vec, &quot;data/theme/stimuli_fullname_vector.RDS&quot;)
+stim_vec &lt;- readRDS(&quot;data/theme/stimuli_fullname_vector.RDS&quot;)
+
+####RESPONSE CATEGORY####
+# resp_list &lt;- list(
+#   UPR = c(&quot;TUN&quot;, &quot;THA&quot;),
+#   DDR = c(&quot;DOX&quot;, &quot;NUTL&quot;),
+#   IMR = c(&quot;LPS&quot;, &quot;TNFa&quot;),
+#   MMR = c(&quot;BPA&quot;, &quot;PFOA&quot;)
+# )
+# response_vec &lt;- unlist(lapply(names(resp_list), function(cat) {
+#   setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+# }))
+# saveRDS(response_vec, &quot;data/theme/response_categories_vector.RDS&quot;)
+response_vec &lt;- readRDS(&quot;data/theme/response_categories_vector.RDS&quot;)
+
+####SPECIES####
+# spec_list &lt;- list(
+#   Human = &quot;H&quot;,
+#   Chimp = &quot;C&quot;
+# )
+# species_vec &lt;- unlist(lapply(names(spec_list), function(cat) {
+#   setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+# }))
+# saveRDS(species_vec, &quot;data/theme/species_vector.RDS&quot;)
+species_vec &lt;- readRDS(&quot;data/theme/species_vector.RDS&quot;)
+
+####TIME####
+# time_list &lt;- list(
+#   &quot;2hr&quot; = &quot;2&quot;,
+#   &quot;24hr&quot; = &quot;24&quot;
+# )
+# time_vec &lt;- unlist(lapply(names(time_list), function(cat) {
+#   setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+# }))
+# saveRDS(time_vec, &quot;data/theme/time_vector.RDS&quot;)
+time_vec &lt;- readRDS(&quot;data/theme/time_vector.RDS&quot;)
+
+####INDIVIDUAL####
+# ind_list &lt;- list(
+#   H24280 = &quot;H1&quot;,
+#   H28126 = &quot;H2&quot;,
+#   &quot;84-1&quot; = &quot;H3&quot;,
+#   H21792 = &quot;H4&quot;,
+#   H20682 = &quot;H5&quot;,
+#   H22422 = &quot;H6&quot;,
+#   &quot;78-1&quot; = &quot;H7&quot;,
+#   C3647 = &quot;C1&quot;,
+#   C8861 = &quot;C2&quot;,
+#   C4020 = &quot;C3&quot;,
+#   C3649 = &quot;C4&quot;,
+#   C3651 = &quot;C5&quot;,
+#   C40280 = &quot;C6&quot;,
+#   C4955 = &quot;C7&quot;
+# )
+# ind_vec &lt;- unlist(lapply(names(ind_list), function (cat) {
+#   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+# }))
+# saveRDS(ind_vec, &quot;data/theme/individual_vector.RDS&quot;)
+ind_vec &lt;- readRDS(&quot;data/theme/individual_vector.RDS&quot;)
+
+#color schemes
+
+# ind_col &lt;- list(
+#   H1 = &quot;#264653&quot;, 
+#   H2 = &quot;#2A9D8F&quot;,
+#   H3 = &quot;#06D6A0&quot;,
+#   H4 = &quot;#68DD94&quot;,
+#   H5 = &quot;#22C75E&quot;,
+#   H6 = &quot;#1DC10B&quot;,
+#   H7 = &quot;#2D6910&quot;,
+#   C1 = &quot;#FFB347&quot;,
+#   C2 = &quot;#F97316&quot;,
+#   C3 = &quot;#F44E53&quot;,
+#   C4 = &quot;#C6134F&quot;,
+#   C5 = &quot;#F03A6E&quot;,
+#   C6 = &quot;#5D0E70&quot;,
+#   C7 = &quot;#A069E0&quot;
+# )
+
+stim_col &lt;- readRDS(&quot;data/theme/stimulus_color_palette_all.RDS&quot;)
+ind_col &lt;- readRDS(&quot;data/theme/individual_category_color_palette.RDS&quot;)
+time_col &lt;- readRDS(&quot;data/theme/time_category_color_palette.RDS&quot;)
+spec_col &lt;- readRDS(&quot;data/theme/species_category_color_palette.RDS&quot;)</code></pre>
+</div>
+<div id="import-counts-files-for-both-species" class="section level1">
+<h1>Import Counts Files for Both Species</h1>
+<pre class="r"><code>#I have one counts table for chimpanzee and another for human
+
+#read in chimpanzee counts
+# c_raw_counts &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/c_samples_counts_fin.csv&quot;)
+
+# saveRDS(c_raw_counts, &quot;data/counts/c_raw_counts.RDS&quot;)
+
+c_raw_counts &lt;- readRDS(&quot;data/counts/c_raw_counts.RDS&quot;)
+
+#read in human counts table in the same manner
+
+# h_raw_counts &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/h_samples_counts_fin.csv&quot;)
+
+# saveRDS(h_raw_counts, &quot;data/counts/h_raw_counts.RDS&quot;)
+
+h_raw_counts &lt;- readRDS(&quot;data/counts/h_raw_counts.RDS&quot;)</code></pre>
+</div>
+<div id="import-metadata-table" class="section level1">
+<h1>Import Metadata Table</h1>
+<pre class="r"><code>#I have a metadata sheet so I can associate the column names with their sample ID
+
+# metadata &lt;- read_csv(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv&quot;,
+#     col_types = cols(Conc = col_number()))
+
+#save metadata sheet
+
+# saveRDS(metadata, &quot;data/counts/dissrt_metadata.RDS&quot;)
+
+metadata &lt;- readRDS(&quot;data/counts/dissrt_metadata.RDS&quot;)
+
+#subset my metadata 
+human_metadata &lt;- metadata[metadata$Species == &quot;H&quot;, ]
+chimp_metadata &lt;- metadata[metadata$Species == &quot;C&quot;, ]</code></pre>
+</div>
+<div id="combine-my-datasets" class="section level1">
+<h1>Combine my datasets</h1>
+<pre class="r"><code>#make sure to sort them so that all of the genes match up
+# 
+# h_counts &lt;- h_counts[order(h_counts$Ensembl_ID), ]
+# c_counts &lt;- c_counts[order(c_counts$Ensembl_ID), ]
+# 
+# hc_counts &lt;- left_join(c_counts, h_counts, by = &quot;Ensembl_ID&quot;)
+
+#now save my combined counts table with both species
+# saveRDS(hc_counts, &quot;data/counts/combined_counts_table_h_c.RDS&quot;)
+
+# hc_counts &lt;- readRDS(&quot;data/counts/combined_counts_table_h_c.RDS&quot;)
+
+#now I have a combined dataframe with the treatment names included
+
+####Replace hc_counts with one made below that has Entrez_ID instead of Ensembl_ID
+
+hc_counts &lt;- readRDS(&quot;data/counts/hc_counts_entrez.RDS&quot;)</code></pre>
+<p>#Subset Dataset to Remove Extraneous Samples</p>
+<pre class="r"><code>#I want to go through my metadata and my counts dataframe to put together a subset of samples
+
+#I will be keeping all 24hr samples
+#I will also be keeping TUN, THA, DMSO for 2hr 
+
+# metadata_sub &lt;- metadata %&gt;% 
+#   filter(
+#     Time == 24 |
+#       (Time == 2 &amp; Drug %in% c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;))
+#   )
+
+
+# saveRDS(metadata_sub, &quot;data/counts/metadata_subset.RDS&quot;)
+
+#I am going to go into here and change the individual names and final names to match my other sheets
+
+#I changed the individuals as listed:
+## C1 = C3647
+## C2 = C8861
+## C3 = C40210
+## C4 = C3649
+## C5 = C3651
+## C6 = C40280
+## C7 = C4955
+## H1 = H24280
+## H2 = H28126
+## H3 = 84-1
+## H4 = H21792
+## H5 = H20682
+## H6 = H22422
+## H7 = 78-1
+
+# Final sample names reflect these changes
+
+metadata_sub &lt;- read_csv(&quot;data/counts/metadata_subset.csv&quot;)</code></pre>
+<pre><code>Rows: 195 Columns: 17
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;,&quot;
+chr (13): Sample_name, Sample_ID, ID, Line, Species, Sex, Stimulus, Response...
+dbl  (4): Number, Ex_Num, Time, Conc
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># saveRDS(metadata_sub, &quot;data/counts/metadata_subset.RDS&quot;)
+
+#Now go in and change hc_counts
+
+#first remove extraneous samples as above
+
+# hc_counts &lt;- readRDS(&quot;data/counts/hc_counts_entrez.RDS&quot;)
+
+# keep_cols &lt;-
+#   grepl(&quot;_24_&quot;, colnames(hc_counts)) |
+#   grepl(&quot;^TUN_2_&quot;, colnames(hc_counts)) |
+#   grepl(&quot;^THA_2_&quot;, colnames(hc_counts)) |
+#   grepl(&quot;^DMSO_2_&quot;, colnames(hc_counts))
+
+
+# hc_counts_sub &lt;- hc_counts[, keep_cols]
+
+#now that I have only the 195 columns left, match them up to my metadata table to rename all as Final_sample_name
+
+# colnames(hc_counts_sub) &lt;- metadata_sub$Final_sample_name
+
+# hc_counts_entrez &lt;- hc_counts_sub %&gt;% 
+  # rownames_to_column(var = &quot;Entrez_ID&quot;)
+
+# write_csv(hc_counts_entrez, &quot;data/counts/hc_counts_subset_entrez.csv&quot;)
+
+# write_csv(hc_counts_sub, &quot;data/counts/hc_counts_subset.csv&quot;)
+
+hc_counts_sub &lt;- read_csv(&quot;data/counts/hc_counts_subset.csv&quot;)</code></pre>
+<pre><code>Rows: 28802 Columns: 195
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;,&quot;
+dbl (195): TUN_2_C1, THA_2_C1, DMSO_2_C1, TUN_24_C1, THA_24_C1, DOX_24_C1, N...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div id="qc-plots" class="section level1">
+<h1>QC Plots</h1>
+<p>Generate plots for the subset of samples kept for this
+experiment.</p>
+<pre class="r"><code>#read in my excel file with all of this information
+
+
+# map_align_stats &lt;- read_excel(&quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx&quot;,
+#     sheet = &quot;Map_Align_all&quot;, col_types = c(&quot;text&quot;,
+#         &quot;text&quot;, &quot;skip&quot;, &quot;text&quot;, &quot;text&quot;, &quot;text&quot;,
+#         &quot;text&quot;, &quot;numeric&quot;, &quot;text&quot;, &quot;text&quot;,
+#         &quot;numeric&quot;, &quot;text&quot;, &quot;skip&quot;, &quot;text&quot;,
+#         &quot;skip&quot;, &quot;text&quot;, &quot;skip&quot;, &quot;text&quot;, &quot;text&quot;,
+#         &quot;text&quot;, &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;,
+#         &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;))
+# View(map_align_stats)
+
+#save as a csv for later
+# saveRDS(map_align_stats, &quot;data/counts/mapping_alignment_stats_sheet.RDS&quot;)
+# write.csv(map_align_stats, &quot;data/counts/mapping_alignment_stats_sheet.csv&quot;)
+
+map_align_stats &lt;- readRDS(&quot;data/counts/mapping_alignment_stats_sheet.RDS&quot;)
+
+#now I want to do some QC plots to highlight this information
+
+Individual &lt;- as.character(map_align_stats$Ind)
+Species &lt;- as.character(map_align_stats$Species)
+Time &lt;- as.character(map_align_stats$Time_Num)
+Stimulus &lt;- as.character(map_align_stats$Stimulus)
+
+
+####Fragments by Sample####
+map_align_stats$Stimulus &lt;- factor(
+  map_align_stats$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+map_align_stats$Ind &lt;- factor(
+  map_align_stats$Ind,
+  levels = c(&quot;H1&quot;, &quot;H2&quot;, &quot;H3&quot;, &quot;H4&quot;, &quot;H5&quot;, 
+             &quot;H6&quot;, &quot;H7&quot;, &quot;C1&quot;, &quot;C2&quot;, &quot;C3&quot;, 
+             &quot;C4&quot;, &quot;C5&quot;, &quot;C6&quot;, &quot;C7&quot;)
+)
+
+#Total Reads per Sample
+total_reads_sample_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Total_Reads_Paired, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col()+
+ scale_fill_manual(values=stim_col)+
+  ggtitle(expression(&quot;Total fragments by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+#Total Mapped Reads per Sample
+map_reads_sample_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y = Mapped_Paired, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col() +
+ geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = stim_col)+
+  ggtitle(expression(&quot;Mapped fragments by sample&quot;)) +
+  xlab(&quot;&quot;) +
+  ylab(expression(&quot;RNA-sequencing fragments&quot;)) +
+  theme_custom() +
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Total Reads by Sample Boxplot####
+total_reads_sample_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Total_Reads_Paired, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values = stim_col)+
+  ggtitle(expression(&quot;Total fragments by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Total Mapped Reads by Sample Boxplot####
+map_reads_sample_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_Tx, y= Mapped_Paired, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values= stim_col)+
+  ggtitle(expression(&quot;Mapped fragments by sample&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Total Reads by Stimulus####
+total_reads_stimulus_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Total_Reads_Paired, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=stim_col)+
+  ggtitle(expression(&quot;Total fragments by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Mapped Reads by Stimulus####
+map_reads_stimulus_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Stimulus, y= Mapped_Paired, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=stim_col)+
+  ggtitle(expression(&quot;Mapped fragments by stimulus&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Total Reads Per Individual####
+total_reads_ind_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Ind), y = Total_Reads_Paired))+
+  geom_boxplot(aes(fill= Ind))+
+ scale_fill_manual(values = ind_col)+
+  ggtitle(expression(&quot;Total fragments by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Total Mapped Reads Per Individual####
+map_reads_ind_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x =as.factor(Ind), y = Mapped_Paired))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression(&quot;Mapped fragments by individual&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+####Total Reads Per Timepoint####
+map_align_stats$Time_Num &lt;- factor(map_align_stats$Time_Num, 
+                            levels = c(&quot;2&quot;, &quot;24&quot;))
+
+reads_by_time &lt;- c(&quot;2&quot; = &quot;#392344&quot;, &quot;24&quot; = &quot;#457291&quot;)
+
+total_reads_time_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_ID, y = Total_Reads_Paired, fill = Time_Num, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression(&quot;Total fragments by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Mapped Reads Per Timepoint####
+map_reads_time_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Sample_ID, y = Mapped_Paired, fill = Time_Num, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression(&quot;Mapped fragments by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+
+####Total Reads Per Timepoint Boxplot####
+total_reads_time_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Time_Num, y= Total_Reads_Paired, fill = Time_Num))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression(&quot;Total fragments by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+####Total Mapped Reads Per Timepoint####
+map_reads_time_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Time_Num, y= Mapped_Paired, fill = Time_Num))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression(&quot;Mapped fragments by timepoint&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+####Total Reads Per Species####
+reads_by_species &lt;- c(&quot;H&quot; = &quot;#E56473&quot;, &quot;C&quot; = &quot;#EE4902&quot;)
+total_reads_species_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Ind, y = Total_Reads_Paired, fill = Species, group_by = Ind))+
+  geom_col()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total fragments by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+####Total Mapped Reads by Species####
+total_reads_species_boxplot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Ind, y= Total_Reads_Paired, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Total fragments by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+####Total Mapped Reads by Species####
+map_reads_species_plot &lt;- map_align_stats %&gt;% 
+  ggplot(., aes (x = Ind, y= Mapped_Paired, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression(&quot;Mapped fragments by species&quot;))+
+  xlab(&quot;&quot;)+
+  ylab(expression(&quot;RNA-sequencing fragments&quot;))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
+#make a list so I can save all of these plots
+qc_map_plots_list &lt;- list(
+  total_reads_sample_plot,
+  map_reads_sample_plot,
+  total_reads_sample_boxplot,
+  map_reads_sample_boxplot,
+  total_reads_ind_plot,
+  map_reads_ind_plot,
+  total_reads_species_plot,
+  total_reads_species_boxplot,
+  map_reads_species_plot,
+  total_reads_stimulus_plot,
+  map_reads_stimulus_plot,
+  total_reads_time_plot,
+  total_reads_time_boxplot,
+  map_reads_time_plot,
+  map_reads_time_boxplot
+)
+
+qc_map_plots_names &lt;- list(
+  &quot;total_reads_sample&quot;,
+  &quot;map_reads_sample&quot;,
+  &quot;total_reads_sample_boxplot&quot;,
+  &quot;map_reads_sample_boxplot&quot;,
+  &quot;total_reads_ind&quot;,
+  &quot;map_reads_ind&quot;,
+  &quot;total_reads_species&quot;,
+  &quot;total_reads_species_boxplot&quot;,
+  &quot;map_reads_species&quot;,
+  &quot;total_reads_stimulus&quot;,
+  &quot;map_reads_stimulus&quot;,
+  &quot;total_reads_time_plot&quot;,
+  &quot;total_reads_time_boxplot&quot;,
+  &quot;map_reads_time_plot&quot;,
+  &quot;map_reads_time_boxplot&quot;
+)
+
+qc_map_plots_names &lt;- paste0(qc_map_plots_names, &quot;_EMP&quot;)
+
+
+stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
+
+#save all of these plots to my designated folder
+
+for (i in seq_along(qc_map_plots_list)) {
+  save_plot(
+    plot = qc_map_plots_list[[i]],
+    filename = qc_map_plots_names[i],
+    folder = output_folder
+  )
+}</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_sample_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_sample_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_sample_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_sample_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_sample_boxplot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_sample_boxplot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_sample_boxplot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_sample_boxplot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_ind_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_ind_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_ind_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_ind_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_species_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_species_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_species_boxplot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_species_boxplot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_species_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_species_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_stimulus_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_stimulus_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_stimulus_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_stimulus_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_time_plot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_time_plot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_time_boxplot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/total_reads_time_boxplot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_time_plot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_time_plot_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_time_boxplot_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/map_reads_time_boxplot_EMP_251227.png</code></pre>
+</div>
+<div id="filter-dataframe" class="section level1">
+<h1>Filter Dataframe</h1>
+<p>Convert my dataframe to log2cpm and filter out lowly-expressed genes
+via rowMeans.</p>
+<pre class="r"><code>#first, convert to log2cpm
+
+#ensure that Entrez_ID are the rownames
+
+hc_cpm_unfilt_sub &lt;- cpm(hc_counts_sub, log = TRUE)
+dim(hc_cpm_unfilt_sub)</code></pre>
+<pre><code>[1] 28802   195</code></pre>
+<pre class="r"><code>hc_cpm_unfilt &lt;- hc_cpm_unfilt_sub
+#28802 genes of 195 columns as expected
+
+hist(hc_cpm_unfilt_sub,
+     main = &quot;Unfiltered cpm&quot;,
+     xlab = expression(&quot;log&quot;[2]*&quot;cpm&quot;),
+     col = 4)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/Filter%20with%20rowMeans-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#now filter by rowMeans &gt; 0 to exclude lowly expressed genes
+hc_cpm_matrix_sub &lt;- subset(hc_cpm_unfilt_sub, (rowMeans(hc_cpm_unfilt_sub) &gt; 0))
+
+dim(hc_cpm_matrix_sub)</code></pre>
+<pre><code>[1] 13739   195</code></pre>
+<pre class="r"><code>#13739 genes after filtering
+
+#save this as an RDS and csv
+# saveRDS(hc_cpm_matrix_sub, &quot;data/counts/hc_cpm_filtered_matrix_subset.RDS&quot;)
+# write.csv(hc_cpm_matrix_sub, &quot;data/counts/hc_cpm_filtered_matrix_subset.csv&quot;)
+
+#now keep the name that is used in the rest of the data to make it easier, assume from now onward that this will be on the 195-sample subset of libraries
+
+hc_cpm_matrix &lt;- readRDS(&quot;data/counts/hc_cpm_filtered_matrix_subset.RDS&quot;)
+
+#plot this out to show the filtering
+hist(hc_cpm_matrix, 
+     main = &quot;Filtered Counts (cpm) rowMeans &gt; 0&quot;,
+     xlab = expression(&quot;log&quot;[2]*&quot;cpm&quot;),
+     col = 2)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/Filter%20with%20rowMeans-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="qc-boxplots" class="section level1">
+<h1>QC Boxplots</h1>
+<pre class="r"><code>#make boxplots of all counts vs log2cpm filtered counts
+
+par(mar = c(8,4,2,2))
+#boxplot of unfiltered cpm matrix
+hc_cpm_unfilt_boxplot &lt;- boxplot(hc_cpm_unfilt, 
+        main = &quot;Unfiltered log2cpm&quot;, 
+        names = colnames(hc_cpm_unfilt), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/QC%20Boxplots%20both%20species-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#set the margins so the x axis isn&#39;t cut off
+par(mar = c(8,4,2,2))
+#boxplot of filtered cpm matrix
+hc_cpm_filt_boxplot &lt;- boxplot(hc_cpm_matrix, 
+        main = &quot;Filtered log2cpm (rowMeans &gt; 0)&quot;, 
+        names = colnames(hc_cpm_matrix), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/QC%20Boxplots%20both%20species-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="qc-boxplots-1" class="section level1">
+<h1>QC Boxplots</h1>
+<pre class="r"><code>#make boxplots of all counts vs log2cpm filtered counts
+
+par(mar = c(8,4,2,2))
+#boxplot of unfiltered cpm matrix
+hc_cpm_unfilt_boxplot &lt;- boxplot(hc_cpm_unfilt_sub, 
+        main = &quot;Unfiltered log2cpm&quot;, 
+        names = colnames(hc_cpm_unfilt_sub), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/QC%20Boxplots-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#set the margins so the x axis isn&#39;t cut off
+par(mar = c(8,4,2,2))
+#boxplot of filtered cpm matrix
+hc_cpm_filt_boxplot &lt;- boxplot(hc_cpm_matrix, 
+        main = &quot;Filtered log2cpm (rowMeans &gt; 0)&quot;, 
+        names = colnames(hc_cpm_matrix), 
+        adj=1, las = 2, cex.axis = 0.7)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/QC%20Boxplots-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="principal-component-analysis" class="section level1">
+<h1>Principal Component Analysis</h1>
+<p>Perform PCA analysis on subset of data.</p>
+<pre class="r"><code>prcomp_hc_unfilt &lt;- prcomp(t(hc_cpm_unfilt_sub), center =  TRUE)
+
+prcomp_hc_filt &lt;- prcomp(t(hc_cpm_matrix), center =  TRUE)
+
+
+#add in labels for individual numbers
+ind_num &lt;- metadata_sub$Ind
+
+metadata_sub$Time &lt;- factor(metadata_sub$Time)
+
+metadata_sub$Stimulus &lt;- factor(
+  metadata_sub$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+#now plot my PCA for unfiltered log2cpm
+
+####PC1/PC2####
+unfilt_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_unfilt, 
+                                    data = metadata_sub, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Time&quot;, 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC1/PC2&quot;)) +
+  theme_custom()
+
+
+####PC2/PC3####
+unfilt_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_unfilt, 
+                                    data = metadata_sub,
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Time&quot;,
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label = ind_num,
+                           vjust = -.5,
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+####PC3/PC4####
+unfilt_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_unfilt,
+                                    data = metadata_sub,
+                                    colour = &quot;Stimulus&quot;,
+                                    shape = &quot;Time&quot;, 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label = ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Unfiltered log&quot;[2]*&quot;cpm PC3/PC4&quot;)) +
+  theme_custom()
+
+
+#Now plot my PCA for filtered log2cpm
+
+####PC1/PC2####
+filt_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_filt, 
+                                  data = metadata_sub, 
+                                  colour = &quot;Stimulus&quot;, 
+                                  shape = &quot;Time&quot;, 
+                                  size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label = ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC1/PC2&quot;)) +
+  theme_custom()
+
+####PC2/PC3####
+filt_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_filt, 
+                                  data = metadata_sub, 
+                                  colour = &quot;Stimulus&quot;, 
+                                  shape = &quot;Time&quot;, 
+                                  size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+####PC3/PC4####
+filt_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_filt, 
+                                  data = metadata_sub, 
+                                  colour = &quot;Stimulus&quot;, 
+                                  shape = &quot;Time&quot;, 
+                                  size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num, 
+                           vjust = -.5, 
+                           max.overlaps = 100,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;Filtered log&quot;[2]*&quot;cpm PC2/PC3&quot;)) +
+  theme_custom()
+
+#now save all of these together in pdf and png
+hc_pca_plots &lt;- list(
+  unfilt_PC1_PC2 = unfilt_PC1_PC2,
+  unfilt_PC2_PC3 = unfilt_PC2_PC3,
+  unfilt_PC3_PC4 = unfilt_PC3_PC4,
+  filt_PC1_PC2 = filt_PC1_PC2,
+  filt_PC2_PC3 = filt_PC2_PC3,
+  filt_PC3_PC4 = filt_PC3_PC4
+)
+
+print(hc_pca_plots)</code></pre>
+<pre><code>$unfilt_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database
+Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family
+not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># for (plot_name in names(hc_pca_plots)) {
+#   save_plot(
+#     plot = hc_pca_plots[[plot_name]],
+#     filename = paste0(&quot;PCA_HC_&quot;, plot_name, &quot;_EMP&quot;),
+#     folder = output_folder
+#   )
+# }</code></pre>
+<div id="pca-from-24hr-samples" class="section level2">
+<h2>PCA from 24hr Samples</h2>
+<p>Only plot 24hr samples on these PCA plots.</p>
+<pre class="r"><code>#now filter out all of the 2hr points and plot your filtered PCA plots
+
+metadata_24 &lt;- metadata_sub %&gt;% 
+  dplyr::filter(Time == &quot;24&quot;)
+
+#now make my matrices into only 24hr samples
+hc_cpm_unfilt_24 &lt;- hc_cpm_unfilt_sub[, metadata_24$Final_sample_name, drop = FALSE]
+
+hc_cpm_mat_24 &lt;- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
+
+# saveRDS(hc_cpm_mat_24, &quot;data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS&quot;)
+
+#prcomp transformation
+prcomp_hc_unfilt_24 &lt;- prcomp(t(hc_cpm_unfilt_24),
+                              center = TRUE)
+
+prcomp_hc_filt_24 &lt;- prcomp(t(hc_cpm_mat_24), 
+                            center =  TRUE)
+
+#add in labels for individual numbers
+ind_num &lt;- metadata_24$Ind
+
+metadata_24$Stimulus &lt;- factor(
+  metadata_24$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+metadata_24$Species &lt;- factor(
+  metadata_24$Species, 
+  levels = c(&quot;H&quot;, &quot;C&quot;)
+)
+
+#now plot my PCA for unfiltered/filtered log2cpm
+
+
+####PC1/PC2####
+unfilt24_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label = ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC1/PC2 24hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt24_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =3, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC1/PC2 24hr&quot;)) +
+  theme_custom()
+
+####PC2/3####
+unfilt24_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC2/PC3 24hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt24_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC2/PC3 24hr&quot;)) +
+  theme_custom()
+
+####PC3/4####
+unfilt24_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC3/PC4 24hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt24_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_filt_24, 
+                                    data = metadata_24, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC3/PC4 24hr&quot;)) +
+  theme_custom()
+
+#make a list of your 24hr PCA plots and print them all
+
+pca_24_list &lt;- list(
+  unfilt24_PC1_PC2 = unfilt24_PC1_PC2,
+  unfilt24_PC2_PC3 = unfilt24_PC2_PC3,
+  unfilt24_PC3_PC4 = unfilt24_PC3_PC4,
+  filt24_PC1_PC2 = filt24_PC1_PC2,
+  filt24_PC2_PC3 = filt24_PC2_PC3,
+  filt24_PC3_PC4 = filt24_PC3_PC4
+)
+
+print(pca_24_list)</code></pre>
+<pre><code>$unfilt24_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning: ggrepel: 4 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt24_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt24_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt24_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt24_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt24_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20Plots%2024hr%20Only-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>for (plot_name in names(pca_24_list)) {
+  save_plot(
+    plot = pca_24_list[[plot_name]],
+    filename = paste0(&quot;PCA_24hr_HC_&quot;, plot_name, &quot;_EMP&quot;),
+    folder = output_folder
+  )
+}</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC1_PC2_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC1_PC2_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC2_PC3_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC2_PC3_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC3_PC4_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_unfilt24_PC3_PC4_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC1_PC2_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC1_PC2_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC2_PC3_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC2_PC3_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC3_PC4_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_24hr_HC_filt24_PC3_PC4_EMP_251227.png</code></pre>
+<pre class="r"><code># save_plot(
+#   plot = filt24_PC1_PC2,
+#   filename = &quot;PCA_24hr_HC_filt24_PC1_PC2_EMP&quot;,
+#   folder = output_folder
+# )</code></pre>
+</div>
+<div id="pca-from-2hr-samples" class="section level2">
+<h2>PCA from 2hr Samples</h2>
+<pre class="r"><code>metadata_2 &lt;- metadata_sub %&gt;% 
+  filter(Time == &quot;2&quot;)
+
+#now make my matrices into only 24hr samples
+hc_cpm_unfilt_2 &lt;- hc_cpm_unfilt_sub[, metadata_2$Final_sample_name, drop = FALSE]
+
+hc_cpm_mat_2 &lt;- hc_cpm_matrix[, metadata_2$Final_sample_name, drop = FALSE]
+
+#prcomp transformation
+prcomp_hc_unfilt_2 &lt;- prcomp(t(hc_cpm_unfilt_2),
+                              center = TRUE)
+
+prcomp_hc_filt_2 &lt;- prcomp(t(hc_cpm_mat_2), 
+                            center =  TRUE)
+
+#add in labels for individual numbers
+ind_num_2 &lt;- metadata_2$Ind
+
+metadata_2$Stimulus &lt;- factor(
+  metadata_2$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;)
+)
+
+metadata_2$Species &lt;- factor(
+  metadata_2$Species, 
+  levels = c(&quot;H&quot;, &quot;C&quot;)
+)
+
+#now plot my PCA for unfiltered/filtered log2cpm
+
+
+####PC1/PC2####
+unfilt2_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=1, y=2) +
+  ggrepel::geom_text_repel(label = ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC1/PC2 2hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt2_PC1_PC2 &lt;- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =3, x=1, y=2) +
+  ggrepel::geom_text_repel(label=ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC1/PC2 2hr&quot;)) +
+  theme_custom()
+
+####PC2/3####
+unfilt2_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC2/PC3 2hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt2_PC2_PC3 &lt;- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=2, y=3) +
+  ggrepel::geom_text_repel(label=ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC2/PC3 2hr&quot;)) +
+  theme_custom()
+
+####PC3/4####
+unfilt2_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_unfilt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC3/PC4 2hr (unfilt)&quot;)) +
+  theme_custom()
+
+
+filt2_PC3_PC4 &lt;- ggplot2::autoplot(prcomp_hc_filt_2, 
+                                    data = metadata_2, 
+                                    colour = &quot;Stimulus&quot;, 
+                                    shape = &quot;Species&quot;, 
+                                    size =4, x=3, y=4) +
+  ggrepel::geom_text_repel(label=ind_num_2,
+                           vjust = -.5,
+                           max.overlaps = 50,
+                           segment.color = &quot;grey&quot;,
+                           segment.size = 0.1) +
+  scale_color_manual(values = stim_col) +
+  ggtitle(expression(&quot;log&quot;[2]*&quot;cpm PC3/PC4 2hr&quot;)) +
+  theme_custom()
+
+#make a list of your 24hr PCA plots and print them all
+
+pca_2_list &lt;- list(
+  unfilt2_PC1_PC2 = unfilt2_PC1_PC2,
+  unfilt2_PC2_PC3 = unfilt2_PC2_PC3,
+  unfilt2_PC3_PC4 = unfilt2_PC3_PC4,
+  filt2_PC1_PC2 = filt2_PC1_PC2,
+  filt2_PC2_PC3 = filt2_PC2_PC3,
+  filt2_PC3_PC4 = filt2_PC3_PC4
+)
+
+print(pca_2_list)</code></pre>
+<pre><code>$unfilt2_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt2_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$unfilt2_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt2_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt2_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$filt2_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%202hr%20Subset-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>for (plot_name in names(pca_2_list)) {
+  save_plot(
+    plot = pca_2_list[[plot_name]],
+    filename = paste0(&quot;PCA_2hr_HC_&quot;, plot_name, &quot;_EMP&quot;),
+    folder = output_folder
+  )
+}</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC1_PC2_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC1_PC2_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC2_PC3_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC2_PC3_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC3_PC4_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_unfilt2_PC3_PC4_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC1_PC2_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC1_PC2_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC2_PC3_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC2_PC3_EMP_251227.png</code></pre>
+<pre><code>Saved plot as Cairo PDF: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC3_PC4_EMP_251227.pdf</code></pre>
+<pre><code>Saved plot as PNG: C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots/PCA_2hr_HC_filt2_PC3_PC4_EMP_251227.png</code></pre>
+<pre class="r"><code># save_plot(
+#   plot = filt2_PC1_PC2,
+#   filename = &quot;PCA_2hr_HC_filt2_PC1_PC2_EMP&quot;,
+#   folder = output_folder
+# )</code></pre>
+</div>
+<div id="pca-subset-by-response-category" class="section level2">
+<h2>PCA Subset by Response Category</h2>
+<p>Now take the samples from my subset and divide them out by response
+category to get an idea of how the different stimuli are working
+together within a category.</p>
+<p>#Subset PCA</p>
+<pre class="r"><code>#Copy down the original full dataset that I&#39;ll divide into categories
+
+ind_num &lt;- metadata_sub$Ind
+
+metadata_sub$Time &lt;- factor(metadata_sub$Time)
+
+metadata_sub$Stimulus &lt;- factor(
+  metadata_sub$Stimulus,
+  levels = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;, 
+             &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;, &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+#UPR Subset
+upr_tx &lt;- c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;)
+upr_meta &lt;- metadata_sub %&gt;% 
+  dplyr::filter(Stimulus %in% upr_tx)
+upr_cpm &lt;- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% upr_meta$Final_sample_name] 
+upr_cols &lt;- list(
+  TUN = &quot;#5A874A&quot;,
+  THA = &quot;#C4E1AE&quot;,
+  DMSO = &quot;#999999&quot;
+)
+
+#DDR Subset
+ddr_tx &lt;- c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;)
+ddr_meta &lt;- metadata_sub %&gt;% 
+  dplyr::filter(Stimulus %in% ddr_tx)
+ddr_cpm &lt;- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% ddr_meta$Final_sample_name]  
+ddr_cols &lt;- c(
+  &quot;DOX&quot; = &quot;#3B4DA3&quot;, 
+  &quot;NUTL&quot; = &quot;#A0CFF8&quot;,
+  &quot;DMSO&quot; = &quot;#999999&quot;)
+
+#IMR Subset
+imr_tx &lt;- c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;)
+imr_meta &lt;- metadata_sub %&gt;% 
+  dplyr::filter(Stimulus %in% imr_tx)
+imr_cpm &lt;- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% imr_meta$Final_sample_name]  
+imr_cols &lt;-  c(
+  &quot;LPS&quot; = &quot;#C0329A&quot;, 
+  &quot;TNFa&quot; = &quot;#F09DD6&quot;, 
+  &quot;H2O&quot; = &quot;#777777&quot;)
+
+#MMR Subset
+mmr_tx &lt;- c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+mmr_meta &lt;- metadata_sub %&gt;% 
+  dplyr::filter(Stimulus %in% mmr_tx)
+mmr_cpm &lt;- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% mmr_meta$Final_sample_name]  
+mmr_cols &lt;- c(
+  &quot;BPA&quot; = &quot;#7359A6&quot;, 
+  &quot;PFOA&quot; = &quot;#D7BDF3&quot;, 
+  &quot;EtOH&quot; = &quot;#555555&quot;)
+
+#now make a function to plot these PCA plots in subsets
+make_pca_plots &lt;- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, stim_col) {
+  # filter metadata
+  keep_idx &lt;- metadata$Stimulus %in% subset_drugs
+  meta_sub &lt;- metadata[keep_idx, ]
+  meta_sub$Ind_label &lt;- ind_num[keep_idx]
+  
+  # subset expression matrix to same samples
+  hc_matrix_sub &lt;- hc_matrix[, keep_idx]
+  
+  # run PCA on subset
+  prcomp_sub &lt;- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 &lt;- autoplot(prcomp_sub, data = meta_sub,
+                 colour = &quot;Stimulus&quot;, shape = &quot;Time&quot;, size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = &quot;grey&quot;,
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ &quot;subset: Filtered log&quot;[2] * &quot;cpm PC1/PC2&quot;)) +
+    coord_cartesian(clip = &quot;off&quot;) +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 &lt;- autoplot(prcomp_sub, data = meta_sub,
+                 colour = &quot;Stimulus&quot;, shape = &quot;Time&quot;, 
+                 size = 4, x = 2, y = 3) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = &quot;grey&quot;,
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ &quot;subset: Filtered log&quot;[2] * &quot;cpm PC2/PC3&quot;)) +
+    coord_cartesian(clip = &quot;off&quot;) +
+    theme_custom()
+  
+  ## PC3/PC4
+  p3 &lt;- autoplot(prcomp_sub, data = meta_sub,
+                 colour = &quot;Stimulus&quot;, shape = &quot;Time&quot;, 
+                 size = 4, x = 3, y = 4) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = &quot;grey&quot;,
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ &quot;subset: Filtered log&quot;[2] * &quot;cpm PC3/PC4&quot;)) +
+    coord_cartesian(clip = &quot;off&quot;) +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2, p3 = p3)
+}
+
+# ---- Run for each subset ----
+upr_plots &lt;- make_pca_plots(&quot;UPR&quot;, c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
+ddr_plots &lt;- make_pca_plots(&quot;DDR&quot;, c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
+imr_plots &lt;- make_pca_plots(&quot;IMR&quot;, c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
+mmr_plots &lt;- make_pca_plots(&quot;MMR&quot;, c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
+
+all_plots_subset_pca &lt;- list(
+  upr_PC1_PC2 = upr_plots$p1,
+  upr_PC2_PC3 = upr_plots$p2,
+  upr_PC3_PC4 = upr_plots$p3,
+  ddr_PC1_PC2 = ddr_plots$p1,
+  ddr_PC2_PC3 = ddr_plots$p2,
+  ddr_PC3_PC4 = ddr_plots$p3,
+  imr_PC1_PC2 = imr_plots$p1,
+  imr_PC2_PC3 = imr_plots$p2,
+  imr_PC3_PC4 = imr_plots$p3,
+  mmr_PC1_PC2 = mmr_plots$p1,
+  mmr_PC2_PC3 = mmr_plots$p2,
+  mmr_PC3_PC4 = mmr_plots$p3
+)
+
+print(all_plots_subset_pca)</code></pre>
+<pre><code>$upr_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$upr_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$upr_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$ddr_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$ddr_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$ddr_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$imr_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-7.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$imr_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-8.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$imr_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-9.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$mmr_PC1_PC2</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-10.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$mmr_PC2_PC3</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-11.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$mmr_PC3_PC4</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database
+Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font
+family not found in Windows font database</code></pre>
+<pre><code>Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database
+Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, :
+font family not found in Windows font database</code></pre>
+<p><img src="figure/QC_Subset.Rmd/PCA%20of%20Subsets-12.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># # Loop through each plot and save
+# for (plot_name in names(all_plots_subset_pca)) {
+#   save_plot(
+#     plot = all_plots_subset_pca[[plot_name]],
+#     filename = paste0(&quot;Subset_PCA_&quot;, plot_name, &quot;_EMP&quot;),
+#     folder = output_folder
+#     )
+# }</code></pre>
+</div>
+</div>
+<div id="correlation-heatmaps" class="section level1">
+<h1>Correlation Heatmaps</h1>
+<p>Create Spearman correlation heatmaps of all samples in the
+subset.</p>
+<pre class="r"><code>#first make correlation heatmaps of all samples
+#using ComplexHeatmap
+
+
+#compute Spearman correlation
+cor_matrix_spearman &lt;- cor(hc_cpm_matrix, 
+                           method = &quot;spearman&quot;,
+                           use = &quot;everything&quot;)
+
+#define factors for legend order
+ind_levels  &lt;- c(paste0(&quot;H&quot;, 1:7), paste0(&quot;C&quot;, 1:7))
+
+stim_levels &lt;- c(
+  &quot;TUN&quot;, &quot;THA&quot;,
+  &quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;,
+  &quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;,
+  &quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;
+)
+
+spec_levels &lt;- c(&quot;H&quot;, &quot;C&quot;)
+
+time_levels &lt;- c(&quot;2&quot;, &quot;24&quot;)
+
+#extract metadata for annotations
+Individual &lt;- factor(metadata_sub$Ind, 
+                     levels = ind_levels)
+Stimulus   &lt;- factor(metadata_sub$Stimulus, 
+                     levels = stim_levels)
+Species    &lt;- factor(metadata_sub$Species, 
+                     levels = spec_levels)
+Time       &lt;- factor(metadata_sub$Time, 
+                     levels = time_levels)
+
+
+#colors defined as above, reinforce ordering for legends
+
+indiv_col &lt;- unlist(ind_col)[ind_levels]
+stim_col  &lt;- stim_col[stim_levels]
+spec_col  &lt;- spec_col[spec_levels]
+time_col  &lt;- time_col[time_levels]
+
+
+#create my annotations
+top_annotation &lt;- HeatmapAnnotation(
+  Individual = Individual, 
+  Time = Time,
+  Stimulus = Stimulus,
+  Species = Species,
+  col = list(
+    Individual = indiv_col,
+    Time = time_col,
+    Stimulus = stim_col,
+    Species = spec_col
+  )
+)
+
+#because this is so large, I want to save the legends separately from the plot
+
+
+#Spearman heatmap for all samples in subset
+heatmap_spearman_all &lt;- Heatmap(
+  cor_matrix_spearman,
+  name = &quot;Spearman&quot;,
+  top_annotation = top_annotation,
+  show_row_names = TRUE,
+  show_column_names = TRUE,
+  cluster_rows = TRUE,
+  cluster_columns = TRUE, 
+  show_row_dend = FALSE,
+  show_column_dend = TRUE,
+  row_names_gp = gpar(fontsize = 7),
+  column_names_gp = gpar(fontsize = 7),
+  column_names_centered = FALSE,
+  row_names_centered = FALSE,
+  rect_gp = gpar(col = &quot;black&quot;, lwd = 0.5), 
+  border = gpar(col = &quot;black&quot;, lwd = 1),
+  column_title = &quot;Spearman Correlation log2cpm 195 Samples&quot;,
+  column_title_gp = gpar(fontsize = 10, fontface = &quot;plain&quot;),
+  heatmap_legend_param = list(
+    title_gp = gpar(fontsize = 9, fontface = &quot;plain&quot;),
+    labels_gp = gpar(fontsize = 8)
+  )
+)
+
+draw(heatmap_spearman_all)</code></pre>
+<p><img src="figure/QC_Subset.Rmd/Spearman%20Heatmaps%20Correlation-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#save all samples heatmap with my custom function
+
+# save_complex_heatmap(
+#   ht = heatmap_spearman_all,
+#   filename = &quot;CorHM_Spearman_AllSamples_EMP&quot;,
+#   folder = output_folder,
+#   height = 20, width = 20)</code></pre>
+<div id="response-category-subset-correlation-heatmaps"
+class="section level2">
+<h2>Response Category Subset Correlation Heatmaps</h2>
+<p>Now create a Spearman correlation heatmap for each response
+category.</p>
+<pre class="r"><code>#define subsets for each response category
+subsets &lt;- list(
+  UPR = c(&quot;TUN&quot;, &quot;THA&quot;, &quot;DMSO&quot;),
+  DDR = c(&quot;DOX&quot;, &quot;NUTL&quot;, &quot;DMSO&quot;),
+  IMR = c(&quot;LPS&quot;, &quot;TNFa&quot;, &quot;H2O&quot;),
+  MMR = c(&quot;BPA&quot;, &quot;PFOA&quot;, &quot;EtOH&quot;)
+)
+
+#loop through subsets by response category
+subset_heatmaps &lt;- list()
+
+for (subset_name in names(subsets)) {
+  
+  #filter columns for each subset
+  cols_subset &lt;- metadata_sub$Final_sample_name[metadata_sub$Stimulus %in% subsets[[subset_name]]]
+  mat_subset &lt;- hc_cpm_matrix[, cols_subset, drop = FALSE]
+  
+  #perform Spearman correlation on each subset
+  cor_subset &lt;- cor(mat_subset, method = &quot;spearman&quot;, 
+                    use = &quot;everything&quot;)
+  
+  #subset annotation factors
+  subset_inds  &lt;- factor(metadata_sub$Ind[metadata_sub$Final_sample_name %in% cols_subset], 
+                         levels = ind_levels)
+  subset_stim  &lt;- factor(metadata_sub$Stimulus[metadata_sub$Final_sample_name %in% cols_subset], 
+                         levels = stim_levels)
+  subset_spec  &lt;- factor(metadata_sub$Species[metadata_sub$Final_sample_name %in% cols_subset], 
+                         levels = spec_levels)
+  subset_time  &lt;- factor(metadata_sub$Time[metadata_sub$Final_sample_name %in% cols_subset], 
+                         levels = time_levels)
+  
+  #subset color vectors to match what&#39;s present in subset
+  indiv_col_sub &lt;- indiv_col[as.character(levels(subset_inds))]
+  stim_col_sub  &lt;- stim_col[as.character(levels(subset_stim))]
+  spec_col_sub  &lt;- spec_col[as.character(levels(subset_spec))]
+  time_col_sub  &lt;- time_col[as.character(levels(subset_time))]
+  
+  #heatmap annotations
+  top_ann_subset &lt;- HeatmapAnnotation(
+    Individual = subset_inds,
+    Time = subset_time,
+    Stimulus = subset_stim,
+    Species = subset_spec,
+    col = list(
+      Individual = indiv_col_sub,
+      Time = time_col_sub,
+      Stimulus = stim_col_sub,
+      Species = spec_col_sub
+    )
+  )
+  
+  #draw heatmap for each subset
+  heatmap_subset &lt;- Heatmap(
+    cor_subset,
+    name = paste0(&quot;Spearman_&quot;, subset_name),
+    top_annotation = top_ann_subset,
+    show_row_names = TRUE,
+    show_column_names = TRUE,
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    show_row_dend = FALSE,
+    show_column_dend = TRUE,
+    row_names_gp = gpar(fontsize = 7),
+    column_names_gp = gpar(fontsize = 7),
+    column_names_centered = FALSE,
+    row_names_centered = FALSE,
+    rect_gp = gpar(col = &quot;black&quot;, lwd = 0.5),
+    border = gpar(col = &quot;black&quot;, lwd = 1),
+    column_title = &quot;Spearman Correlation log2cpm 195 Samples&quot;,
+    column_title_gp = gpar(fontsize = 10, fontface = &quot;plain&quot;),
+    heatmap_legend_param = list(
+      title_gp = gpar(fontsize = 9, fontface = &quot;plain&quot;),
+      labels_gp = gpar(fontsize = 8)
+    )
+  )
+  
+  subset_heatmaps[[subset_name]] &lt;- heatmap_subset
+}
+
+#save the subset heatmaps with my custom function
+
+# for (nm in names(subset_heatmaps)) {
+#   ht &lt;- subset_heatmaps[[nm]]
+#   save_complex_heatmap(
+#     ht = ht,
+#     filename = paste0(&quot;CorHM_Spearman_&quot;, nm, &quot;_EMP&quot;),
+#     folder = output_folder,
+#     height = 18,
+#     width = 18
+#   )
+#   message(&quot;Saved subset heatmap: &quot;, nm)
+# }
+
+#ignore time in each set besides UPR, all other 2hr samples have been filtered out</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.4.2 (2024-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22000)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] magick_2.9.0                broom_1.0.8                
+ [3] gprofiler2_0.2.3            car_3.1-3                  
+ [5] carData_3.0-5               patchwork_1.3.0            
+ [7] eulerr_7.0.2                ggrastr_1.0.2              
+ [9] rstatix_0.7.2               ggsignif_0.6.4             
+[11] RUVSeq_1.40.0               EDASeq_2.40.0              
+[13] ShortRead_1.64.0            GenomicAlignments_1.42.0   
+[15] SummarizedExperiment_1.36.0 MatrixGenerics_1.18.1      
+[17] matrixStats_1.5.0           Rsamtools_2.22.0           
+[19] GenomicRanges_1.58.0        Biostrings_2.74.0          
+[21] GenomeInfoDb_1.42.3         XVector_0.46.0             
+[23] BiocParallel_1.40.0         VennDetail_1.22.0          
+[25] VennDiagram_1.7.3           futile.logger_1.4.3        
+[27] ggpubr_0.6.0                UpSetR_1.4.0               
+[29] ggVennDiagram_1.5.2         reshape2_1.4.4             
+[31] circlize_0.4.16             ComplexHeatmap_2.22.0      
+[33] org.Hs.eg.db_3.20.0         AnnotationDbi_1.68.0       
+[35] IRanges_2.40.0              S4Vectors_0.44.0           
+[37] corrplot_0.95               ggfortify_0.4.17           
+[39] ggrepel_0.9.6               biomaRt_2.62.1             
+[41] readxl_1.4.5                scales_1.4.0               
+[43] edgebundleR_0.1.4           edgeR_4.4.0                
+[45] limma_3.62.1                Biobase_2.66.0             
+[47] BiocGenerics_0.52.0         lubridate_1.9.4            
+[49] forcats_1.0.0               stringr_1.5.1              
+[51] dplyr_1.1.4                 purrr_1.0.4                
+[53] readr_2.1.5                 tidyr_1.3.1                
+[55] tibble_3.2.1                ggplot2_3.5.2              
+[57] tidyverse_2.0.0             workflowr_1.7.1            
+
+loaded via a namespace (and not attached):
+  [1] later_1.4.2             BiocIO_1.16.0           bitops_1.0-9           
+  [4] filelock_1.0.3          R.oo_1.27.1             cellranger_1.1.0       
+  [7] XML_3.99-0.18           lifecycle_1.0.4         httr2_1.1.2            
+ [10] pwalign_1.2.0           doParallel_1.0.17       rprojroot_2.0.4        
+ [13] vroom_1.6.5             MASS_7.3-61             processx_3.8.6         
+ [16] lattice_0.22-6          backports_1.5.0         magrittr_2.0.3         
+ [19] plotly_4.10.4           sass_0.4.10             rmarkdown_2.29         
+ [22] jquerylib_0.1.4         yaml_2.3.10             httpuv_1.6.16          
+ [25] DBI_1.2.3               RColorBrewer_1.1-3      abind_1.4-8            
+ [28] zlibbioc_1.52.0         R.utils_2.13.0          RCurl_1.98-1.17        
+ [31] rappdirs_0.3.3          git2r_0.36.2            GenomeInfoDbData_1.2.13
+ [34] codetools_0.2-20        DelayedArray_0.32.0     xml2_1.3.8             
+ [37] tidyselect_1.2.1        shape_1.4.6.1           UCSC.utils_1.2.0       
+ [40] farver_2.1.2            BiocFileCache_2.14.0    jsonlite_2.0.0         
+ [43] GetoptLong_1.0.5        Formula_1.2-5           iterators_1.0.14       
+ [46] systemfonts_1.2.2       foreach_1.5.2           tools_4.4.2            
+ [49] progress_1.2.3          ragg_1.4.0              Rcpp_1.0.14            
+ [52] glue_1.8.0              gridExtra_2.3           SparseArray_1.6.0      
+ [55] xfun_0.52               withr_3.0.2             formatR_1.14           
+ [58] fastmap_1.2.0           latticeExtra_0.6-30     callr_3.7.6            
+ [61] digest_0.6.37           timechange_0.3.0        R6_2.6.1               
+ [64] mime_0.13               textshaping_1.0.1       colorspace_2.1-1       
+ [67] Cairo_1.6-5             jpeg_0.1-11             RSQLite_2.3.9          
+ [70] R.methodsS3_1.8.2       generics_0.1.4          data.table_1.17.0      
+ [73] rtracklayer_1.66.0      prettyunits_1.2.0       httr_1.4.7             
+ [76] htmlwidgets_1.6.4       S4Arrays_1.6.0          whisker_0.4.1          
+ [79] pkgconfig_2.0.3         gtable_0.3.6            blob_1.2.4             
+ [82] hwriter_1.3.2.1         htmltools_0.5.8.1       clue_0.3-66            
+ [85] png_0.1-8               knitr_1.50              lambda.r_1.2.4         
+ [88] rstudioapi_0.17.1       tzdb_0.5.0              rjson_0.2.23           
+ [91] curl_6.0.1              cachem_1.1.0            GlobalOptions_0.1.2    
+ [94] vipor_0.4.7             parallel_4.4.2          restfulr_0.0.15        
+ [97] pillar_1.10.2           vctrs_0.6.5             promises_1.3.2         
+[100] dbplyr_2.5.0            xtable_1.8-4            cluster_2.1.6          
+[103] beeswarm_0.4.0          evaluate_1.0.3          GenomicFeatures_1.58.0 
+[106] cli_3.6.3               locfit_1.5-9.12         compiler_4.4.2         
+[109] futile.options_1.0.1    rlang_1.1.6             crayon_1.5.3           
+[112] labeling_0.4.3          aroma.light_3.36.0      interp_1.1-6           
+[115] ps_1.9.1                ggbeeswarm_0.7.2        getPass_0.2-4          
+[118] plyr_1.8.9              fs_1.6.6                stringi_1.8.7          
+[121] viridisLite_0.4.2       deldir_2.0-4            lazyeval_0.2.2         
+[124] Matrix_1.7-1            hms_1.1.3               bit64_4.5.2            
+[127] KEGGREST_1.46.0         statmod_1.5.0           shiny_1.10.0           
+[130] igraph_2.1.4            memoise_2.0.1           bslib_0.9.0            
+[133] bit_4.5.0              </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
