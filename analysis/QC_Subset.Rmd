@@ -419,11 +419,13 @@ metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 # hc_counts_entrez <- hc_counts_sub %>% 
   # rownames_to_column(var = "Entrez_ID")
 
+# saveRDS(hc_counts_sub, "data/counts/hc_counts_subset_entrez.RDS")
+
 # write_csv(hc_counts_entrez, "data/counts/hc_counts_subset_entrez.csv")
 
 # write_csv(hc_counts_sub, "data/counts/hc_counts_subset.csv")
 
-hc_counts_sub <- read_csv("data/counts/hc_counts_subset.csv")
+hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
 
 
 ```
@@ -1654,4 +1656,254 @@ for (subset_name in names(subsets)) {
 #ignore time in each set besides UPR, all other 2hr samples have been filtered out
 
 ```
+
+
+# Differential Expression Analysis
+
+```{r Set up DE}
+#filter my raw counts (subset of samples) to remove lowly expressed genes as above
+
+x <- hc_counts_sub[row.names(hc_cpm_matrix),]
+dim(x)
+
+# saveRDS(x, "data/de/x_dge_counts_allind_subset.RDS")
+
+#use metadata_sub to match
+meta_de <- metadata_sub
+
+#ensure that the names are matched up properly
+identical(meta_de$Final_sample_name, colnames(x))
+
+colnames(x) <- meta_de$Final_sample_name
+rownames(meta_de) <- meta_de$Final_sample_name
+
+meta_de$Cond <- make.names(meta_de$Cond)
+meta_de$Ind <- as.character(meta_de$Ind)
+
+# saveRDS(meta_de, "data/de/metadata_2_de.RDS")
+# saveRDS(x, "data/de/x_counts_de.RDS")
+
+#create my DGElist object
+dge <- DGEList(counts = x)
+dge$samples$group <- factor(meta_de$Cond)
+dge <- calcNormFactors(dge, method = "TMM")
+
+# saveRDS(dge, "data/de/dge_matrix.RDS")
+
+#check the normalization factors from TMM normalization of the libraries
+dge$samples
+
+design <- model.matrix(~0 + meta_de$Cond)
+colnames(design) <- gsub("meta_de\\$Cond", "", colnames(design))
+
+#take care that this alphabetizes everything
+#currently all C are first and H are second
+#BPA, DMSO2, DMSO24, DOX, EtOH, H2O, LPS, NUTL, PFOA, THA2, THA24, TNFa, TUN2, TUN24 current order
+
+#run duplicate correlation for individual effect
+corfit <- duplicateCorrelation(object = dge$counts, design = design,
+                               block = metadata_sub$Ind)
+
+#voom transformation and plot
+v <- voom(dge, design, block = meta_de$Ind, 
+          correlation = corfit$consensus.correlation, plot = TRUE)
+
+#fit my linear model
+fit <- lmFit(v, design, block = meta_de$Ind,
+             correlation = corfit$consensus.correlation)
+
+#make my contrast matrix to compare across tx and veh within each species
+contrast_matrix <- makeContrasts(
+  V.TUN2_H = TUN_2_H - DMSO_2_H,
+  V.THA2_H = THA_2_H - DMSO_2_H,
+  V.TUN24_H = TUN_24_H - DMSO_24_H,
+  V.THA24_H = THA_24_H - DMSO_24_H,
+  V.DOX24_H = DOX_24_H - DMSO_24_H,
+  V.NUTL24_H = NUTL_24_H - DMSO_24_H,
+  V.LPS24_H = LPS_24_H - H2O_24_H,
+  V.TNFa24_H = TNFa_24_H - H2O_24_H,
+  V.BPA24_H = BPA_24_H - EtOH_24_H,
+  V.PFOA24_H = PFOA_24_H - EtOH_24_H,
+  V.TUN2_C = TUN_2_C - DMSO_2_C,
+  V.THA2_C = THA_2_C - DMSO_2_C,
+  V.TUN24_C = TUN_24_C - DMSO_24_C,
+  V.THA24_C = THA_24_C - DMSO_24_C,
+  V.DOX24_C = DOX_24_C - DMSO_24_C,
+  V.NUTL24_C = NUTL_24_C - DMSO_24_C,
+  V.LPS24_C = LPS_24_C - H2O_24_C,
+  V.TNFa24_C = TNFa_24_C - H2O_24_C,
+  V.BPA24_C = BPA_24_C - EtOH_24_C,
+  V.PFOA24_C = PFOA_24_C - EtOH_24_C,
+  levels = design
+)
+
+#apply these contrasts to compare stimuli to vehicle
+fit2 <- contrasts.fit(fit, contrast_matrix)
+fit2 <- eBayes(fit2)
+
+#plot the mean-variance trend
+plotSA(fit2, main = "final model: mean-variance trend")
+
+#now look at the summary of results to identify whether there are DEGs in each comparison
+results_summary <- decideTests(fit2, adjust.method = "BH", p.value = 0.05)
+summary(results_summary)
+
+```
+
+
+# Create Toptables
+
+```{r Toptables}
+
+#2hr Chimp
+Toptable_V.TUN2_H <- topTable(fit = fit2, 
+                            coef = "V.TUN2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_H <- topTable(fit = fit2, 
+                            coef = "V.THA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#2hr Chimp
+Toptable_V.TUN2_C <- topTable(fit = fit2, 
+                            coef = "V.TUN2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_C <- topTable(fit = fit2, 
+                            coef = "V.THA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#24hr toptables
+
+Toptable_V.TUN24_H <- topTable(fit = fit2, 
+                            coef = "V.TUN24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_H <- topTable(fit = fit2, 
+                            coef = "V.THA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_H <- topTable(fit = fit2, 
+                            coef = "V.DOX24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_H <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_H <- topTable(fit = fit2, 
+                            coef = "V.LPS24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_H <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_H <- topTable(fit = fit2, 
+                            coef = "V.BPA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_H <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+
+#chimp
+
+Toptable_V.TUN24_C <- topTable(fit = fit2, 
+                            coef = "V.TUN24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_C <- topTable(fit = fit2, 
+                            coef = "V.THA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_C <- topTable(fit = fit2, 
+                            coef = "V.DOX24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_C <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_C <- topTable(fit = fit2, 
+                            coef = "V.LPS24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_C <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_C <- topTable(fit = fit2, 
+                            coef = "V.BPA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_C <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+
+```
+
+
 

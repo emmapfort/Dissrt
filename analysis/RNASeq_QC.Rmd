@@ -2363,7 +2363,6 @@ save_complex_heatmap(
 # metadata_2 <- metadata %>%
 #   as.data.frame()
 
-rownames(metadata_2) <- metadata_2$Sample_ID
 colnames(x) <- metadata_2$Final_sample_name
 rownames(metadata_2) <- metadata_2$Final_sample_name
 
@@ -2473,20 +2472,6 @@ summary(results_summary)
 ```{r DE Toptables Chimp}
 #make toptables of DEGs - start with Chimp
 
-#2hr Chimp
-Toptable_V.TUN2_C <- topTable(fit = fit2, 
-                            coef = "V.TUN2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.THA2_C <- topTable(fit = fit2, 
-                            coef = "V.THA2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
 
 Toptable_V.DOX2_C <- topTable(fit = fit2, 
                             coef = "V.DOX2_C",
