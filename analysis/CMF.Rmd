@@ -1,0 +1,2586 @@
+---
+title: "CMF"
+author: "Emma M Pfortmiller"
+date: "2025-12-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+```
+
+# Load Libraries
+
+
+```{r Necessary Libraries, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(Biobase)
+library(limma)
+library(edgeR)
+library(edgebundleR)
+library(scales)
+library(readxl)
+library(biomaRt)
+library(ggrepel)
+library(ggfortify)
+library(corrplot)
+library(readr)
+library(org.Hs.eg.db)
+library(AnnotationDbi)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(reshape2)
+library(ggVennDiagram)
+library(UpSetR)
+library(ggpubr)
+library(VennDiagram)
+library(VennDetail)
+library(BiocParallel)
+library(RUVSeq)
+library(SummarizedExperiment)
+library(ggsignif)
+library(purrr)
+library(rstatix)
+library(ggrastr)
+library(tibble)
+library(grid)
+library(eulerr)
+library(patchwork)
+library(car)
+library(gprofiler2)
+library(forcats)
+library(broom)
+library(magick)
+```
+
+# Define plot theme
+
+
+```{r Custom Theme}
+# Define the custom theme
+# plot_theme_custom <- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = "black"),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, "in"),
+# 
+#       #text and font
+#       axis.text = element_text(color = "black",
+#                                family = "Arial",
+#                                size = 8),
+#       axis.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 10),
+#       legend.text = element_text(color = "black",
+#                                  family = "Arial",
+#                                  size = 8),
+#       legend.title = element_text(color = "black",
+#                                   family = "Arial",
+#                                   size = 10),
+#       plot.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = "grey80", linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = "grey90", linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+
+theme_custom <- readRDS("data/plot_theme_custom.RDS")
+
+```
+
+# Define saving plots as pdfs
+
+
+```{r pdf saving function}
+
+save_plot <- function(plot, filename, 
+                      folder = ".", 
+                      width = 8, 
+                      height = 6, 
+                      units = "in", 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  
+  #add conditions for recorded plots and ggsave
+  if (inherits(plot, "recordedplot")) {
+    
+    #pdf save
+    pdf(pdf_file, width = width, height = height, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+    #png save
+    png(png_file, width = width, height = height, units = units, res = dpi, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+  } else {
+    
+    #save pdf
+    ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, 
+         width = width, height = height, units = units, bg = "transparent")
+    
+    #save png
+    ggsave(filename = png_file, plot = plot, device = "png", 
+         width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  
+  message("Saved plot as PDF: ", pdf_file)
+  message("Saved plot as PNG: ", png_file)
+  
+  }
+  
+}
+
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height
+```
+
+
+# Complex Heatmap Saving Script
+
+```{r Save ComplexHeatmaps}
+
+save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height = 10, dpi = 300, add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+  
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  
+  # Save PDF
+  cairo_pdf(pdf_file, width = width, height = height)
+  draw(ht)
+  dev.off()
+  message("Saved PDF: ", pdf_file)
+  
+  # Save PNG
+  png(png_file, width = width, height = height, units = "in", res = dpi)
+  draw(ht)
+  dev.off()
+  message("Saved PNG: ", png_file)
+}
+
+
+```
+
+
+# Define colors and factors
+
+
+```{r Theme Colors and Factors}
+#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+# stim_list <- list(
+#   "Tunicamycin" = "TUN",
+#   "Thapsigargin" = "THA",
+#   "Doxorubicin" = "DOX",
+#   "Nutlin-3" = "NUTL",
+#   "Lipopolysaccharides" = "LPS",
+#   "Tumor Necrosis Factor alpha" = "TNFa",
+#   "Bisphenol A" = "BPA",
+#   "Perfluorooctanoic Acid" = "PFOA"
+# )
+# stimuli_vec <- unlist(lapply(names(stim_list), function(cat) {
+#   setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+# }))
+# saveRDS(stimuli_vec, "data/theme/stimuli_fullname_vector.RDS")
+stim_vec <- readRDS("data/theme/stimuli_fullname_vector.RDS")
+
+####RESPONSE CATEGORY####
+# resp_list <- list(
+#   UPR = c("TUN", "THA"),
+#   DDR = c("DOX", "NUTL"),
+#   IMR = c("LPS", "TNFa"),
+#   MMR = c("BPA", "PFOA")
+# )
+# response_vec <- unlist(lapply(names(resp_list), function(cat) {
+#   setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+# }))
+# saveRDS(response_vec, "data/theme/response_categories_vector.RDS")
+response_vec <- readRDS("data/theme/response_categories_vector.RDS")
+
+####SPECIES####
+# spec_list <- list(
+#   Human = "H",
+#   Chimp = "C"
+# )
+# species_vec <- unlist(lapply(names(spec_list), function(cat) {
+#   setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+# }))
+# saveRDS(species_vec, "data/theme/species_vector.RDS")
+species_vec <- readRDS("data/theme/species_vector.RDS")
+
+####TIME####
+# time_list <- list(
+#   "2hr" = "2",
+#   "24hr" = "24"
+# )
+# time_vec <- unlist(lapply(names(time_list), function(cat) {
+#   setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+# }))
+# saveRDS(time_vec, "data/theme/time_vector.RDS")
+time_vec <- readRDS("data/theme/time_vector.RDS")
+
+####INDIVIDUAL####
+# ind_list <- list(
+#   H24280 = "H1",
+#   H28126 = "H2",
+#   "84-1" = "H3",
+#   H21792 = "H4",
+#   H20682 = "H5",
+#   H22422 = "H6",
+#   "78-1" = "H7",
+#   C3647 = "C1",
+#   C8861 = "C2",
+#   C4020 = "C3",
+#   C3649 = "C4",
+#   C3651 = "C5",
+#   C40280 = "C6",
+#   C4955 = "C7"
+# )
+# ind_vec <- unlist(lapply(names(ind_list), function (cat) {
+#   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+# }))
+# saveRDS(ind_vec, "data/theme/individual_vector.RDS")
+ind_vec <- readRDS("data/theme/individual_vector.RDS")
+
+#color schemes
+
+# ind_col <- list(
+#   H1 = "#264653", 
+#   H2 = "#2A9D8F",
+#   H3 = "#06D6A0",
+#   H4 = "#68DD94",
+#   H5 = "#22C75E",
+#   H6 = "#1DC10B",
+#   H7 = "#2D6910",
+#   C1 = "#FFB347",
+#   C2 = "#F97316",
+#   C3 = "#F44E53",
+#   C4 = "#C6134F",
+#   C5 = "#F03A6E",
+#   C6 = "#5D0E70",
+#   C7 = "#A069E0"
+# )
+
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+time_col <- readRDS("data/theme/time_category_color_palette.RDS")
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
+
+```
+
+# Import cpm matrix
+
+```{r import my log2cpm matrix, message=FALSE, warning=FALSE}
+
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
+hc_cpm_matrix_24 <- readRDS("data/counts/")
+
+```
+
+# Cormotif Script
+
+```{r Cormotif Function, warning=FALSE, message=FALSE}
+## Fit limma model using code as it is found in the original cormotif code. It has
+## only been modified to add names to the matrix of t values, as well as the
+## limma fits
+
+limmafit.default <- function(exprs,groupid,compid) {
+  limmafits  <- list()
+  compnum    <- nrow(compid)
+  genenum    <- nrow(exprs)
+  limmat     <- matrix(0,genenum,compnum)
+  limmas2    <- rep(0,compnum)
+  limmadf    <- rep(0,compnum)
+  limmav0    <- rep(0,compnum)
+  limmag1num <- rep(0,compnum)
+  limmag2num <- rep(0,compnum)
+
+  rownames(limmat)  <- rownames(exprs)
+  colnames(limmat)  <- rownames(compid)
+  names(limmas2)    <- rownames(compid)
+  names(limmadf)    <- rownames(compid)
+  names(limmav0)    <- rownames(compid)
+  names(limmag1num) <- rownames(compid)
+  names(limmag2num) <- rownames(compid)
+
+  for(i in 1:compnum) {
+    selid1 <- which(groupid == compid[i,1])
+    selid2 <- which(groupid == compid[i,2])
+    eset   <- new("ExpressionSet", exprs=cbind(exprs[,selid1],exprs[,selid2]))
+    g1num  <- length(selid1)
+    g2num  <- length(selid2)
+    designmat <- cbind(base=rep(1,(g1num+g2num)), delta=c(rep(0,g1num),rep(1,g2num)))
+    fit <- lmFit(eset,designmat)
+    fit <- eBayes(fit)
+    limmat[,i] <- fit$t[,2]
+    limmas2[i] <- fit$s2.prior
+    limmadf[i] <- fit$df.prior
+    limmav0[i] <- fit$var.prior[2]
+    limmag1num[i] <- g1num
+    limmag2num[i] <- g2num
+    limmafits[[i]] <- fit
+
+    # log odds
+    # w<-sqrt(1+fit$var.prior[2]/(1/g1num+1/g2num))
+    # log(0.99)+dt(fit$t[1,2],g1num+g2num-2+fit$df.prior,log=TRUE)-log(0.01)-dt(fit$t[1,2]/w, g1num+g2num-2+fit$df.prior, log=TRUE)+log(w)
+  }
+  names(limmafits) <- rownames(compid)
+  limmacompnum<-nrow(compid)
+  result<-list(t       = limmat,
+               v0      = limmav0,
+               df0     = limmadf,
+               s20     = limmas2,
+               g1num   = limmag1num,
+               g2num   = limmag2num,
+               compnum = limmacompnum,
+               fits    = limmafits)
+}
+
+limmafit.counts <-
+  function (exprs, groupid, compid, norm.factor.method = "TMM", voom.normalize.method = "none")
+  {
+    limmafits  <- list()
+    compnum    <- nrow(compid)
+    genenum    <- nrow(exprs)
+    limmat     <- matrix(NA,genenum,compnum)
+    limmas2    <- rep(0,compnum)
+    limmadf    <- rep(0,compnum)
+    limmav0    <- rep(0,compnum)
+    limmag1num <- rep(0,compnum)
+    limmag2num <- rep(0,compnum)
+
+    rownames(limmat)  <- rownames(exprs)
+    colnames(limmat)  <- rownames(compid)
+    names(limmas2)    <- rownames(compid)
+    names(limmadf)    <- rownames(compid)
+    names(limmav0)    <- rownames(compid)
+    names(limmag1num) <- rownames(compid)
+    names(limmag2num) <- rownames(compid)
+
+    for (i in 1:compnum) {
+      message(paste("Running limma for comparision",i,"/",compnum))
+      selid1 <- which(groupid == compid[i, 1])
+      selid2 <- which(groupid == compid[i, 2])
+      # make a new count data frame
+      counts <- cbind(exprs[, selid1], exprs[, selid2])
+
+      # remove NAs
+      not.nas <- which(apply(counts, 1, function(x) !any(is.na(x))) == TRUE)
+
+      # runn voom/limma
+      d <- DGEList(counts[not.nas,])
+      d <- calcNormFactors(d, method = norm.factor.method)
+      g1num <- length(selid1)
+      g2num <- length(selid2)
+      designmat <- cbind(base = rep(1, (g1num + g2num)), delta = c(rep(0,
+                                                                       g1num), rep(1, g2num)))
+
+      y <- voom(d, designmat, normalize.method = voom.normalize.method)
+      fit <- lmFit(y, designmat)
+      fit <- eBayes(fit)
+
+      limmafits[[i]] <- fit
+      limmat[not.nas, i] <- fit$t[, 2]
+      limmas2[i] <- fit$s2.prior
+      limmadf[i] <- fit$df.prior
+      limmav0[i] <- fit$var.prior[2]
+      limmag1num[i] <- g1num
+      limmag2num[i] <- g2num
+    }
+    limmacompnum <- nrow(compid)
+    names(limmafits) <- rownames(compid)
+    result <- list(t       = limmat,
+                   v0      = limmav0,
+                   df0     = limmadf,
+                   s20     = limmas2,
+                   g1num   = limmag1num,
+                   g2num   = limmag2num,
+                   compnum = limmacompnum,
+                   fits    = limmafits)
+  }
+
+limmafit.list <-
+  function (fitlist, cmp.idx=2)
+  {
+    compnum    <- length(fitlist)
+
+    genes <- c()
+    for (i in 1:compnum) genes <- unique(c(genes, rownames(fitlist[[i]])))
+
+    genenum    <- length(genes)
+    limmat     <- matrix(NA,genenum,compnum)
+    limmas2    <- rep(0,compnum)
+    limmadf    <- rep(0,compnum)
+    limmav0    <- rep(0,compnum)
+    limmag1num <- rep(0,compnum)
+    limmag2num <- rep(0,compnum)
+
+    rownames(limmat)  <- genes
+    colnames(limmat)  <- names(fitlist)
+    names(limmas2)    <- names(fitlist)
+    names(limmadf)    <- names(fitlist)
+    names(limmav0)    <- names(fitlist)
+    names(limmag1num) <- names(fitlist)
+    names(limmag2num) <- names(fitlist)
+
+    for (i in 1:compnum) {
+      this.t <- fitlist[[i]]$t[,cmp.idx]
+      limmat[names(this.t),i] <- this.t
+
+      limmas2[i]    <- fitlist[[i]]$s2.prior
+      limmadf[i]    <- fitlist[[i]]$df.prior
+      limmav0[i]    <- fitlist[[i]]$var.prior[cmp.idx]
+      limmag1num[i] <- sum(fitlist[[i]]$design[,cmp.idx]==0)
+      limmag2num[i] <- sum(fitlist[[i]]$design[,cmp.idx]==1)
+    }
+
+    limmacompnum <- compnum
+    result <- list(t       = limmat,
+                   v0      = limmav0,
+                   df0     = limmadf,
+                   s20     = limmas2,
+                   g1num   = limmag1num,
+                   g2num   = limmag2num,
+                   compnum = limmacompnum,
+                   fits    = limmafits)
+
+  }
+
+## Rank genes based on statistics
+generank<-function(x) {
+  xcol<-ncol(x)
+  xrow<-nrow(x)
+  result<-matrix(0,xrow,xcol)
+  z<-(1:1:xrow)
+  for(i in 1:xcol) {
+    y<-sort(x[,i],decreasing=TRUE,na.last=TRUE)
+    result[,i]<-match(x[,i],y)
+    result[,i]<-order(result[,i])
+  }
+  result
+}
+
+## Log-likelihood for moderated t under H0
+modt.f0.loglike<-function(x,df) {
+  a<-dt(x, df, log=TRUE)
+  result<-as.vector(a)
+  flag<-which(is.na(result)==TRUE)
+  result[flag]<-0
+  result
+}
+
+## Log-likelihood for moderated t under H1
+## param=c(df,g1num,g2num,v0)
+modt.f1.loglike<-function(x,param) {
+  df<-param[1]
+  g1num<-param[2]
+  g2num<-param[3]
+  v0<-param[4]
+  w<-sqrt(1+v0/(1/g1num+1/g2num))
+  dt(x/w, df, log=TRUE)-log(w)
+  a<-dt(x/w, df, log=TRUE)-log(w)
+  result<-as.vector(a)
+  flag<-which(is.na(result)==TRUE)
+  result[flag]<-0
+  result
+}
+
+## Correlation Motif Fit
+cmfit.X<-function(x, type, K=1, tol=1e-3, max.iter=100) {
+  ## initialize
+  xrow <- nrow(x)
+  xcol <- ncol(x)
+  loglike0 <- list()
+  loglike1 <- list()
+  p <- rep(1, K)/K
+  q <- matrix(runif(K * xcol), K, xcol)
+  q[1, ] <- rep(0.01, xcol)
+  for (i in 1:xcol) {
+    f0 <- type[[i]][[1]]
+    f0param <- type[[i]][[2]]
+    f1 <- type[[i]][[3]]
+    f1param <- type[[i]][[4]]
+    loglike0[[i]] <- f0(x[, i], f0param)
+    loglike1[[i]] <- f1(x[, i], f1param)
+  }
+  condlike <- list()
+  for (i in 1:xcol) {
+    condlike[[i]] <- matrix(0, xrow, K)
+  }
+  loglike.old <- -1e+10
+  for (i.iter in 1:max.iter) {
+    if ((i.iter%%50) == 0) {
+      print(paste("We have run the first ", i.iter, " iterations for K=",
+                  K, sep = ""))
+    }
+    err <- tol + 1
+    clustlike <- matrix(0, xrow, K)
+    #templike <- matrix(0, xrow, 2)
+    templike1 <- rep(0, xrow)
+    templike2 <- rep(0, xrow)
+    for (j in 1:K) {
+      for (i in 1:xcol) {
+        templike1 <- log(q[j, i]) + loglike1[[i]]
+        templike2 <- log(1 - q[j, i]) + loglike0[[i]]
+        tempmax <- Rfast::Pmax(templike1, templike2)
+
+        templike1 <- exp(templike1 - tempmax)
+        templike2 <- exp(templike2 - tempmax)
+
+        tempsum <- templike1 + templike2
+        clustlike[, j] <- clustlike[, j] + tempmax +
+          log(tempsum)
+        condlike[[i]][, j] <- templike1/tempsum
+      }
+      clustlike[, j] <- clustlike[, j] + log(p[j])
+    }
+    #tempmax <- apply(clustlike, 1, max)
+    tempmax <- Rfast::rowMaxs(clustlike, value=TRUE)
+    for (j in 1:K) {
+      clustlike[, j] <- exp(clustlike[, j] - tempmax)
+    }
+    #tempsum <- apply(clustlike, 1, sum)
+    tempsum <- Rfast::rowsums(clustlike)
+    for (j in 1:K) {
+      clustlike[, j] <- clustlike[, j]/tempsum
+    }
+    #p.new <- (apply(clustlike, 2, sum) + 1)/(xrow + K)
+    p.new <- (Rfast::colsums(clustlike) + 1)/(xrow + K)
+    q.new <- matrix(0, K, xcol)
+    for (j in 1:K) {
+      clustpsum <- sum(clustlike[, j])
+      for (i in 1:xcol) {
+        q.new[j, i] <- (sum(clustlike[, j] * condlike[[i]][,
+                                                           j]) + 1)/(clustpsum + 2)
+      }
+    }
+    err.p <- max(abs(p.new - p)/p)
+    err.q <- max(abs(q.new - q)/q)
+    err <- max(err.p, err.q)
+    loglike.new <- (sum(tempmax + log(tempsum)) + sum(log(p.new)) +
+                      sum(log(q.new) + log(1 - q.new)))/xrow
+    p <- p.new
+    q <- q.new
+    loglike.old <- loglike.new
+    if (err < tol) {
+      break
+    }
+  }
+  clustlike <- matrix(0, xrow, K)
+  for (j in 1:K) {
+    for (i in 1:xcol) {
+      templike1 <- log(q[j, i]) + loglike1[[i]]
+      templike2 <- log(1 - q[j, i]) + loglike0[[i]]
+      tempmax <- Rfast::Pmax(templike1, templike2)
+
+      templike1 <- exp(templike1 - tempmax)
+      templike2 <- exp(templike2 - tempmax)
+
+      tempsum <- templike1 + templike2
+      clustlike[, j] <- clustlike[, j] + tempmax + log(tempsum)
+      condlike[[i]][, j] <- templike1/tempsum
+    }
+    clustlike[, j] <- clustlike[, j] + log(p[j])
+  }
+  #tempmax <- apply(clustlike, 1, max)
+  tempmax <- Rfast::rowMaxs(clustlike, value=TRUE)
+  for (j in 1:K) {
+    clustlike[, j] <- exp(clustlike[, j] - tempmax)
+  }
+  #tempsum <- apply(clustlike, 1, sum)
+  tempsum <- Rfast::rowsums(clustlike)
+  for (j in 1:K) {
+    clustlike[, j] <- clustlike[, j]/tempsum
+  }
+  p.post <- matrix(0, xrow, xcol)
+  for (j in 1:K) {
+    for (i in 1:xcol) {
+      p.post[, i] <- p.post[, i] + clustlike[, j] * condlike[[i]][,
+                                                                  j]
+    }
+  }
+  loglike.old <- loglike.old - (sum(log(p)) + sum(log(q) +
+                                                    log(1 - q)))/xrow
+  loglike.old <- loglike.old * xrow
+  result <- list(p.post = p.post, motif.prior = p, motif.q = q,
+                 loglike = loglike.old, clustlike=clustlike, condlike=condlike)
+}
+
+## Fit using (0,0,...,0) and (1,1,...,1)
+cmfitall<-function(x, type, tol=1e-3, max.iter=100) {
+  ## initialize
+  xrow<-nrow(x)
+  xcol<-ncol(x)
+  loglike0<-list()
+  loglike1<-list()
+  p<-0.01
+
+  ## compute loglikelihood
+  L0<-matrix(0,xrow,1)
+  L1<-matrix(0,xrow,1)
+  for(i in 1:xcol) {
+    f0<-type[[i]][[1]]
+    f0param<-type[[i]][[2]]
+    f1<-type[[i]][[3]]
+    f1param<-type[[i]][[4]]
+    loglike0[[i]]<-f0(x[,i],f0param)
+    loglike1[[i]]<-f1(x[,i],f1param)
+    L0<-L0+loglike0[[i]]
+    L1<-L1+loglike1[[i]]
+  }
+
+
+  ## EM algorithm to get MLE of p and q
+  loglike.old <- -1e10
+  for(i.iter in 1:max.iter) {
+    if((i.iter%%50) == 0) {
+      print(paste("We have run the first ", i.iter, " iterations",sep=""))
+    }
+    err<-tol+1
+
+    ## compute posterior cluster membership
+    clustlike<-matrix(0,xrow,2)
+    clustlike[,1]<-log(1-p)+L0
+    clustlike[,2]<-log(p)+L1
+
+    tempmax<-apply(clustlike,1,max)
+    for(j in 1:2) {
+      clustlike[,j]<-exp(clustlike[,j]-tempmax)
+    }
+    tempsum<-apply(clustlike,1,sum)
+
+    ## update motif occurrence rate
+    for(j in 1:2) {
+      clustlike[,j]<-clustlike[,j]/tempsum
+    }
+
+    p.new<-(sum(clustlike[,2])+1)/(xrow+2)
+
+    ## evaluate convergence
+    err<-abs(p.new-p)/p
+
+    ## evaluate whether the log.likelihood increases
+    loglike.new<-(sum(tempmax+log(tempsum))+log(p.new)+log(1-p.new))/xrow
+
+    loglike.old<-loglike.new
+    p<-p.new
+
+    if(err<tol) {
+      break;
+    }
+  }
+
+  ## compute posterior p
+  clustlike<-matrix(0,xrow,2)
+  clustlike[,1]<-log(1-p)+L0
+  clustlike[,2]<-log(p)+L1
+
+  tempmax<-apply(clustlike,1,max)
+  for(j in 1:2) {
+    clustlike[,j]<-exp(clustlike[,j]-tempmax)
+  }
+  tempsum<-apply(clustlike,1,sum)
+
+  for(j in 1:2) {
+    clustlike[,j]<-clustlike[,j]/tempsum
+  }
+
+  p.post<-matrix(0,xrow,xcol)
+  for(i in 1:xcol) {
+    p.post[,i]<-clustlike[,2]
+  }
+
+  ## return
+
+  #calculate back loglikelihood
+  loglike.old<-loglike.old-(log(p)+log(1-p))/xrow
+  loglike.old<-loglike.old*xrow
+  result<-list(p.post=p.post, motif.prior=p, loglike=loglike.old)
+}
+
+## Fit each dataset separately
+cmfitsep<-function(x, type, tol=1e-3, max.iter=100) {
+  ## initialize
+  xrow<-nrow(x)
+  xcol<-ncol(x)
+  loglike0<-list()
+  loglike1<-list()
+  p<-0.01*rep(1,xcol)
+  loglike.final<-rep(0,xcol)
+
+  ## compute loglikelihood
+  for(i in 1:xcol) {
+    f0<-type[[i]][[1]]
+    f0param<-type[[i]][[2]]
+    f1<-type[[i]][[3]]
+    f1param<-type[[i]][[4]]
+    loglike0[[i]]<-f0(x[,i],f0param)
+    loglike1[[i]]<-f1(x[,i],f1param)
+  }
+
+  p.post<-matrix(0,xrow,xcol)
+
+  ## EM algorithm to get MLE of p
+  for(coli in 1:xcol) {
+    loglike.old <- -1e10
+    for(i.iter in 1:max.iter) {
+      if((i.iter%%50) == 0) {
+        print(paste("We have run the first ", i.iter, " iterations",sep=""))
+      }
+      err<-tol+1
+
+      ## compute posterior cluster membership
+      clustlike<-matrix(0,xrow,2)
+      clustlike[,1]<-log(1-p[coli])+loglike0[[coli]]
+      clustlike[,2]<-log(p[coli])+loglike1[[coli]]
+
+      tempmax<-apply(clustlike,1,max)
+      for(j in 1:2) {
+        clustlike[,j]<-exp(clustlike[,j]-tempmax)
+      }
+      tempsum<-apply(clustlike,1,sum)
+
+      ## evaluate whether the log.likelihood increases
+      loglike.new<-sum(tempmax+log(tempsum))/xrow
+
+      ## update motif occurrence rate
+      for(j in 1:2) {
+        clustlike[,j]<-clustlike[,j]/tempsum
+      }
+
+      p.new<-(sum(clustlike[,2]))/(xrow)
+
+      ## evaluate convergence
+      err<-abs(p.new-p[coli])/p[coli]
+      loglike.old<-loglike.new
+      p[coli]<-p.new
+
+      if(err<tol) {
+        break;
+      }
+    }
+
+    ## compute posterior p
+    clustlike<-matrix(0,xrow,2)
+    clustlike[,1]<-log(1-p[coli])+loglike0[[coli]]
+    clustlike[,2]<-log(p[coli])+loglike1[[coli]]
+
+    tempmax<-apply(clustlike,1,max)
+    for(j in 1:2) {
+      clustlike[,j]<-exp(clustlike[,j]-tempmax)
+    }
+    tempsum<-apply(clustlike,1,sum)
+
+    for(j in 1:2) {
+      clustlike[,j]<-clustlike[,j]/tempsum
+    }
+
+    p.post[,coli]<-clustlike[,2]
+    loglike.final[coli]<-loglike.old
+  }
+
+
+  ## return
+  loglike.final<-loglike.final*xrow
+  result<-list(p.post=p.post, motif.prior=p, loglike=loglike.final)
+}
+
+## Fit the full model
+cmfitfull<-function(x, type, tol=1e-3, max.iter=100) {
+  ## initialize
+  xrow<-nrow(x)
+  xcol<-ncol(x)
+  loglike0<-list()
+  loglike1<-list()
+  K<-2^xcol
+  p<-rep(1,K)/K
+  pattern<-rep(0,xcol)
+  patid<-matrix(0,K,xcol)
+
+  ## compute loglikelihood
+  for(i in 1:xcol) {
+    f0<-type[[i]][[1]]
+    f0param<-type[[i]][[2]]
+    f1<-type[[i]][[3]]
+    f1param<-type[[i]][[4]]
+    loglike0[[i]]<-f0(x[,i],f0param)
+    loglike1[[i]]<-f1(x[,i],f1param)
+  }
+  L<-matrix(0,xrow,K)
+  for(i in 1:K)
+  {
+    patid[i,]<-pattern
+    for(j in 1:xcol) {
+      if(pattern[j] < 0.5) {
+        L[,i]<-L[,i]+loglike0[[j]]
+      } else {
+        L[,i]<-L[,i]+loglike1[[j]]
+      }
+    }
+
+    if(i < K) {
+      pattern[xcol]<-pattern[xcol]+1
+      j<-xcol
+      while(pattern[j] > 1) {
+        pattern[j]<-0
+        j<-j-1
+        pattern[j]<-pattern[j]+1
+      }
+    }
+  }
+
+  ## EM algorithm to get MLE of p and q
+  loglike.old <- -1e10
+  for(i.iter in 1:max.iter) {
+    if((i.iter%%50) == 0) {
+      print(paste("We have run the first ", i.iter, " iterations",sep=""))
+    }
+    err<-tol+1
+
+    ## compute posterior cluster membership
+    clustlike<-matrix(0,xrow,K)
+    for(j in 1:K) {
+      clustlike[,j]<-log(p[j])+L[,j]
+    }
+
+    tempmax<-apply(clustlike,1,max)
+    for(j in 1:K) {
+      clustlike[,j]<-exp(clustlike[,j]-tempmax)
+    }
+    tempsum<-apply(clustlike,1,sum)
+
+    ## update motif occurrence rate
+    for(j in 1:K) {
+      clustlike[,j]<-clustlike[,j]/tempsum
+    }
+
+    p.new<-(apply(clustlike,2,sum)+1)/(xrow+K)
+
+    ## evaluate convergence
+    err<-max(abs(p.new-p)/p)
+
+    ## evaluate whether the log.likelihood increases
+    loglike.new<-(sum(tempmax+log(tempsum))+sum(log(p.new)))/xrow
+
+    loglike.old<-loglike.new
+    p<-p.new
+
+    if(err<tol) {
+      break;
+    }
+  }
+
+  ## compute posterior p
+  clustlike<-matrix(0,xrow,K)
+  for(j in 1:K) {
+    clustlike[,j]<-log(p[j])+L[,j]
+  }
+
+  tempmax<-apply(clustlike,1,max)
+  for(j in 1:K) {
+    clustlike[,j]<-exp(clustlike[,j]-tempmax)
+  }
+  tempsum<-apply(clustlike,1,sum)
+
+  for(j in 1:K) {
+    clustlike[,j]<-clustlike[,j]/tempsum
+  }
+
+  p.post<-matrix(0,xrow,xcol)
+  for(j in 1:K) {
+    for(i in 1:xcol) {
+      if(patid[j,i] > 0.5) {
+        p.post[,i]<-p.post[,i]+clustlike[,j]
+      }
+    }
+  }
+
+  ## return
+  #calculate back loglikelihood
+  loglike.old<-loglike.old-sum(log(p))/xrow
+  loglike.old<-loglike.old*xrow
+  result<-list(p.post=p.post, motif.prior=p, loglike=loglike.old)
+}
+
+generatetype<-function(limfitted)
+{
+  jtype<-list()
+  df<-limfitted$g1num+limfitted$g2num-2+limfitted$df0
+  for(j in 1:limfitted$compnum)
+  {
+    jtype[[j]]<-list(f0=modt.f0.loglike, f0.param=df[j], f1=modt.f1.loglike, f1.param=c(df[j],limfitted$g1num[j],limfitted$g2num[j],limfitted$v0[j]))
+  }
+  jtype
+}
+
+cormotiffit <- function(exprs, groupid=NULL, compid=NULL, K=1, tol=1e-3,
+                        max.iter=100, BIC=TRUE, norm.factor.method="TMM",
+                        voom.normalize.method = "none", runtype=c("logCPM","counts","limmafits"), each=3)
+{
+  # first I want to do some typechecking. Input can be either a normalized
+  # matrix, a count matrix, or a list of limma fits. Dispatch the correct
+  # limmafit accordingly.
+  # todo: add some typechecking here
+  limfitted <- list()
+  if (runtype=="counts") {DOX_24T_shared_DEGs
+    limfitted <- limmafit.counts(exprs,groupid,compid, norm.factor.method, voom.normalize.method)
+  } else if (runtype=="logCPM") {
+    limfitted <- limmafit.default(exprs,groupid,compid)
+  } else if (runtype=="limmafits") {
+    limfitted <- limmafit.list(exprs)
+  } else {
+    stop("runtype must be one of 'logCPM', 'counts', or 'limmafits'")
+  }
+
+
+  jtype<-generatetype(limfitted)
+  fitresult<-list()
+  ks <- rep(K, each = each)
+  fitresult <- bplapply(1:length(ks), function(i, x, type, ks, tol, max.iter) {
+    cmfit.X(x, type, K = ks[i], tol = tol, max.iter = max.iter)
+  }, x=limfitted$t, type=jtype, ks=ks, tol=tol, max.iter=max.iter)
+
+  best.fitresults <- list()
+  for (i in 1:length(K)) {
+    w.k <- which(ks==K[i])
+    this.bic <- c()
+    for (j in w.k) this.bic[j] <- -2 * fitresult[[j]]$loglike + (K[i] - 1 + K[i] * limfitted$compnum) * log(dim(limfitted$t)[1])
+    w.min <- which(this.bic == min(this.bic, na.rm = TRUE))[1]
+    best.fitresults[[i]] <- fitresult[[w.min]]
+  }
+  fitresult <- best.fitresults
+
+  bic <- rep(0, length(K))
+  aic <- rep(0, length(K))
+  loglike <- rep(0, length(K))
+  for (i in 1:length(K)) loglike[i] <- fitresult[[i]]$loglike
+  for (i in 1:length(K)) bic[i] <- -2 * fitresult[[i]]$loglike + (K[i] - 1 + K[i] * limfitted$compnum) * log(dim(limfitted$t)[1])
+  for (i in 1:length(K)) aic[i] <- -2 * fitresult[[i]]$loglike + 2 * (K[i] - 1 + K[i] * limfitted$compnum)
+  if(BIC==TRUE) {
+    bestflag=which(bic==min(bic))
+  }
+  else {
+    bestflag=which(aic==min(aic))
+  }
+  result<-list(bestmotif=fitresult[[bestflag]],bic=cbind(K,bic),
+               aic=cbind(K,aic),loglike=cbind(K,loglike), allmotifs=fitresult)
+
+}
+
+cormotiffitall<-function(exprs,groupid,compid, tol=1e-3, max.iter=100)
+{
+  limfitted<-limmafit(exprs,groupid,compid)
+  jtype<-generatetype(limfitted)
+  fitresult<-cmfitall(limfitted$t,type=jtype,tol=1e-3,max.iter=max.iter)
+}
+
+cormotiffitsep<-function(exprs,groupid,compid, tol=1e-3, max.iter=100)
+{
+  limfitted<-limmafit(exprs,groupid,compid)
+  jtype<-generatetype(limfitted)
+  fitresult<-cmfitsep(limfitted$t,type=jtype,tol=1e-3,max.iter=max.iter)
+}
+
+cormotiffitfull<-function(exprs,groupid,compid, tol=1e-3, max.iter=100)
+{
+  limfitted<-limmafit(exprs,groupid,compid)
+  jtype<-generatetype(limfitted)
+  fitresult<-cmfitfull(limfitted$t,type=jtype,tol=1e-3,max.iter=max.iter)
+}
+
+plotIC<-function(fitted_cormotif)
+{
+  oldpar<-par(mfrow=c(1,2))
+  plot(fitted_cormotif$bic[,1], fitted_cormotif$bic[,2], type="b",xlab="Motif Number", ylab="BIC", main="BIC")
+  plot(fitted_cormotif$aic[,1], fitted_cormotif$aic[,2], type="b",xlab="Motif Number", ylab="AIC", main="AIC")
+}
+
+plotMotif<-function(fitted_cormotif,title="")
+{
+  layout(matrix(1:2,ncol=2))
+  u<-1:dim(fitted_cormotif$bestmotif$motif.q)[2]
+  v<-1:dim(fitted_cormotif$bestmotif$motif.q)[1]
+  image(u,v,t(fitted_cormotif$bestmotif$motif.q),
+        col=gray(seq(from=1,to=0,by=-0.1)),xlab="Study",yaxt = "n",
+        ylab="Corr. Motifs",main=paste(title,"pattern",sep=" "))
+  axis(2,at=1:length(v))
+  for(i in 1:(length(u)+1))
+  {
+    abline(v=(i-0.5))
+  }
+  for(i in 1:(length(v)+1))
+  {
+    abline(h=(i-0.5))
+  }
+  Ng=10000
+  if(is.null(fitted_cormotif$bestmotif$p.post)!=TRUE)
+    Ng=nrow(fitted_cormotif$bestmotif$p.post)
+  genecount=floor(fitted_cormotif$bestmotif$motif.p*Ng)
+  NK=nrow(fitted_cormotif$bestmotif$motif.q)
+  plot(0,0.7,pch=".",xlim=c(0,1.2),ylim=c(0.75,NK+0.25),
+       frame.plot=FALSE,axes=FALSE,xlab="No. of genes",ylab="", main=paste(title,"frequency",sep=" "))
+  segments(0,0.7,fitted_cormotif$bestmotif$motif.p[1],0.7)
+  rect(0,1:NK-0.3,fitted_cormotif$bestmotif$motif.p,1:NK+0.3,
+       col="dark grey")
+  mtext(1:NK,at=1:NK,side=2,cex=0.8)
+  text(fitted_cormotif$bestmotif$motif.p+0.15,1:NK,
+       labels=floor(fitted_cormotif$bestmotif$motif.p*Ng))
+}
+
+```
+
+
+# Cormotif Setup
+
+Use the Cormotif package to identify clusters of gene expression patterns across my samples.
+
+```{r Cormotif Setup log2cpm, warning=FALSE, message=FALSE}
+
+hc_cpm_matrix
+
+#the column names are encoded in my metadata which I'll read in here
+
+metadata_sub <- read_csv("data/counts/metadata_subset.csv")
+
+#I want to reorder my cpm matrix and metadata so that the comparisons are easier
+#order by stimulus, time, species/individual where all 2hr are first and followed by 24hr, group all of the individuals in a line together for ease of interpretation
+
+# stim_order <- c(
+#   "TUN", "THA", "DMSO",          #2hr samples
+#   "TUN", "THA", "DOX", "NUTL", "DMSO", #24hr samples
+#   "LPS", "TNFa", "H2O",
+#   "BPA", "PFOA", "EtOH"
+# ) |> unique()
+# 
+# time_order <- c(2, 24)
+# species_order <- c("H", "C")
+# 
+# meta_cmf <- metadata_sub |>
+#   dplyr::mutate(
+#     Stimulus = factor(Stimulus, levels = stim_order),
+#     Time = factor(Time, levels = time_order),
+#     Species = factor(Species, levels = species_order)
+#   ) |>
+#   dplyr::arrange(
+#     Stimulus,
+#     Time,
+#     Species,
+#     Ind
+#   )
+
+# saveRDS(meta_cmf, "data/cmf/metadata_cormotif_reordered.RDS")
+
+meta_cmf <- readRDS("data/cmf/metadata_cormotif_reordered.RDS")
+
+#now that the metadata dataframe is reordered, use it to reorder my expr matrix
+
+# expr <- hc_cpm_matrix[, meta_cmf$Final_sample_name]
+
+#check that the order is the same
+
+# stopifnot(colnames(expr) == meta_cmf$Final_sample_name)
+
+#the columns match, now save the expr matrix for later
+
+# saveRDS(expr, "data/cmf/cormotif_reordered_cpm_matrix.RDS")
+
+expr <- readRDS("data/cmf/cormotif_reordered_cpm_matrix.RDS")
+
+expr <- as.matrix(expr)
+
+#create my groupid to define the different experimental parameters present
+#I have Stimulus, Time, Species/Individual. The individual has species built in.
+
+#groupid is laid out as follows:
+#TUN_2_H1-7 = 1; C1-7 = 2
+#THA_2_H1-7 = 3; C1-7 = 4
+#DMSO_2_H1-7 = 5; C1-7 = 6
+#TUN_24_H1-7 = 7; C1-7 = 8
+#THA_24_H1-7 = 9; C1-7 = 10
+#DOX_24_H1-7 = 11; C1-7 = 12
+#NUTL_24_H1-7 = 13; C1-7 = 14
+#DMSO_24_H1-7 = 15; C1-7 = 16
+#LPS_24_H1-7 = 17; C1-7 = 18
+#TNFa_24_H1-7 = 19; C1-7 = 20
+#H2O_24_H1-7 = 21; C1-7 = 22
+#BPA_24_H1-7 = 23; C1-7 = 24
+#PFOA_24_H1-7 = 25; C1-7 = 26
+#EtOH_24_H1-7 = 27; C1-7 = 28
+
+groupid <- read_csv("data/cmf/groupid.csv")
+
+#flatten into a vector
+groupid <- as.numeric(groupid[1,])
+
+#now make the comparisons between stimulus and vehicle within species
+
+# compid <- read_csv("data/cmf/compid.csv")
+
+#flatten into a vector
+compid <- data.frame(Cond1 = c(1, 2, 3, 4, 
+                               7, 8, 9, 10, 11, 12, 13, 14, 
+                               17, 18, 19, 20,
+                               23, 24, 25, 26), 
+                     Cond2 = c(5, 6, 5, 6, 
+                               15, 16, 15, 16, 15, 16, 15, 16,
+                               21, 22, 21, 22,
+                               27, 28, 27, 28))
+  
+
+#comparing each stim to veh within timepoint and species
+
+```
+
+# Perform Cormotif Analysis
+
+Utilize the components put together above to run Cormotif.
+
+```{r Cormotif Run, warning=FALSE, message=FALSE}
+
+#fit cormotif model
+# set.seed(19191)
+#only set seed once for reproducibility
+
+# cmf_fit <- cormotiffit(
+#   exprs = expr,
+#   groupid = groupid,
+#   compid = compid,
+#   K  = 1:20,
+#   max.iter = 1000,
+#   BIC = TRUE,
+#   runtype = "logCPM"
+# )
+
+#save this so you have it for later
+
+# saveRDS(cmf_fit, "data/cmf/cormotif_fitmatrix_k20.RDS")
+
+cmf_fit <- readRDS("data/cmf/cormotif_fitmatrix_k20.RDS")
+
+```
+
+# Assess BIC and AIC 
+
+```{r Plot Cormotif, warning=FALSE, message=FALSE}
+
+plotIC(cmf_fit)
+
+
+#visual check of the lowest BIC
+cmf_fit$bic
+
+#it looks like with the first run that 10 + motifs are appearing, so I'll have to increase my K
+
+plotMotif(cmf_fit)
+
+#plot the probability legend
+myColors <-  rev(c("#FFFFFF", "#E6E6E6" ,"#CCCCCC", "#B3B3B3", "#999999", "#808080", "#666666","#4C4C4C", "#333333", "#191919","#000000"))
+
+plot.new()
+legend('bottomleft',fill=myColors, legend =rev(c("0", "0.1", "0.2", "0.3", "0.4",  "0.5", "0.6", "0.7", "0.8","0.9", "1")), box.col="white",title = "Probability\nlegend", horiz=FALSE,title.cex=.8)
+
+```
+
+# Perform Cormotif on 24hr Samples
+
+
+```{r Cormotif Subset 24hr}
+
+#I want to go ahead and subset my data to focus on the 24hr samples for Cormotif
+#I will take my same matrix and remove any 2hr samples
+
+expr_24 <- expr[, grep("_24_", colnames(expr))]
+
+#also make sure that my metadata is only 24hr samples
+
+metadata_24 <- metadata_sub %>% 
+  dplyr::filter(Time == "24")
+
+#groupid is laid out as follows:
+#TUN_24_H1-7 = 1; C1-7 = 2
+#THA_24_H1-7 = 3; C1-7 = 4
+#DOX_24_H1-7 = 5; C1-7 = 6
+#NUTL_24_H1-7 = 7; C1-7 = 8
+#DMSO_24_H1-7 = 9; C1-7 = 10
+#LPS_24_H1-7 = 11; C1-7 = 12
+#TNFa_24_H1-7 = 13; C1-7 = 14
+#H2O_24_H1-7 = 15; C1-7 = 16
+#BPA_24_H1-7 = 17; C1-7 = 18
+#PFOA_24_H1-7 = 19; C1-7 = 20
+#EtOH_24_H1-7 = 21; C1-7 = 22
+
+groupid_24 <- read_csv("data/cmf/groupid_24.csv")
+
+#flatten into a vector
+groupid_24 <- as.numeric(groupid_24[1,])
+
+#now make the comparisons between stimulus and vehicle within species
+#flatten into a vector
+compid_24 <- data.frame(Cond1 = c(1, 2, 3, 4, 5, 6, 7, 8,
+                                  11, 12, 13, 14,
+                                  17, 18, 19, 20), 
+                     Cond2 = c(9, 10, 9, 10, 9, 10, 9, 10,
+                               15, 16, 15, 16,
+                               21, 22, 21, 22))
+  
+
+#comparing each stim to veh within timepoint and species
+
+
+```
+
+
+# Run Cormotif 24hr Subset
+
+```{r Cormotif Run 24hr samples, warning=FALSE, message=FALSE}
+
+#fit cormotif model
+# set.seed(19191)
+# #only set seed once for reproducibility 
+# 
+# cmf_fit_24 <- cormotiffit(
+#   exprs = expr_24,
+#   groupid = groupid_24,
+#   compid = compid_24,
+#   K  = 1:30,
+#   max.iter = 10,000,
+#   BIC = TRUE,
+#   runtype = "logCPM"
+# )
+
+#save this so you have it for later
+
+# saveRDS(cmf_fit_24, "data/cmf/cormotif_fitmatrix_k30_24hr.RDS")
+
+cmf_fit_24 <- readRDS("data/cmf/cormotif_fitmatrix_k30_24hr.RDS")
+
+#plot these
+
+plotIC(cmf_fit_24)
+
+plotMotif(cmf_fit_24)
+
+
+```
+
+
+# Define these motifs
+
+```{r Define motifs}
+
+#extract the posterior probability that these genes belong to motifs
+gene_prob_all <- cmf_fit_24$bestmotif$p.post
+rownames(gene_prob_all) <- rownames(expr_24)
+gene_probs <- gene_prob_all
+
+#assign each gene to a motif with max post prob
+assigned_motifs <- apply(gene_probs, 1, which.max)
+max_probs <- apply(gene_probs, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+motif_assignment_df <- gene_probs %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = assigned_motifs[Gene],
+    Max_Probability = max_probs[Gene]
+  )
+
+#make some histograms of the unfiltered data from Cormotif p.post
+
+gene_prob_all %>% 
+  as.data.frame() %>% 
+  ggplot(., aes(x = V1))+
+  geom_histogram(bins = 50)+
+  xlim(0,1)+
+  ggtitle("Cormotif Genes p.post RUV M1")
+
+gene_prob_all %>% 
+  as.data.frame() %>% 
+  ggplot(., aes(x = V2))+
+  geom_histogram(bins = 50)+
+  xlim(0,1)+
+  ggtitle("Cormotif Genes p.post RUV M2")
+
+
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+motif_prob <- cmf_fit_24$bestmotif$clustlike
+rownames(motif_prob) <- rownames(gene_prob_all)
+# write.csv(motif_prob,"data/cmf/cormotif_probability_genelist_all_RUV_log2cpm_NormCounts.csv")
+
+#make some histograms to look at the distribution of clustlike genes without filtering
+motif_prob %>% 
+  as.data.frame() %>% 
+  ggplot(., aes(x = V1))+
+  geom_histogram(bins = 50)+
+  xlim(0,1)+
+  ggtitle("Cormotif Genes clustlike Distribution M1")
+
+motif_prob %>% 
+  as.data.frame() %>% 
+  ggplot(., aes(x = V2))+
+  geom_histogram(bins = 50)+
+  xlim(0,1)+
+  ggtitle("Cormotif Genes clustlike Distribution M2")
+
+
+
+```
+
+```{r p.post and clustlike}
+#use clustlike and p.post to define my motifs
+
+#m1
+#filter 1: clustlike
+clust1_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 
+         & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
+  rownames
+length(clust1_genes)
+#6480 genes
+
+#m2
+clust2_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 > 0.5 & V3 < 0.5 
+         & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
+  rownames
+length(clust2_genes)
+#3741 genes
+
+#m3
+clust3_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.5 
+         & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
+  rownames
+length(clust3_genes)
+#1381 genes
+
+#m4
+clust4_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
+         & V4 > 0.1 & V5 < 0.5 & V6 < 0.5) %>% 
+  rownames
+length(clust4_genes)
+#108 genes
+
+#m5
+clust5_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
+         & V4 < 0.5 & V5 > 0.5 & V6 < 0.5) %>% 
+  rownames
+length(clust5_genes)
+#36 genes
+
+#m6
+clust6_genes <- 
+  motif_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
+         & V4 < 0.5 & V5 < 0.5 & V6 > 0.5) %>% 
+  rownames
+length(clust6_genes)
+#917 genes
+
+# ### Filter 2: Gene-level posterior pattern
+# prob_filtered_genes_1 <- rownames(gene_probs[(gene_probs[,1] > 0.05 & gene_probs[,1] <0.5 & gene_probs[,2] <0.5 & gene_probs[,3] <0.5),])
+# ### Final intersection of both filters
+# final_genes_1_RUV <- intersect(clust1_genes_RUV, prob_filtered_genes_1_RUV)
+# cat("Number of genes passing both filters:", length(final_genes_1_RUV), "\n")
+# #7602 genes pass both filters here
+
+
+#now look at these just based on cluster likelihood and go through to refine later
+
+#first check that each list of genes is unique
+cmf_clustlike <- list(
+  clust1_genes,
+  clust2_genes,
+  clust3_genes,
+  clust4_genes,
+  clust5_genes,
+  clust6_genes
+)
+
+#total of 13023 genes out of my original 13739
+
+length(unique(unlist(cmf_clustlike))) == sum(lengths(cmf_clustlike))
+#each of these gene lists is unique
+
+assigned_genes <- unique(unlist(cmf_clustlike))
+all_genes <- rownames(hc_cpm_matrix_24)
+clust_unassign <- setdiff(all_genes, assigned_genes)
+
+#quick barplot and pie chart
+clust_data <- data.frame(
+  Category = c("1", "2", "3", "4", "5", "6", "unassign"), 
+  Value = c(length(clust1_genes), length(clust2_genes), length(clust3_genes),
+            length(clust4_genes), length(clust5_genes), length(clust6_genes),
+            length(clust_unassign)
+))
+
+
+piecolors <- c("1" = "blue", 
+                       "2" = "red",
+                       "3" = "hotpink",
+                       "4" = "lightgreen",
+                       "5" = "purple",
+                       "6" = "orange",
+               "unassign" = "gray"
+                       )
+
+clust_data <- clust_data %>%
+  mutate(Prop = Value / sum(Value) * 100)
+
+clust_data <- clust_data %>%
+  mutate(Category = factor(Category, levels = c("1", "2", "3", "4", "5", "6", "unassign"))) %>%
+  mutate(Prop = Value / sum(Value) * 100)
+
+#stacked bar with no axes
+ggplot(clust_data, aes(x = "", y = Value, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  labs(title = "Distr of Gene Clusters Cormotif clustlike") +
+  scale_fill_manual(values = piecolors) +
+  theme_void() +
+  theme(legend.title = element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+#make a piechart of these distributions
+clust_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
+  geom_bar(width = 1, stat = "identity")+
+  coord_polar("y", start = 0)+
+  geom_text(aes(label = Value),
+            position = position_dodge(width = 2),
+            size = 4, color = "black")+
+  labs(title = "Distr of Gene Clusters Cormotif clustlike", x = NULL, y = NULL)+
+  theme_void()+
+  scale_fill_manual(values = piecolors)
+
+
+
+
+```
+
+# Create gene dataframes
+
+```{r create dataframes}
+#read in my toptable list so I can look at the logFC 
+
+toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
+#also add in my combined dataframe
+combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
+
+filt_toptable_clust <- combined_24hr %>% 
+  dplyr::filter(Entrez_ID  %in% clust1_genes) %>% 
+  mutate(absFC = abs(logFC)) %>% 
+  mutate(time = factor(Time, levels = c("24T", "24R", "144R"), labels = c("24hr", "24hr Recovery", "144hr Recovery"))) %>% 
+  ggplot(., aes(x = time, y = logFC))+
+  geom_boxplot(aes(fill = time))+
+  scale_fill_manual(values = time_col)+
+  guides(fill = guide_legend(title = "Time"))+
+  theme_bw()+
+  xlab(" ")+
+  ylab("logFC")+
+  theme_bw()+
+  ggtitle("LogFC Motif 1 RUVs clustlike")+
+  theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = 15, colour = "black"),
+        strip.background = element_rect(fill = "#CAD899"),
+        axis.text.x = element_text(size = 8, colour = "white", angle = 15),
+        strip.text.x = element_text(size = 12, colour = "black", face = "bold"))
+
+```
+
+
+```{r go kegg}
+#go kegg for each
+
+library(gprofiler2)
+
+clust1_mat <- as.matrix(clust1_genes)
+colnames(clust1_mat) <- c("Entrez_ID")
+
+c1_gk <- gost(query = clust1_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+c1_gk_gost <- gostplot(c1_gk, capped = FALSE, interactive = TRUE)
+c1_gk_gost
+
+table_c1 <- c1_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+table_c1 %>% 
+  mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+  kableExtra::kable(.,) %>% 
+  kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+  kableExtra::scroll_box(width = "100%", height = "400px")
+
+# #GO:BP
+# table_c1 <- table_c1 %>% 
+#   dplyr::filter(source=="GO:BP") %>% 
+#   dplyr::select(p_value, term_name, intersection_size) %>% 
+#   dplyr::slice_min(., n=20, order_by=p_value) %>% 
+#   mutate(log_val = -log10(p_value))
+
+# table_c1 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+#   geom_point() +
+#   ggtitle("M1 Enriched GO:BP")+
+#   xlab(expression("-log"[10]~"p-value"))+
+#   ylab("GO:BP term")+
+#   scale_y_discrete(labels = scales::label_wrap(30))+
+#   theme_custom()
+
+#KEGG
+table_c1 <- table_c1 %>% 
+  dplyr::filter(source=="KEGG") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c1 %>%
+  ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("KEGG Clust1") +
+  xlab(expression("-log"[10]~"adj. p-value")) +
+  ylab("KEGG Term") +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  theme_custom() +
+  theme(legend.position = "none")
+  
+
+#C2
+clust2_mat <- as.matrix(clust2_genes)
+colnames(clust2_mat) <- c("Entrez_ID")
+
+# c2_gk <- gost(query = clust2_mat,
+#                           organism = "hsapiens",
+#                           ordered_query = FALSE,
+#                           measure_underrepresentation = FALSE,
+#                           evcodes = TRUE,
+#                           user_threshold = 0.05,
+#                           significant = TRUE,
+#                           custom_bg = all_genes,
+#                           correction_method = c("fdr"),
+#                           sources = c("GO:BP", "KEGG"))
+# 
+# c2_gk_gost <- gostplot(c2_gk, capped = FALSE, interactive = TRUE)
+# c2_gk_gost
+# 
+# table_c2 <- c2_gk$result %>% 
+#   dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+# 
+# table_c2 %>% 
+#   mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+#   kableExtra::kable(.,) %>% 
+#   kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+#   kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+#   kableExtra::scroll_box(width = "100%", height = "400px")
+
+# #GO:BP
+# table_c2_go <- table_c2 %>% 
+#   dplyr::filter(source=="GO:BP") %>% 
+#   dplyr::select(p_value, term_name, intersection_size) %>% 
+#   dplyr::slice_min(., n=20, order_by=p_value) %>% 
+#   mutate(log_val = -log10(p_value))
+# 
+# table_c2_go %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+#   geom_point() +
+#   ggtitle("GO:BP Clust2")+
+#   xlab(expression("-log"[10]~"p-value"))+
+#   ylab("GO:BP term")+
+#   scale_y_discrete(labels = scales::label_wrap(30))+
+#   theme_custom()
+
+# #KEGG
+# table_c2_kegg <- table_c2 %>% 
+#   dplyr::filter(source=="KEGG") %>% 
+#   dplyr::select(p_value, term_name, intersection_size) %>% 
+#   dplyr::slice_min(., n=20, order_by=p_value) %>% 
+#   mutate(log_val = -log10(p_value))
+# 
+# table_c2_kegg %>%
+#   ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+#   geom_point() +
+#   ggtitle("KEGG Clust2") +
+#   xlab(expression("-log"[10]~"adj. p-value")) +
+#   ylab("KEGG Term") +
+#   scale_y_discrete(labels = scales::label_wrap(30)) +
+#   theme_custom() +
+#   theme(legend.position = "none")
+
+#C3
+clust3_mat <- as.matrix(clust3_genes)
+colnames(clust3_mat) <- c("Entrez_ID")
+
+c3_gk <- gost(query = clust3_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+c3_gk_gost <- gostplot(c3_gk, capped = FALSE, interactive = TRUE)
+c3_gk_gost
+
+table_c3 <- c3_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+table_c3 %>% 
+  mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+  kableExtra::kable(.,) %>% 
+  kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+  kableExtra::scroll_box(width = "100%", height = "400px")
+
+#GO:BP
+table_c3 <- table_c3 %>% 
+  dplyr::filter(source=="GO:BP") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c3 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("GO:BP Clust3")+
+  xlab(expression("-log"[10]~"p-value"))+
+  ylab("GO:BP term")+
+  scale_y_discrete(labels = scales::label_wrap(30))+
+  theme_custom()
+
+table_c3 <- c3_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+#KEGG
+table_c3 <- table_c3 %>% 
+  dplyr::filter(source=="KEGG") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c3 %>%
+  ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("KEGG Clust3") +
+  xlab(expression("-log"[10]~"adj. p-value")) +
+  ylab("KEGG Term") +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  theme_custom() +
+  theme(legend.position = "none")
+
+#C2
+clust4_mat <- as.matrix(clust4_genes)
+colnames(clust4_mat) <- c("Entrez_ID")
+
+c4_gk <- gost(query = clust4_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+c4_gk_gost <- gostplot(c4_gk, capped = FALSE, interactive = TRUE)
+c4_gk_gost
+
+table_c4 <- c4_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+table_c4 %>% 
+  mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+  kableExtra::kable(.,) %>% 
+  kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+  kableExtra::scroll_box(width = "100%", height = "400px")
+
+#GO:BP
+table_c4 <- table_c4 %>% 
+  dplyr::filter(source=="GO:BP") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c4 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("GO:BP Clust4")+
+  xlab(expression("-log"[10]~"p-value"))+
+  ylab("GO:BP term")+
+  scale_y_discrete(labels = scales::label_wrap(30))+
+  theme_custom()
+
+# table_c4 <- c4_gk$result %>% 
+#   dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+# 
+# #KEGG
+# table_c4 <- table_c4 %>% 
+#   dplyr::filter(source=="KEGG") %>% 
+#   dplyr::select(p_value, term_name, intersection_size) %>% 
+#   dplyr::slice_min(., n=20, order_by=p_value) %>% 
+#   mutate(log_val = -log10(p_value))
+# 
+# table_c4 %>%
+#   ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+#   geom_point() +
+#   ggtitle("KEGG Clust4") +
+#   xlab(expression("-log"[10]~"adj. p-value")) +
+#   ylab("KEGG Term") +
+#   scale_y_discrete(labels = scales::label_wrap(30)) +
+#   theme_custom() +
+#   theme(legend.position = "none")
+
+#C5
+clust5_mat <- as.matrix(clust5_genes)
+colnames(clust5_mat) <- c("Entrez_ID")
+
+c5_gk <- gost(query = clust5_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+c5_gk_gost <- gostplot(c5_gk, capped = FALSE, interactive = TRUE)
+c5_gk_gost
+
+table_c5 <- c5_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+table_c5 %>% 
+  mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+  kableExtra::kable(.,) %>% 
+  kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+  kableExtra::scroll_box(width = "100%", height = "400px")
+
+#GO:BP
+table_c5 <- table_c5 %>% 
+  dplyr::filter(source=="GO:BP") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c5 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("GO:BP Clust5")+
+  xlab(expression("-log"[10]~"p-value"))+
+  ylab("GO:BP term")+
+  scale_y_discrete(labels = scales::label_wrap(30))+
+  theme_custom()
+
+table_c5 <- c5_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+#KEGG
+table_c5 <- table_c5 %>% 
+  dplyr::filter(source=="KEGG") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c5 %>%
+  ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("KEGG Clust5") +
+  xlab(expression("-log"[10]~"adj. p-value")) +
+  ylab("KEGG Term") +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  theme_custom() +
+  theme(legend.position = "none")
+
+#C6
+clust6_mat <- as.matrix(clust6_genes)
+colnames(clust6_mat) <- c("Entrez_ID")
+
+c6_gk <- gost(query = clust6_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+c6_gk_gost <- gostplot(c6_gk, capped = FALSE, interactive = TRUE)
+c6_gk_gost
+
+table_c6 <- c6_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+table_c6 %>% 
+  mutate_at(.vars = 6, .funs = scales::label_scientific(digits=4)) %>% 
+  kableExtra::kable(.,) %>% 
+  kableExtra::kable_paper("striped", full_width = FALSE) %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "left", bootstrap_options = c("striped", "hover")) %>% 
+  kableExtra::scroll_box(width = "100%", height = "400px")
+
+#GO:BP
+table_c6 <- table_c6 %>% 
+  dplyr::filter(source=="GO:BP") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c6 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("GO:BP Clust6")+
+  xlab(expression("-log"[10]~"p-value"))+
+  ylab("GO:BP term")+
+  scale_y_discrete(labels = scales::label_wrap(30))+
+  theme_custom()
+
+table_c6 <- c6_gk$result %>% 
+  dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
+
+#KEGG
+table_c6 <- table_c6 %>% 
+  dplyr::filter(source=="KEGG") %>% 
+  dplyr::select(p_value, term_name, intersection_size) %>% 
+  dplyr::slice_min(., n=20, order_by=p_value) %>% 
+  mutate(log_val = -log10(p_value))
+
+table_c6 %>%
+  ggplot(aes(x = log_val, y = reorder(term_name, p_value))) +
+  geom_point() +
+  ggtitle("KEGG Clust6") +
+  xlab(expression("-log"[10]~"adj. p-value")) +
+  ylab("KEGG Term") +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  theme_custom() +
+  theme(legend.position = "none")
+```
+
+
+# CMF Subsets by Response Category
+
+I want to perform this Cormotif analysis on each response category as well, so that I can make more specific comparisons between the stimuli and between species.
+
+```{r Subset my CMF results for each response category}
+#subset my expr matrix from above by each subset
+
+#upr 24hr
+expr_upr <- expr[, grepl("^(TUN|THA|DMSO)_24_", colnames(expr))]
+
+#upr all
+expr_upr_all <- expr[, grepl("^(TUN|THA|DMSO)", colnames(expr))]
+
+#ddr
+expr_ddr <- expr[, grepl("^(DOX|NUTL|DMSO)_24_", colnames(expr))]
+
+#imr
+expr_imr <- expr[, grepl("^(LPS|TNFa|H2O)_24_", colnames(expr))]
+
+#mcr
+expr_mcr <- expr[, grepl("^(BPA|PFOA|EtOH)_24_", colnames(expr))]
+
+
+#now generate groupids for each of these based on their column names
+
+upr_all_order <- c("TUN_2", "THA_2", "DMSO_2", "TUN_24", "THA_24", "DMSO_24")
+upr_order <- c("TUN_24", "THA_24", "DMSO_24")
+ddr_order <- c("DOX_24", "NUTL_24", "DMSO_24")
+imr_order <- c("LPS_24", "TNFa_24", "H2O_24")
+mcr_order <- c("BPA_24", "PFOA_24", "EtOH_24")
+
+
+make_groupid <- function(colnames_vec, stimulus_order) {
+  
+  meta <- data.frame(sample = colnames_vec) |>
+    transform(
+      stimulus = sub("_(H|C)[0-9]+$", "", sample),
+      species  = sub("^.*_(H|C)[0-9]+$", "\\1", sample)
+    )
+  
+  meta$stimulus <- factor(meta$stimulus, levels = stimulus_order)
+  
+  if (any(is.na(meta$stimulus))) {
+    stop("Some samples do not match the provided stimulus_order")
+  }
+  
+  stim_id <- as.numeric(meta$stimulus)
+  spec_id <- ifelse(meta$species == "H", 1, 2)
+  
+  groupid <- (stim_id - 1) * 2 + spec_id
+  names(groupid) <- meta$sample
+  
+  groupid
+}
+
+groupid_upr_all <- make_groupid(
+  colnames(expr_upr_all),
+  upr_all_order
+)
+
+groupid_upr <- make_groupid(
+  colnames(expr_upr),
+  upr_order
+)
+
+groupid_ddr <- make_groupid(
+  colnames(expr_ddr),
+  ddr_order
+)
+
+groupid_imr <- make_groupid(
+  colnames(expr_imr),
+  imr_order
+)
+
+groupid_mcr <- make_groupid(
+  colnames(expr_mcr),
+  mcr_order
+)
+
+#ensure all of these are named vectors
+groupid_upr_all <- setNames(as.numeric(groupid_upr_all), names(groupid_upr_all))
+groupid_upr  <- setNames(as.numeric(groupid_upr),  names(groupid_upr))
+groupid_ddr    <- setNames(as.numeric(groupid_ddr),    names(groupid_ddr))
+groupid_imr    <- setNames(as.numeric(groupid_imr),    names(groupid_imr))
+groupid_mcr    <- setNames(as.numeric(groupid_mcr),    names(groupid_mcr))
+
+#now make the compid (which can be shared by all of the 24hr only ones)
+compid_upr <- data.frame(Cond1 = c(1, 2, 3, 4),
+                         Cond2 = c(5, 6, 5, 6))
+
+compid_ddr <- data.frame(Cond1 = c(1, 2, 3, 4),
+                         Cond2 = c(5, 6, 5, 6))
+
+compid_imr <- data.frame(Cond1 = c(1, 2, 3, 4),
+                         Cond2 = c(5, 6, 5, 6))
+
+compid_mcr <- data.frame(Cond1 = c(1, 2, 3, 4),
+                         Cond2 = c(5, 6, 5, 6))
+
+compid_upr_all <- data.frame(Cond1 = c(1, 2, 3, 4, 7, 8, 9, 10),
+                             Cond2 = c(5, 6, 5, 6, 11, 12, 11, 12))
+
+
+#now go ahead and set up the cormotif function for each of these, make it a loop so it runs through all of these
+#make sure that your computer has enough memory!
+
+```
+
+# Loop through Cormotif for each Subset
+
+```{r run cormotif fit for each subset}
+
+#I want to create a loop so that I can run each of these and plot them
+
+#make my expr_list
+expr_list <- list(
+  upr_all = expr_upr_all, 
+  upr = expr_upr, 
+  ddr = expr_ddr, 
+  imr = expr_imr, 
+  mcr = expr_mcr)
+
+#make my list of groupids
+groupid_list <- list(
+  upr_all = groupid_upr_all, 
+  upr = groupid_upr, 
+  ddr = groupid_ddr, 
+  imr = groupid_imr, 
+  mcr = groupid_mcr)
+
+#make my list of compids
+compid_list <- list(
+  upr_all = compid_upr_all, 
+  upr = compid_upr, 
+  ddr = compid_ddr, 
+  imr = compid_imr, 
+  mcr = compid_mcr)
+
+#store the fits in a list
+# cmf_fit_list <- list()
+
+#store the plots into a list to print later
+# cmf_plot_list <- list()
+
+#set seed once for reproducibility
+# set.seed(19191)
+
+# for (name in names(expr_list)) {
+#   
+#   cat("Fitting Cormotif for subset:", name, "\n")
+#   
+#   #fit model
+#   
+#   fit <- cormotiffit(
+#     exprs = expr_list[[name]],
+#     groupid = groupid_list[[name]],
+#     compid = compid_list[[name]],
+#     K = 1:20,
+#     max.iter = 10000,
+#     BIC = TRUE,
+#     runtype = "logCPM"
+#   )
+#   
+#   #store into a list
+#   cmf_fit_list[[name]] <- fit
+#   
+#   #saveRDS
+#   saveRDS(fit, file = paste0("data/cmf/subset/cormotif_fit_matrix_", name, "k30.RDS"))
+#   
+#   #plot IC and save plot
+#   plotIC(fit)
+#   save_plot(
+#     plot = last_plot(),
+#     filename = paste0("cmf_aic_bic_subset_", name, "_EMP"),
+#     folder = output_folder
+#   )
+#   #now save this plot to my list to print later
+#   cmf_plot_list[[paste0("cmf_ic_", name)]] <- last_plot()
+#   
+#   #plot motif and save
+#   plotMotif(fit)
+#   save_plot(
+#     plot = last_plot(),
+#     filename = paste0("cmf_motif_subset_", name, "_EMP"), 
+#     folder = output_folder
+#   )
+#   #save the plot to the list as well
+#   cmf_plot_list[[paste0("cmf_plot_", name)]] <- last_plot()
+#   
+#   
+#   cat("Finished subset:", name, "\n\n")
+#   
+# }
+
+#now read in each of these results so I can save each plot to my plots folder
+#make sure that you only run these once since they take up so much memory!
+
+cmf_upr_all <- readRDS("data/cmf/subset/cormotif_fit_matrix_upr_allk30.RDS")
+cmf_upr <- readRDS("data/cmf/subset/cormotif_fit_matrix_uprk30.RDS")
+cmf_ddr <- readRDS("data/cmf/subset/cormotif_fit_matrix_ddrk30.RDS")
+cmf_imr <- readRDS("data/cmf/subset/cormotif_fit_matrix_imrk30.RDS")
+cmf_mcr <- readRDS("data/cmf/subset/cormotif_fit_matrix_mcrk30.RDS")
+
+cmf_data_list <- list(
+  upr_all = cmf_upr_all,
+  upr = cmf_upr,
+  ddr = cmf_ddr,
+  imr = cmf_imr,
+  mcr = cmf_mcr
+)
+
+#make two lists so I can store the IC/motif plots
+cmf_ic_plots <- list()
+cmf_motif_plots <- list()
+
+for(name in names(cmf_data_list)) {
+  
+  cat("processing subset:", name, "\n")
+  
+  fit <- cmf_data_list[[name]]
+  
+  plotIC(fit)
+  ic_plot <- recordPlot()
+  ic_name <- paste0("cmf_ic_", name)
+  
+  cmf_ic_plots[[ic_name]] <- ic_plot
+  
+  save_plot(
+    plot = ic_plot,
+    filename = paste0(ic_name, "_EMP"),
+    folder = output_folder
+  )
+  
+  #now do the same for the motifs plot
+  
+  plotMotif(fit)
+  mtf_plot <- recordPlot()
+  mtf_name <- paste0("cmf_motif_", name)
+  
+  cmf_motif_plots[[mtf_name]] <- mtf_plot
+  
+  save_plot(
+    plot = mtf_plot,
+    filename = paste0(mtf_name, "_EMP"),
+    folder = output_folder
+  )
+  
+  cat("finished subset:", name, "\n\n")
+  
+}
+
+
+#now that I've saved each of these images, let's dive into characterizing each of these motifs
+
+
+```
+
+# UPR Subset Motifs
+
+I have two subsets within this, upr and upr_all. upr_all contains both 2 hour and 24 hour timepoints, whereas upr only contains the 24 hour data. I am going to start by investigating upr 24hr only.
+
+```{r UPR cormotif analysis, message=FALSE, warning=FALSE}
+#start by looking at the cluster likelihood for each of these motifs
+
+# cmf_upr <- readRDS("data/cmf/subset/cormotif_fit_matrix_uprk30.RDS")
+
+#extract the posterior probability that these genes belong to motifs
+upr_gene_prob <- cmf_upr$bestmotif$p.post
+rownames(upr_gene_prob) <- rownames(expr_upr)
+
+#assign each gene to a motif with max post prob
+upr_assign_mtf <- apply(upr_gene_prob, 1, which.max)
+max_probs_upr <- apply(upr_gene_prob, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+upr_clust_df <- upr_gene_prob %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = upr_assign_mtf[Gene],
+    Max_Probability = max_probs_upr[Gene]
+  )
+  
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+upr_clust_prob <- cmf_upr$bestmotif$clustlike
+rownames(upr_clust_prob) <- rownames(upr_gene_prob)
+
+# write.csv(upr_clust_prob,"data/cmf/subset/cormotif_upr_clusterlikelihood.csv")
+
+#now go through each of these motifs' clustlike to assign a set of genes for each
+
+#motif1
+#filter 1: clustlike
+clust1_upr <- 
+  upr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust1_upr)
+#11,172 genes w/ cutoff of 0.6 (too many at 0.5)
+
+#motif2
+clust2_upr <- 
+  upr_clust_prob %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 > 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust2_upr)
+#40 genes with 0.5 cutoff
+
+#motif3
+clust3_upr <- 
+  upr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust3_upr)
+#60 genes w/ cutoff of 0.5
+
+#motif4
+clust4_upr <- 
+  upr_clust_prob %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 & V4 > 0.5) %>% 
+  rownames
+length(clust4_upr)
+#2,130 genes with 0.5 cutoff
+
+
+#first check that each list of genes is unique
+upr_clustlike <- list(
+  clust1_upr,
+  clust2_upr,
+  clust3_upr,
+  clust4_upr
+)
+
+length(unique(unlist(upr_clustlike))) == sum(lengths(upr_clustlike))
+#each of these gene lists is unique
+
+assign_upr <- unique(unlist(upr_clustlike))
+length(assign_upr)
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_upr <- setdiff(all_genes, assign_upr)
+length(unassign_upr)
+
+#13401 genes are assigned to a motif with these cutoffs presently
+#338 unassigned genes
+
+
+```
+
+# UPR All Subset Motifs
+
+```{r UPR all cormotif analysis 2hr 24hr, message=FALSE, warning=FALSE}
+#start by looking at the cluster likelihood for each of these motifs
+
+#extract the posterior probability that these genes belong to motifs
+upr_gene_prob_all <- cmf_upr_all$bestmotif$p.post
+rownames(upr_gene_prob_all) <- rownames(expr_upr_all)
+
+#assign each gene to a motif with max post prob
+upr_assign_mtf_all <- apply(upr_gene_prob_all, 1, which.max)
+max_probs_upr_all <- apply(upr_gene_prob_all, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+upr_clust_df_all <- upr_gene_prob_all %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = upr_assign_mtf_all[Gene],
+    Max_Probability = max_probs_upr_all[Gene]
+  )
+  
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+upr_clust_prob_all <- cmf_upr_all$bestmotif$clustlike
+rownames(upr_clust_prob_all) <- rownames(upr_gene_prob_all)
+
+# write.csv(upr_clust_prob_all,"data/cmf/subset/cormotif_upr_all_clusterlikelihood.csv")
+
+#now go through each of these motifs' clustlike to assign a set of genes for each
+
+#motif1
+#filter 1: clustlike
+clust1_upr_all <- 
+  upr_clust_prob_all %>%
+  as.data.frame() %>%
+  filter(V1 > 0.7 & V2 < 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust1_upr_all)
+#10,781 genes w/ cutoff of 0.7 (too many at 0.5)
+
+#motif2
+clust2_upr_all <- 
+  upr_clust_prob_all %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 > 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust2_upr_all)
+#2,011 genes with 0.5 cutoff
+
+#motif3
+clust3_upr_all <- 
+  upr_clust_prob_all %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust3_upr_all)
+#232 genes w/ cutoff of 0.5
+
+#motif4
+clust4_upr_all <- 
+  upr_clust_prob_all %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 & V4 > 0.5) %>% 
+  rownames
+length(clust4_upr_all)
+#226 genes with 0.5 cutoff
+
+
+#first check that each list of genes is unique
+upr_clustlike_all <- list(
+  clust1_upr_all,
+  clust2_upr_all,
+  clust3_upr_all,
+  clust4_upr_all
+)
+
+length(unique(unlist(upr_clustlike_all))) == sum(lengths(upr_clustlike_all))
+#each of these gene lists is unique
+
+assign_upr_all <- unique(unlist(upr_clustlike_all))
+length(assign_upr_all)
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_upr_all <- setdiff(all_genes, assign_upr_all)
+length(unassign_upr_all)
+
+#13250 genes are assigned to a motif with these cutoffs presently
+#489 unassigned genes
+
+```
+
+
+# DDR Subset Motifs
+
+```{r DDR subset cormotif clustlike, message=FALSE, warning=FALSE}
+
+#extract the posterior probability that these genes belong to motifs
+ddr_gene_prob <- cmf_ddr$bestmotif$p.post
+rownames(ddr_gene_prob) <- rownames(expr_ddr)
+
+#assign each gene to a motif with max post prob
+ddr_assign_mtf <- apply(ddr_gene_prob, 1, which.max)
+max_probs_ddr <- apply(ddr_gene_prob, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+ddr_clust_df <- ddr_gene_prob %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = ddr_assign_mtf[Gene],
+    Max_Probability = max_probs_ddr[Gene]
+  )
+  
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+ddr_clust_prob <- cmf_ddr$bestmotif$clustlike
+rownames(ddr_clust_prob) <- rownames(ddr_gene_prob)
+
+# write.csv(ddr_clust_prob,"data/cmf/subset/cormotif_ddr_clusterlikelihood.csv")
+
+#now go through each of these motifs' clustlike to assign a set of genes for each
+
+#motif1
+#filter 1: clustlike
+clust1_ddr <- 
+  ddr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust1_ddr)
+#7633 genes w/ cutoff of 0.6 (too many at 0.5)
+
+#motif2
+clust2_ddr <- 
+  ddr_clust_prob %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 > 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust2_ddr)
+#340 genes with 0.5 cutoff
+
+#motif3
+clust3_ddr <- 
+  ddr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.5 & V4 < 0.5) %>% 
+  rownames
+length(clust3_ddr)
+#240 genes w/ cutoff of 0.5
+
+#motif4
+clust4_ddr <- 
+  ddr_clust_prob %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 & V4 > 0.5) %>% 
+  rownames
+length(clust4_ddr)
+#4,682 genes with 0.5 cutoff
+
+
+#first check that each list of genes is unique
+ddr_clustlike <- list(
+  clust1_ddr,
+  clust2_ddr,
+  clust3_ddr,
+  clust4_ddr
+)
+
+length(unique(unlist(ddr_clustlike))) == sum(lengths(ddr_clustlike))
+#each of these gene lists is unique
+
+assign_ddr <- unique(unlist(ddr_clustlike))
+length(assign_ddr)
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_ddr <- setdiff(all_genes, assign_ddr)
+length(unassign_ddr)
+
+#13055 genes are assigned to a motif with these cutoffs presently
+#684 unassigned genes
+
+```
+
+# IMR Subset Motifs
+
+```{r IMR cormotif analysis}
+
+#extract the posterior probability that these genes belong to motifs
+imr_gene_prob <- cmf_imr$bestmotif$p.post
+rownames(imr_gene_prob) <- rownames(expr_imr)
+
+#assign each gene to a motif with max post prob
+imr_assign_mtf <- apply(imr_gene_prob, 1, which.max)
+max_probs_imr <- apply(imr_gene_prob, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+imr_clust_df <- imr_gene_prob %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = imr_assign_mtf[Gene],
+    Max_Probability = max_probs_imr[Gene]
+  )
+  
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+imr_clust_prob <- cmf_imr$bestmotif$clustlike
+rownames(imr_clust_prob) <- rownames(imr_gene_prob)
+
+# write.csv(imr_clust_prob,"data/cmf/subset/cormotif_imr_clusterlikelihood.csv")
+
+#now go through each of these motifs' clustlike to assign a set of genes for each
+
+#motif1
+#filter 1: clustlike
+clust1_imr <- 
+  imr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 > 0.6 & V2 < 0.5) %>% 
+  rownames
+length(clust1_imr)
+#13643 genes w/ cutoff of 0.6 (too many at 0.5)
+
+#motif2
+clust2_imr <- 
+  imr_clust_prob %>% 
+  as.data.frame() %>% 
+  filter(V1 < 0.5 & V2 > 0.5) %>% 
+  rownames
+length(clust2_imr)
+#84 genes with 0.5 cutoff
+
+
+#first check that each list of genes is unique
+imr_clustlike <- list(
+  clust1_imr,
+  clust2_imr
+)
+
+length(unique(unlist(imr_clustlike))) == sum(lengths(imr_clustlike))
+#each of these gene lists is unique
+
+assign_imr <- unique(unlist(imr_clustlike))
+length(assign_imr)
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_imr <- setdiff(all_genes, assign_imr)
+length(unassign_imr)
+
+#13727 genes are assigned to a motif with these cutoffs presently
+#12 unassigned genes
+```
+
+#MCR Subset Motifs
+
+```{r MCR cormotif analysis}
+
+#extract the posterior probability that these genes belong to motifs
+mcr_gene_prob <- cmf_mcr$bestmotif$p.post
+rownames(mcr_gene_prob) <- rownames(expr_mcr)
+
+#assign each gene to a motif with max post prob
+mcr_assign_mtf <- apply(mcr_gene_prob, 1, which.max)
+max_probs_mcr <- apply(mcr_gene_prob, 1, max)
+
+#combine these into a dataframe - motif assigned genes (p.post)
+mcr_clust_df <- mcr_gene_prob %>%
+  as.data.frame() %>%
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = mcr_assign_mtf[Gene],
+    Max_Probability = max_probs_mcr[Gene]
+  )
+  
+#extract the cluster likelihood - which DEGs are most likely to be in this cluster
+mcr_clust_prob <- cmf_mcr$bestmotif$clustlike
+rownames(mcr_clust_prob) <- rownames(mcr_gene_prob)
+
+# write.csv(mcr_clust_prob,"data/cmf/subset/cormotif_mcr_clusterlikelihood.csv")
+
+#now go through each of these motifs' clustlike to assign a set of genes for each
+
+#motif1 (only one)
+#filter 1: clustlike
+clust1_mcr <- 
+  mcr_clust_prob %>%
+  as.data.frame() %>%
+  filter(V1 > 0.6) %>% 
+  rownames
+length(clust1_mcr)
+#13739 genes (same number as my total number of genes?)
+
+
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_mcr <- setdiff(all_genes, clust1_mcr)
+length(unassign_mcr)
+
+#13739 genes are assigned to the one motif with the cutoff I used
+#0 unassigned genes
+
+```
+
+# Barplots Subset Motifs
+
+```{r generate stacked barplots and pie charts for each subset, message=FALSE, warning=FALSE}
+
+#now that I've preliminarily assigned genes to each motif, let's take a look at their distribution
+
+#make a loop for a stacked barplot that goes through each of my gene lists to plot them
+
+
+```
+
