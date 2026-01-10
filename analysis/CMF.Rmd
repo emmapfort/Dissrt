@@ -316,7 +316,25 @@ spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
 ```{r import my log2cpm matrix, message=FALSE, warning=FALSE}
 
 hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
-hc_cpm_matrix_24 <- readRDS("data/counts/")
+hc_cpm_matrix_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
+
+#I want to go through my hc_cpm_matrix and add a SYMBOL column for later
+
+# hc_cpm_mat <- hc_cpm_matrix %>%
+#   as.data.frame() %>% 
+#   rownames_to_column(var = "Entrez_ID") %>% 
+#   mutate(
+#     SYMBOL = mapIds(
+#       org.Hs.eg.db,
+#       keys = Entrez_ID,
+#       column = "SYMBOL",
+#       keytype = "ENTREZID",
+#       multiVals = "first"
+#     )
+#   ) %>% 
+#   dplyr::select("Entrez_ID", "SYMBOL", everything())
+
+hc_cpm_mat <- readRDS("data/counts/hc_cpm_matrix_entrezsymbol.RDS")
 
 ```
 
@@ -1312,59 +1330,59 @@ plotMotif(cmf_fit_24)
 ```{r Define motifs}
 
 #extract the posterior probability that these genes belong to motifs
-gene_prob_all <- cmf_fit_24$bestmotif$p.post
-rownames(gene_prob_all) <- rownames(expr_24)
-gene_probs <- gene_prob_all
+gene_prob_all24 <- cmf_fit_24$bestmotif$p.post
+rownames(gene_prob_all24) <- rownames(expr_24)
+gene_probs24 <- gene_prob_all24
 
 #assign each gene to a motif with max post prob
-assigned_motifs <- apply(gene_probs, 1, which.max)
-max_probs <- apply(gene_probs, 1, max)
+assigned_motifs24 <- apply(gene_probs24, 1, which.max)
+max_probs24 <- apply(gene_probs24, 1, max)
 
 #combine these into a dataframe - motif assigned genes (p.post)
-motif_assignment_df <- gene_probs %>%
+motif_assignment_df24 <- gene_probs24 %>%
   as.data.frame() %>%
   rownames_to_column("Gene") %>%
   mutate(
-    Assigned_Motif = assigned_motifs[Gene],
-    Max_Probability = max_probs[Gene]
+    Assigned_Motif = assigned_motifs24[Gene],
+    Max_Probability = max_probs24[Gene]
   )
 
 #make some histograms of the unfiltered data from Cormotif p.post
 
-gene_prob_all %>% 
+gene_prob_all24 %>% 
   as.data.frame() %>% 
   ggplot(., aes(x = V1))+
   geom_histogram(bins = 50)+
   xlim(0,1)+
-  ggtitle("Cormotif Genes p.post RUV M1")
+  ggtitle("Cormotif p.post RUV M1 24hr")
 
-gene_prob_all %>% 
+gene_prob_all24 %>% 
   as.data.frame() %>% 
   ggplot(., aes(x = V2))+
   geom_histogram(bins = 50)+
   xlim(0,1)+
-  ggtitle("Cormotif Genes p.post RUV M2")
+  ggtitle("Cormotif p.post RUV M2 24hr")
 
 
 #extract the cluster likelihood - which DEGs are most likely to be in this cluster
-motif_prob <- cmf_fit_24$bestmotif$clustlike
-rownames(motif_prob) <- rownames(gene_prob_all)
-# write.csv(motif_prob,"data/cmf/cormotif_probability_genelist_all_RUV_log2cpm_NormCounts.csv")
+motif_prob24 <- cmf_fit_24$bestmotif$clustlike
+rownames(motif_prob24) <- rownames(gene_prob_all24)
+# write.csv(motif_prob24,"data/cmf/cormotif_probability_genelist_all_24hr_subset.csv")
 
 #make some histograms to look at the distribution of clustlike genes without filtering
-motif_prob %>% 
-  as.data.frame() %>% 
-  ggplot(., aes(x = V1))+
-  geom_histogram(bins = 50)+
-  xlim(0,1)+
-  ggtitle("Cormotif Genes clustlike Distribution M1")
-
-motif_prob %>% 
-  as.data.frame() %>% 
-  ggplot(., aes(x = V2))+
-  geom_histogram(bins = 50)+
-  xlim(0,1)+
-  ggtitle("Cormotif Genes clustlike Distribution M2")
+# motif_prob %>% 
+#   as.data.frame() %>% 
+#   ggplot(., aes(x = V1))+
+#   geom_histogram(bins = 50)+
+#   xlim(0,1)+
+#   ggtitle("Cormotif Genes clustlike Distribution M1")
+# 
+# motif_prob %>% 
+#   as.data.frame() %>% 
+#   ggplot(., aes(x = V2))+
+#   geom_histogram(bins = 50)+
+#   xlim(0,1)+
+#   ggtitle("Cormotif Genes clustlike Distribution M2")
 
 
 
@@ -1375,63 +1393,63 @@ motif_prob %>%
 
 #m1
 #filter 1: clustlike
-clust1_genes <- 
-  motif_prob %>%
+clust1_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 
          & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
   rownames
-length(clust1_genes)
+length(clust1_24)
 #6480 genes
 
 #m2
-clust2_genes <- 
-  motif_prob %>%
+clust2_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 < 0.5 & V2 > 0.5 & V3 < 0.5 
          & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
   rownames
-length(clust2_genes)
+length(clust2_24)
 #3741 genes
 
 #m3
-clust3_genes <- 
-  motif_prob %>%
+clust3_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.5 
          & V4 < 0.5 & V5 < 0.5 & V6 < 0.5) %>% 
   rownames
-length(clust3_genes)
+length(clust3_24)
 #1381 genes
 
 #m4
-clust4_genes <- 
-  motif_prob %>%
+clust4_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
          & V4 > 0.1 & V5 < 0.5 & V6 < 0.5) %>% 
   rownames
-length(clust4_genes)
+length(clust4_24)
 #108 genes
 
 #m5
-clust5_genes <- 
-  motif_prob %>%
+clust5_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
          & V4 < 0.5 & V5 > 0.5 & V6 < 0.5) %>% 
   rownames
-length(clust5_genes)
+length(clust5_24)
 #36 genes
 
 #m6
-clust6_genes <- 
-  motif_prob %>%
+clust6_24 <- 
+  motif_prob24 %>%
   as.data.frame() %>%
   filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 
          & V4 < 0.5 & V5 < 0.5 & V6 > 0.5) %>% 
   rownames
-length(clust6_genes)
+length(clust6_24)
 #917 genes
 
 # ### Filter 2: Gene-level posterior pattern
@@ -1445,30 +1463,30 @@ length(clust6_genes)
 #now look at these just based on cluster likelihood and go through to refine later
 
 #first check that each list of genes is unique
-cmf_clustlike <- list(
-  clust1_genes,
-  clust2_genes,
-  clust3_genes,
-  clust4_genes,
-  clust5_genes,
-  clust6_genes
+cmf24_clustlike <- list(
+  all_24_c1 = clust1_24,
+  all_24_c2 = clust2_24,
+  all_24_c3 = clust3_24,
+  all_24_c4 = clust4_24,
+  all_24_c5 = clust5_24,
+  all_24_c6 = clust6_24
 )
 
 #total of 13023 genes out of my original 13739
 
-length(unique(unlist(cmf_clustlike))) == sum(lengths(cmf_clustlike))
+length(unique(unlist(cmf24_clustlike))) == sum(lengths(cmf24_clustlike))
 #each of these gene lists is unique
 
-assigned_genes <- unique(unlist(cmf_clustlike))
+assign_24 <- unique(unlist(cmf24_clustlike))
 all_genes <- rownames(hc_cpm_matrix_24)
-clust_unassign <- setdiff(all_genes, assigned_genes)
+unassign_24 <- setdiff(all_genes, assign_24)
 
 #quick barplot and pie chart
-clust_data <- data.frame(
+clust24_data <- data.frame(
   Category = c("1", "2", "3", "4", "5", "6", "unassign"), 
-  Value = c(length(clust1_genes), length(clust2_genes), length(clust3_genes),
-            length(clust4_genes), length(clust5_genes), length(clust6_genes),
-            length(clust_unassign)
+  Value = c(length(clust1_24), length(clust2_24), length(clust3_24),
+            length(clust4_24), length(clust5_24), length(clust6_24),
+            length(unassign_24)
 ))
 
 
@@ -1481,10 +1499,10 @@ piecolors <- c("1" = "blue",
                "unassign" = "gray"
                        )
 
-clust_data <- clust_data %>%
+clust24_data <- clust24_data %>%
   mutate(Prop = Value / sum(Value) * 100)
 
-clust_data <- clust_data %>%
+clust24_data <- clust24_data %>%
   mutate(Category = factor(Category, levels = c("1", "2", "3", "4", "5", "6", "unassign"))) %>%
   mutate(Prop = Value / sum(Value) * 100)
 
@@ -1513,7 +1531,7 @@ clust_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
 
 ```
 
-# Create gene dataframes
+# Create gene dataframes FIX THIS SOON
 
 ```{r create dataframes}
 #read in my toptable list so I can look at the logFC 
@@ -1522,32 +1540,30 @@ toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
 #also add in my combined dataframe
 combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
 
-filt_toptable_clust <- combined_24hr %>% 
-  dplyr::filter(Entrez_ID  %in% clust1_genes) %>% 
-  mutate(absFC = abs(logFC)) %>% 
-  mutate(time = factor(Time, levels = c("24T", "24R", "144R"), labels = c("24hr", "24hr Recovery", "144hr Recovery"))) %>% 
-  ggplot(., aes(x = time, y = logFC))+
-  geom_boxplot(aes(fill = time))+
-  scale_fill_manual(values = time_col)+
-  guides(fill = guide_legend(title = "Time"))+
-  theme_bw()+
-  xlab(" ")+
-  ylab("logFC")+
-  theme_bw()+
-  ggtitle("LogFC Motif 1 RUVs clustlike")+
-  theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
-        axis.title = element_text(size = 15, colour = "black"),
-        strip.background = element_rect(fill = "#CAD899"),
-        axis.text.x = element_text(size = 8, colour = "white", angle = 15),
-        strip.text.x = element_text(size = 12, colour = "black", face = "bold"))
+# filt_toptable_clust <- combined_24hr %>% 
+#   dplyr::filter(Entrez_ID  %in% clust1_genes) %>% 
+#   mutate(absFC = abs(logFC)) %>% 
+#   mutate(Stimulus = factor(Stimulus, levels = c("24T", "24R", "144R"), labels = c("24hr", "24hr Recovery", "144hr Recovery"))) %>% 
+#   ggplot(., aes(x = time, y = logFC))+
+#   geom_boxplot(aes(fill = time))+
+#   scale_fill_manual(values = time_col)+
+#   guides(fill = guide_legend(title = "Time"))+
+#   theme_bw()+
+#   xlab(" ")+
+#   ylab("logFC")+
+#   theme_bw()+
+#   ggtitle("LogFC Motif 1 RUVs clustlike")+
+#   theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
+#         axis.title = element_text(size = 15, colour = "black"),
+#         strip.background = element_rect(fill = "#CAD899"),
+#         axis.text.x = element_text(size = 8, colour = "white", angle = 15),
+#         strip.text.x = element_text(size = 12, colour = "black", face = "bold"))
 
 ```
 
 
 ```{r go kegg}
 #go kegg for each
-
-library(gprofiler2)
 
 clust1_mat <- as.matrix(clust1_genes)
 colnames(clust1_mat) <- c("Entrez_ID")
@@ -2139,41 +2155,41 @@ cmf_data_list <- list(
 cmf_ic_plots <- list()
 cmf_motif_plots <- list()
 
-for(name in names(cmf_data_list)) {
-  
-  cat("processing subset:", name, "\n")
-  
-  fit <- cmf_data_list[[name]]
-  
-  plotIC(fit)
-  ic_plot <- recordPlot()
-  ic_name <- paste0("cmf_ic_", name)
-  
-  cmf_ic_plots[[ic_name]] <- ic_plot
-  
-  save_plot(
-    plot = ic_plot,
-    filename = paste0(ic_name, "_EMP"),
-    folder = output_folder
-  )
-  
-  #now do the same for the motifs plot
-  
-  plotMotif(fit)
-  mtf_plot <- recordPlot()
-  mtf_name <- paste0("cmf_motif_", name)
-  
-  cmf_motif_plots[[mtf_name]] <- mtf_plot
-  
-  save_plot(
-    plot = mtf_plot,
-    filename = paste0(mtf_name, "_EMP"),
-    folder = output_folder
-  )
-  
-  cat("finished subset:", name, "\n\n")
-  
-}
+# for(name in names(cmf_data_list)) {
+#   
+#   cat("processing subset:", name, "\n")
+#   
+#   fit <- cmf_data_list[[name]]
+#   
+#   plotIC(fit)
+#   ic_plot <- recordPlot()
+#   ic_name <- paste0("cmf_ic_", name)
+#   
+#   cmf_ic_plots[[ic_name]] <- ic_plot
+#   
+#   save_plot(
+#     plot = ic_plot,
+#     filename = paste0(ic_name, "_EMP"),
+#     folder = output_folder
+#   )
+#   
+#   #now do the same for the motifs plot
+#   
+#   plotMotif(fit)
+#   mtf_plot <- recordPlot()
+#   mtf_name <- paste0("cmf_motif_", name)
+#   
+#   cmf_motif_plots[[mtf_name]] <- mtf_plot
+#   
+#   save_plot(
+#     plot = mtf_plot,
+#     filename = paste0(mtf_name, "_EMP"),
+#     folder = output_folder
+#   )
+#   
+#   cat("finished subset:", name, "\n\n")
+#   
+# }
 
 
 #now that I've saved each of these images, let's dive into characterizing each of these motifs
@@ -2255,10 +2271,10 @@ length(clust4_upr)
 
 #first check that each list of genes is unique
 upr_clustlike <- list(
-  clust1_upr,
-  clust2_upr,
-  clust3_upr,
-  clust4_upr
+  upr_c1 = clust1_upr,
+  upr_c2 = clust2_upr,
+  upr_c3 = clust3_upr,
+  upr_c4 = clust4_upr
 )
 
 length(unique(unlist(upr_clustlike))) == sum(lengths(upr_clustlike))
@@ -2346,10 +2362,10 @@ length(clust4_upr_all)
 
 #first check that each list of genes is unique
 upr_clustlike_all <- list(
-  clust1_upr_all,
-  clust2_upr_all,
-  clust3_upr_all,
-  clust4_upr_all
+  upr_all_c1 = clust1_upr_all,
+  upr_all_c2 = clust2_upr_all,
+  upr_all_c3 = clust3_upr_all,
+  upr_all_c4 = clust4_upr_all
 )
 
 length(unique(unlist(upr_clustlike_all))) == sum(lengths(upr_clustlike_all))
@@ -2436,10 +2452,10 @@ length(clust4_ddr)
 
 #first check that each list of genes is unique
 ddr_clustlike <- list(
-  clust1_ddr,
-  clust2_ddr,
-  clust3_ddr,
-  clust4_ddr
+  ddr_c1 = clust1_ddr,
+  ddr_c2 = clust2_ddr,
+  ddr_c3 = clust3_ddr,
+  ddr_c4 = clust4_ddr
 )
 
 length(unique(unlist(ddr_clustlike))) == sum(lengths(ddr_clustlike))
@@ -2507,8 +2523,8 @@ length(clust2_imr)
 
 #first check that each list of genes is unique
 imr_clustlike <- list(
-  clust1_imr,
-  clust2_imr
+  imr_c1 = clust1_imr,
+  imr_c2 = clust2_imr
 )
 
 length(unique(unlist(imr_clustlike))) == sum(lengths(imr_clustlike))
@@ -2563,7 +2579,11 @@ clust1_mcr <-
 length(clust1_mcr)
 #13739 genes (same number as my total number of genes?)
 
+mcr_clustlike <- list(
+  mcr_c1 = clust1_mcr
+)
 
+assign_mcr <- mcr_clustlike
 all_genes <- rownames(hc_cpm_matrix_24)
 unassign_mcr <- setdiff(all_genes, clust1_mcr)
 length(unassign_mcr)
@@ -2573,13 +2593,296 @@ length(unassign_mcr)
 
 ```
 
-# Barplots Subset Motifs
+# Barplots and Pie Charts Subset Motifs
 
 ```{r generate stacked barplots and pie charts for each subset, message=FALSE, warning=FALSE}
 
 #now that I've preliminarily assigned genes to each motif, let's take a look at their distribution
 
 #make a loop for a stacked barplot that goes through each of my gene lists to plot them
+
+subset_names <- c("all_24", "upr_all", "upr", "ddr", "imr", "mcr")
+
+subset_registry <- list(
+  all_24 = list(
+    clustlike = cmf24_clustlike,
+    unassign = unassign_24
+  ),
+  upr_all = list(
+    clustlike = upr_clustlike_all,
+    unassign = unassign_upr_all
+  ),
+  upr = list(
+    clustlike = upr_clustlike,
+    unassign = unassign_upr
+  ),
+  ddr = list(
+    clustlike = ddr_clustlike,
+    unassign = unassign_ddr
+  ),
+  imr = list(
+    clustlike = imr_clustlike,
+    unassign = unassign_imr
+  ),
+  mcr = list(
+    clustlike = mcr_clustlike,
+    unassign = unassign_mcr
+  )
+  
+)
+
+
+#now make a function that loops through each of these to make plots to show the gene distribution proportions/percentages
+
+cmf_plots_funct <- function(clustlike, unassign, subset_name) {
+  
+  n_motifs <- length(clustlike)
+  
+  motif_sizes <- lengths(clustlike)
+  unassign_size <- length(unassign)
+  
+  clust_data <- data.frame(
+    Category = c(as.character(seq_len(n_motifs)), "unassign"),
+    Value = c(motif_sizes, unassign_size),
+    stringsAsFactors = FALSE
+  ) 
+  
+  clust_data <- clust_data %>% 
+    dplyr::mutate(
+      Percentage = Value / sum(Value) * 100,
+      Category = factor(
+        Category,
+        levels = c(as.character(seq_len(n_motifs)), "unassign")
+      )
+    )
+  
+  motif_cols <- RColorBrewer::brewer.pal(
+    max(3, n_motifs),
+    "Set1"
+  )[seq_len(n_motifs)]
+  
+  fill_colors <- c(
+    setNames(motif_cols, as.character(seq_len(n_motifs))),
+    unassign = "gray70"
+  )
+  
+  total_genes <- length(all_genes)
+  
+  #stacked barplot
+  barplot <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    scale_y_continuous(
+      limits = c(0, 105)
+    ) +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.6),
+      direction = "x",
+      size = 6
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("cluster genes distribution ", subset_name)
+    ) +
+    theme_custom() +
+    theme(
+      plot.title = element_text(hjust = 0.5)
+    )
+  
+  #pie charts
+  piechart <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y") +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.6),
+      direction = "y",
+      size = 6
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("cluster genes distribution ", subset_name),
+      x = NULL,
+      y = NULL
+    ) +
+    theme_void()
+  
+  return(list(
+    summary_table = clust_data,
+    barplot = barplot,
+    piechart = piechart
+  ))
+  
+}
+
+#now loop over my subsets
+summary_tables <- list()
+barplots <- list()
+piecharts <- list()
+
+for (subset in names(subset_registry)) {
+  
+  message("processing ", subset)
+  
+  res <- cmf_plots_funct(
+    clustlike = subset_registry[[subset]]$clustlike,
+    unassign = subset_registry[[subset]]$unassign,
+    subset_name = subset
+  )
+  
+  summary_tables[[subset]] <- res$summary_table
+  barplots[[subset]] <- res$barplot
+  piecharts[[subset]] <- res$piechart
+  
+}
+
+#now print these and save them (print them huge so you can see the labels non overlapping)
+
+print(barplots)
+print(piecharts)
+
+# for (nm in names(barplots)) {
+#   
+#   p <- barplots[[nm]]
+#   
+#   print(p)
+#   
+#   #save these plots to my folder
+#   save_plot(
+#     plot = p,
+#     filename = paste0("cmf_barplot_", nm, "_EMP"),
+#     folder = output_folder,
+#     height = 16,
+#     width = 16
+#   )
+#   
+#   #now define the pie charts as well to print and save them
+#   
+#   q <- piecharts[[nm]]
+#   
+#   print(q)
+#   
+#   #save pie charts
+#   save_plot(
+#     plot = q,
+#     filename = paste0("cmf_piechart_", nm, "_EMP"),
+#     folder = output_folder,
+#     height = 16,
+#     width = 16
+#   )
+#   
+# }
+
+```
+
+
+# Example Genes Subset Motifs
+
+```{r Pull out example genes for each subset}
+
+#create a loop to pull out some random example genes (log2cpm) from my matrix hc_cpm_mat
+
+#list the needed data for this
+# hc_cpm_mat
+# meta_cmf
+
+#make a function to pull 5 random genes from each motif gene list
+
+process_motif_genes <- function(gene_vec, expr_mat, meta_df, n_genes = 5) {
+  
+  gene_vec <- gene_vec[gene_vec %in% expr_mat$Entrez_ID]
+  if(length(gene_vec) == 0) return(NULL)
+  
+  #subset my expression matrix (log2cpm)
+  gene_mat <- expr_mat[expr_mat$Entrez_ID %in% gene_vec, , drop = FALSE]
+  
+  #randomly sample 5 genes per motif set
+  n_pull <- min(n_genes, nrow(gene_mat))
+  example_genes <- gene_mat[sample(nrow(gene_mat), n_pull), , drop = FALSE]
+  
+  #long format
+  long_data <- example_genes %>% 
+    pivot_longer(
+      cols = where(is.numeric),
+      names_to = "Sample",
+      values_to = "log2cpm"
+    ) %>% 
+    left_join(meta_df, by = c("Sample" = "Final_sample_name"))
+  
+  return(long_data)
+  
+}
+
+#now make another function to plot these genes in my boxplot format
+
+plot_example_gene <- function(gene_data, gene_name, motif_name) {
+  p <- ggplot(gene_data, aes(x = Cond, y = log2cpm, fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(aes(color = Ind), size = 2, alpha = 0.9,
+               position = position_identity()) +
+    scale_fill_manual(values = stim_col) +
+    scale_color_manual(values = ind_col) +
+  ggtitle(paste("log2cpm expression", gene_name, "cluster", motif_name)) +
+    labs(x = "Condition", y = "log2cpm") +
+    theme_custom()
+  
+  return(p)
+}
+
+#now loop through all of my subsets and their corresponding gene clusters
+
+subset_clustlike <- list(
+  all_24 = cmf24_clustlike,
+  upr_all = upr_clustlike_all,
+  upr = upr_clustlike,
+  ddr = ddr_clustlike,
+  imr = imr_clustlike,
+  mcr = mcr_clustlike
+)
+
+ex_gene_plots <- list()
+
+for(subset_name in names(subset_clustlike)) {
+  
+  cat("generating plots for", subset_name, "\n")
+  
+  motif_list <- subset_clustlike[[subset_name]]
+  
+  for(motif_name in names(motif_list)) {
+    
+    motif_genes <- motif_list[[motif_name]]
+    
+    if(length(motif_genes) == 0) next
+    
+    #pull the genes
+    long_gene_data <- process_motif_genes(motif_genes, hc_cpm_mat, meta_cmf, n_genes = 5)
+    
+    if(is.null(long_gene_data)) next
+    
+    #loop through each ex gene and plot
+    for(gene in unique(long_gene_data$SYMBOL)) {
+      gene_data <- long_gene_data %>% 
+        filter(SYMBOL == gene)
+      
+      p <- plot_example_gene(gene_data, gene_name = gene, motif_name = motif_name)
+      
+      #save plot to list
+      plot_name <- paste0("cmf_", subset_name, "_", motif_name, "_exgene_", gene)
+      ex_gene_plots[[plot_name]] <- p
+      
+      #save plots using my custom function
+      save_plot(
+        plot = p,
+        filename = plot_name,
+        folder = output_folder,
+        height = 10,
+        width = 20
+      )
+      
+      print(p)
+    }
+  }
+}
 
 
 ```
