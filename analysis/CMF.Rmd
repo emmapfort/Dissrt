@@ -1515,7 +1515,7 @@ clust24_data <- clust24_data %>%
   mutate(Prop = Value / sum(Value) * 100)
 
 #stacked bar with no axes
-ggplot(clust_data, aes(x = "", y = Value, fill = Category)) +
+ggplot(clust24_data, aes(x = "", y = Value, fill = Category)) +
   geom_bar(stat = "identity", width = 0.6) +
   labs(title = "Distr of Gene Clusters Cormotif clustlike") +
   scale_fill_manual(values = piecolors) +
@@ -1524,7 +1524,7 @@ ggplot(clust_data, aes(x = "", y = Value, fill = Category)) +
         plot.title = element_text(hjust = 0.5))
 
 #make a piechart of these distributions
-clust_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
+clust24_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
   geom_bar(width = 1, stat = "identity")+
   coord_polar("y", start = 0)+
   geom_text(aes(label = Value),
@@ -1537,7 +1537,7 @@ clust_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
 
 ```
 
-# Create gene dataframes FIX THIS SOON
+# Create gene dataframes
 
 ```{r create dataframes, warning=FALSE, message=FALSE}
 #read in my toptable list so I can look at the logFC 
@@ -1552,7 +1552,7 @@ combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
 ```{r go kegg, warning=FALSE, message=FALSE}
 #go kegg for each
 
-clust1_mat <- as.matrix(clust1_genes)
+clust1_mat <- as.matrix(clust1_24)
 colnames(clust1_mat) <- c("Entrez_ID")
 
 c1_gk <- gost(query = clust1_mat,
@@ -1613,20 +1613,22 @@ table_c1 %>%
   
 
 #C2
-clust2_mat <- as.matrix(clust2_genes)
+clust2_mat <- as.matrix(clust2_24)
 colnames(clust2_mat) <- c("Entrez_ID")
 
-# c2_gk <- gost(query = clust2_mat,
-#                           organism = "hsapiens",
-#                           ordered_query = FALSE,
-#                           measure_underrepresentation = FALSE,
-#                           evcodes = TRUE,
-#                           user_threshold = 0.05,
-#                           significant = TRUE,
-#                           custom_bg = all_genes,
-#                           correction_method = c("fdr"),
-#                           sources = c("GO:BP", "KEGG"))
-# 
+c2_gk <- gost(query = clust2_mat,
+                          organism = "hsapiens",
+                          ordered_query = FALSE,
+                          measure_underrepresentation = FALSE,
+                          evcodes = TRUE,
+                          user_threshold = 0.05,
+                          significant = TRUE,
+                          custom_bg = all_genes,
+                          correction_method = c("fdr"),
+                          sources = c("GO:BP", "KEGG"))
+
+#no terms found
+
 # c2_gk_gost <- gostplot(c2_gk, capped = FALSE, interactive = TRUE)
 # c2_gk_gost
 # 
@@ -1673,7 +1675,7 @@ colnames(clust2_mat) <- c("Entrez_ID")
 #   theme(legend.position = "none")
 
 #C3
-clust3_mat <- as.matrix(clust3_genes)
+clust3_mat <- as.matrix(clust3_24)
 colnames(clust3_mat) <- c("Entrez_ID")
 
 c3_gk <- gost(query = clust3_mat,
@@ -1736,7 +1738,7 @@ table_c3 %>%
   theme(legend.position = "none")
 
 #C2
-clust4_mat <- as.matrix(clust4_genes)
+clust4_mat <- as.matrix(clust4_24)
 colnames(clust4_mat) <- c("Entrez_ID")
 
 c4_gk <- gost(query = clust4_mat,
@@ -1778,6 +1780,8 @@ table_c4 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
   scale_y_discrete(labels = scales::label_wrap(30))+
   theme_custom()
 
+#no KEGG terms found
+
 # table_c4 <- c4_gk$result %>% 
 #   dplyr::select(c(source, term_id, term_name, intersection_size, term_size, p_value))
 # 
@@ -1799,7 +1803,7 @@ table_c4 %>% ggplot(., aes(x = log_val, y = reorder(term_name, p_value))) +
 #   theme(legend.position = "none")
 
 #C5
-clust5_mat <- as.matrix(clust5_genes)
+clust5_mat <- as.matrix(clust5_24)
 colnames(clust5_mat) <- c("Entrez_ID")
 
 c5_gk <- gost(query = clust5_mat,
@@ -1862,7 +1866,7 @@ table_c5 %>%
   theme(legend.position = "none")
 
 #C6
-clust6_mat <- as.matrix(clust6_genes)
+clust6_mat <- as.matrix(clust6_24)
 colnames(clust6_mat) <- c("Entrez_ID")
 
 c6_gk <- gost(query = clust6_mat,
@@ -2970,4 +2974,5 @@ for(gene in unique(long_gene_data$SYMBOL)) {
 }
 
 ```
+
 
