@@ -9,10 +9,9 @@ output:
     toc_float: true
     theme: journal
     highlight: textmate
----
-
 editor_options: 
   chunk_output_type: inline
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
