@@ -1,11 +1,18 @@
 ---
-title: "Home"
+title: "Analysis Workflow"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
     toc: false
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
-Welcome to my research website.
+# Welcome!
+
+This website is a working archive for the analysis I'm completing for this project. Click below to look at each piece of my analysis within our workflow.
+
+## Analysis
+- [Initial QC Analysis](QC_Subset.html)
+- [Differential Expression Analysis](DE.html)
+- [Cormotif Analysis](CMF.html)

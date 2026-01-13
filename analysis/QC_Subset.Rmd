@@ -1,10 +1,16 @@
 ---
 title: "QC"
 author: "Emma M Pfortmiller"
-date: "2025-12-27"
-output: html_document
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: journal
+    highlight: textmate
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -71,7 +77,7 @@ library(magick)
 # Define plot theme
 
 
-```{r Custom Theme}
+```{r Custom Theme, message=FALSE, warning=FALSE}
 # Define the custom theme
 # plot_theme_custom <- function() {
 #   theme_minimal() +
@@ -123,7 +129,7 @@ theme_custom <- readRDS("data/plot_theme_custom.RDS")
 # Define saving plots as pdfs
 
 
-```{r pdf saving function}
+```{r pdf saving function, message=FALSE, warning=FALSE}
 
 save_plot <- function(plot, filename, 
                       folder = ".", 
@@ -132,15 +138,41 @@ save_plot <- function(plot, filename,
                       units = "in", 
                       dpi = 300, 
                       add_date = TRUE) {
+  
   if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
 
   date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
   pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
   png_file <- file.path(folder, paste0(filename, date_str, ".png"))
-  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
-  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
-  message("Saved plot as Cairo PDF: ", pdf_file)
+  
+  #add conditions for recorded plots and ggsave
+  if (inherits(plot, "recordedplot")) {
+    
+    #pdf save
+    pdf(pdf_file, width = width, height = height, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+    #png save
+    png(png_file, width = width, height = height, units = units, res = dpi, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+  } else {
+    
+    #save pdf
+    ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, 
+         width = width, height = height, units = units, bg = "transparent")
+    
+    #save png
+    ggsave(filename = png_file, plot = plot, device = "png", 
+         width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  
+  message("Saved plot as PDF: ", pdf_file)
   message("Saved plot as PNG: ", png_file)
+  
+  }
+  
 }
 
 output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
@@ -153,7 +185,7 @@ output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor 
 
 # Complex Heatmap Saving Script
 
-```{r Save ComplexHeatmaps}
+```{r Save ComplexHeatmaps, message=FALSE, warning=FALSE}
 
 save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height = 10, dpi = 300, add_date = TRUE) {
   if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
@@ -183,7 +215,7 @@ save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height =
 # Define colors and factors
 
 
-```{r Theme Colors and Factors}
+```{r Theme Colors and Factors, message=FALSE, warning=FALSE}
 #each of these to be used after pairwise comparison save individual
 
 ####STIMULI####
@@ -290,7 +322,7 @@ spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
 
 # Import Counts Files for Both Species
 
-```{r Import Counts Tables}
+```{r Import Counts Tables, message=FALSE, warning=FALSE}
 #I have one counts table for chimpanzee and another for human
 
 #read in chimpanzee counts
@@ -313,7 +345,7 @@ h_raw_counts <- readRDS("data/counts/h_raw_counts.RDS")
 
 # Import Metadata Table
 
-```{r Read in Metadata Sheet}
+```{r Read in Metadata Sheet, message=FALSE, warning=FALSE}
 #I have a metadata sheet so I can associate the column names with their sample ID
 
 # metadata <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv",
@@ -334,7 +366,7 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 
 # Combine my datasets 
 
-```{r Join my Human and Chimp datasets together}
+```{r Join my Human and Chimp datasets together, message=FALSE, warning=FALSE}
 #make sure to sort them so that all of the genes match up
 # 
 # h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
@@ -357,7 +389,7 @@ hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 
 #Subset Dataset to Remove Extraneous Samples
 
-```{r Remove extra samples}
+```{r Remove extra samples, message=FALSE, warning=FALSE}
 
 #I want to go through my metadata and my counts dataframe to put together a subset of samples
 
@@ -436,7 +468,7 @@ hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
 Generate plots for the subset of samples kept for this experiment.
 
 
-```{r Mapping and Counts Stats}
+```{r Mapping and Counts Stats, message=FALSE, warning=FALSE, fig.height=10, fig.width=14}
 #read in my excel file with all of this information
 
 
@@ -740,15 +772,18 @@ qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
 
 stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
 
+#print all of these plots here
+print(qc_map_plots_list)
+
 #save all of these plots to my designated folder
 
-for (i in seq_along(qc_map_plots_list)) {
-  save_plot(
-    plot = qc_map_plots_list[[i]],
-    filename = qc_map_plots_names[i],
-    folder = output_folder
-  )
-}
+# for (i in seq_along(qc_map_plots_list)) {
+#   save_plot(
+#     plot = qc_map_plots_list[[i]],
+#     filename = qc_map_plots_names[i],
+#     folder = output_folder
+#   )
+# }
 
 ```
 
@@ -756,7 +791,7 @@ for (i in seq_along(qc_map_plots_list)) {
 
 Convert my dataframe to log2cpm and filter out lowly-expressed genes via rowMeans.
 
-```{r Filter with rowMeans}
+```{r Filter with rowMeans, message=FALSE, warning=FALSE}
 #first, convert to log2cpm
 
 #ensure that Entrez_ID are the rownames
@@ -797,7 +832,7 @@ hist(hc_cpm_matrix,
 
 # QC Boxplots
 
-```{r QC Boxplots both species}
+```{r QC Boxplots both species, message=FALSE, warning=FALSE, fig.height=6, fig.width=8}
 #make boxplots of all counts vs log2cpm filtered counts
 
 par(mar = c(8,4,2,2))
@@ -815,38 +850,16 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
         names = colnames(hc_cpm_matrix), 
         adj=1, las = 2, cex.axis = 0.7)
 
+print(hc_cpm_unfilt_boxplot)
+print(hc_cpm_filt_boxplot)
 
 ```
-
-# QC Boxplots
-
-
-```{r QC Boxplots}
-#make boxplots of all counts vs log2cpm filtered counts
-
-par(mar = c(8,4,2,2))
-#boxplot of unfiltered cpm matrix
-hc_cpm_unfilt_boxplot <- boxplot(hc_cpm_unfilt_sub, 
-        main = "Unfiltered log2cpm", 
-        names = colnames(hc_cpm_unfilt_sub), 
-        adj=1, las = 2, cex.axis = 0.7)
-
-#set the margins so the x axis isn't cut off
-par(mar = c(8,4,2,2))
-#boxplot of filtered cpm matrix
-hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix, 
-        main = "Filtered log2cpm (rowMeans > 0)", 
-        names = colnames(hc_cpm_matrix), 
-        adj=1, las = 2, cex.axis = 0.7)
-
-```
-
 
 # Principal Component Analysis
 
 Perform PCA analysis on subset of data.
 
-```{r PCA Plots}
+```{r PCA Plots, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 
 prcomp_hc_unfilt <- prcomp(t(hc_cpm_unfilt_sub), center =  TRUE)
 
@@ -986,7 +999,7 @@ print(hc_pca_plots)
 
 Only plot 24hr samples on these PCA plots.
 
-```{r PCA Plots 24hr Only}
+```{r PCA Plots 24hr Only, warning=FALSE, message=FALSE, fig.height=6, fig.width=8}
 #now filter out all of the 2hr points and plot your filtered PCA plots
 
 metadata_24 <- metadata_sub %>% 
@@ -1126,13 +1139,13 @@ pca_24_list <- list(
 
 print(pca_24_list)
 
-for (plot_name in names(pca_24_list)) {
-  save_plot(
-    plot = pca_24_list[[plot_name]],
-    filename = paste0("PCA_24hr_HC_", plot_name, "_EMP"),
-    folder = output_folder
-  )
-}
+# for (plot_name in names(pca_24_list)) {
+#   save_plot(
+#     plot = pca_24_list[[plot_name]],
+#     filename = paste0("PCA_24hr_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
 
 # save_plot(
 #   plot = filt24_PC1_PC2,
@@ -1145,7 +1158,7 @@ for (plot_name in names(pca_24_list)) {
 
 ## PCA from 2hr Samples
 
-```{r PCA 2hr Subset}
+```{r PCA 2hr Subset, warning=FALSE, message=FALSE, fig.height=6, fig.width=8}
 
 metadata_2 <- metadata_sub %>% 
   filter(Time == "2")
@@ -1281,13 +1294,13 @@ pca_2_list <- list(
 
 print(pca_2_list)
 
-for (plot_name in names(pca_2_list)) {
-  save_plot(
-    plot = pca_2_list[[plot_name]],
-    filename = paste0("PCA_2hr_HC_", plot_name, "_EMP"),
-    folder = output_folder
-  )
-}
+# for (plot_name in names(pca_2_list)) {
+#   save_plot(
+#     plot = pca_2_list[[plot_name]],
+#     filename = paste0("PCA_2hr_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
 
 # save_plot(
 #   plot = filt2_PC1_PC2,
@@ -1303,7 +1316,7 @@ for (plot_name in names(pca_2_list)) {
 Now take the samples from my subset and divide them out by response category to get an idea of how the different stimuli are working together within a category.
 
 #Subset PCA
-```{r PCA of Subsets}
+```{r PCA of Subsets, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 
 #Copy down the original full dataset that I'll divide into categories
 
@@ -1453,7 +1466,7 @@ print(all_plots_subset_pca)
 
 Create Spearman correlation heatmaps of all samples in the subset.
 
-```{r Spearman Heatmaps Correlation, fig.width=12, fig.height=10, warning=FALSE}
+```{r Spearman Heatmaps Correlation, fig.width=20, fig.height=20, warning=FALSE, message=FALSE}
 
 #first make correlation heatmaps of all samples
 #using ComplexHeatmap
@@ -1466,6 +1479,8 @@ cor_matrix_spearman <- cor(hc_cpm_matrix,
 
 #define factors for legend order
 ind_levels  <- c(paste0("H", 1:7), paste0("C", 1:7))
+
+inf_status <- c("infected", "uninfected")
 
 stim_levels <- c(
   "TUN", "THA",
@@ -1558,7 +1573,7 @@ draw(heatmap_spearman_all)
 Now create a Spearman correlation heatmap for each response category.
 
 
-```{r Subset Spearman Correlation Heatmaps}
+```{r Subset Spearman Correlation Heatmaps, warning=FALSE, message=FALSE, fig.height=18, fig.width=18}
 
 #define subsets for each response category
 subsets <- list(
@@ -1660,7 +1675,7 @@ for (subset_name in names(subsets)) {
 
 # Differential Expression Analysis
 
-```{r Set up DE}
+```{r Set up DE, warning=FALSE, message=FALSE}
 #filter my raw counts (subset of samples) to remove lowly expressed genes as above
 
 x <- hc_counts_sub[row.names(hc_cpm_matrix),]
@@ -1687,6 +1702,9 @@ meta_de$Ind <- as.character(meta_de$Ind)
 dge <- DGEList(counts = x)
 dge$samples$group <- factor(meta_de$Cond)
 dge <- calcNormFactors(dge, method = "TMM")
+
+
+
 
 # saveRDS(dge, "data/de/dge_matrix.RDS")
 
@@ -1753,7 +1771,7 @@ summary(results_summary)
 
 # Create Toptables
 
-```{r Toptables}
+```{r Toptables, warning=FALSE, message=FALSE}
 
 #2hr Chimp
 Toptable_V.TUN2_H <- topTable(fit = fit2, 

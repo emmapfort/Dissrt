@@ -1,17 +1,24 @@
-name: "Dissrt"
+name: "Dissrt_website"
 output_dir: ../docs
 navbar:
-  title: "Dissrt"
+  title: "Dissrt Project"
   left:
-  - text: Home
-    href: index.html
   - text: About
     href: about.html
+  - text: Analysis
+    href: index.html
   - text: License
     href: license.html
+  right:
+  - icon: fab fa-github
+    href: https://github.com/emmapfort/Dissrt
+    text: Source Code
 output:
   workflowr::wflow_html:
     toc: yes
-    toc_float: yes
-    theme: cosmo
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+    theme: journal
     highlight: textmate
