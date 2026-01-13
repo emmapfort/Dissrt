@@ -1,9 +1,18 @@
 ---
 title: "CMF"
 author: "Emma M Pfortmiller"
-date: "2025-12-29"
-output: html_document
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: journal
+    highlight: textmate
 ---
+
+editor_options: 
+  chunk_output_type: inline
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -69,7 +78,7 @@ library(magick)
 # Define plot theme
 
 
-```{r Custom Theme}
+```{r Custom Theme, warning=FALSE, message=FALSE}
 # Define the custom theme
 # plot_theme_custom <- function() {
 #   theme_minimal() +
@@ -121,7 +130,7 @@ theme_custom <- readRDS("data/plot_theme_custom.RDS")
 # Define saving plots as pdfs
 
 
-```{r pdf saving function}
+```{r pdf saving function, warning=FALSE, message=FALSE}
 
 save_plot <- function(plot, filename, 
                       folder = ".", 
@@ -177,7 +186,7 @@ output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor 
 
 # Complex Heatmap Saving Script
 
-```{r Save ComplexHeatmaps}
+```{r Save ComplexHeatmaps, warning=FALSE, message=FALSE}
 
 save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height = 10, dpi = 300, add_date = TRUE) {
   if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
@@ -207,7 +216,7 @@ save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height =
 # Define colors and factors
 
 
-```{r Theme Colors and Factors}
+```{r Theme Colors and Factors, warning=FALSE, message=FALSE}
 #each of these to be used after pairwise comparison save individual
 
 ####STIMULI####
@@ -1245,7 +1254,7 @@ legend('bottomleft',fill=myColors, legend =rev(c("0", "0.1", "0.2", "0.3", "0.4"
 # Perform Cormotif on 24hr Samples
 
 
-```{r Cormotif Subset 24hr}
+```{r Cormotif Subset 24hr, warning=FALSE, message=FALSE}
 
 #I want to go ahead and subset my data to focus on the 24hr samples for Cormotif
 #I will take my same matrix and remove any 2hr samples
@@ -1327,7 +1336,7 @@ plotMotif(cmf_fit_24)
 
 # Define these motifs
 
-```{r Define motifs}
+```{r Define motifs, warning=FALSE, message=FALSE}
 
 #extract the posterior probability that these genes belong to motifs
 gene_prob_all24 <- cmf_fit_24$bestmotif$p.post
@@ -1452,12 +1461,11 @@ clust6_24 <-
 length(clust6_24)
 #917 genes
 
-# ### Filter 2: Gene-level posterior pattern
+# ### Filter 2: Gene-level posterior pattern (add later)
 # prob_filtered_genes_1 <- rownames(gene_probs[(gene_probs[,1] > 0.05 & gene_probs[,1] <0.5 & gene_probs[,2] <0.5 & gene_probs[,3] <0.5),])
 # ### Final intersection of both filters
 # final_genes_1_RUV <- intersect(clust1_genes_RUV, prob_filtered_genes_1_RUV)
 # cat("Number of genes passing both filters:", length(final_genes_1_RUV), "\n")
-# #7602 genes pass both filters here
 
 
 #now look at these just based on cluster likelihood and go through to refine later
@@ -1527,42 +1535,21 @@ clust_data %>% ggplot(aes(x = "", y = Value, fill = Category))+
   scale_fill_manual(values = piecolors)
 
 
-
-
 ```
 
 # Create gene dataframes FIX THIS SOON
 
-```{r create dataframes}
+```{r create dataframes, warning=FALSE, message=FALSE}
 #read in my toptable list so I can look at the logFC 
 
 toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
 #also add in my combined dataframe
 combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
 
-# filt_toptable_clust <- combined_24hr %>% 
-#   dplyr::filter(Entrez_ID  %in% clust1_genes) %>% 
-#   mutate(absFC = abs(logFC)) %>% 
-#   mutate(Stimulus = factor(Stimulus, levels = c("24T", "24R", "144R"), labels = c("24hr", "24hr Recovery", "144hr Recovery"))) %>% 
-#   ggplot(., aes(x = time, y = logFC))+
-#   geom_boxplot(aes(fill = time))+
-#   scale_fill_manual(values = time_col)+
-#   guides(fill = guide_legend(title = "Time"))+
-#   theme_bw()+
-#   xlab(" ")+
-#   ylab("logFC")+
-#   theme_bw()+
-#   ggtitle("LogFC Motif 1 RUVs clustlike")+
-#   theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
-#         axis.title = element_text(size = 15, colour = "black"),
-#         strip.background = element_rect(fill = "#CAD899"),
-#         axis.text.x = element_text(size = 8, colour = "white", angle = 15),
-#         strip.text.x = element_text(size = 12, colour = "black", face = "bold"))
-
 ```
 
 
-```{r go kegg}
+```{r go kegg, warning=FALSE, message=FALSE}
 #go kegg for each
 
 clust1_mat <- as.matrix(clust1_genes)
@@ -1943,7 +1930,7 @@ table_c6 %>%
 
 I want to perform this Cormotif analysis on each response category as well, so that I can make more specific comparisons between the stimuli and between species.
 
-```{r Subset my CMF results for each response category}
+```{r Subset my CMF results for each response category, warning=FALSE, message=FALSE}
 #subset my expr matrix from above by each subset
 
 #upr 24hr
@@ -2050,7 +2037,7 @@ compid_upr_all <- data.frame(Cond1 = c(1, 2, 3, 4, 7, 8, 9, 10),
 
 # Loop through Cormotif for each Subset
 
-```{r run cormotif fit for each subset}
+```{r run cormotif fit for each subset, warning=FALSE, message=FALSE}
 
 #I want to create a loop so that I can run each of these and plot them
 
@@ -2238,7 +2225,7 @@ clust1_upr <-
   as.data.frame() %>%
   filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
   rownames
-length(clust1_upr)
+length(clust1_upr)    
 #11,172 genes w/ cutoff of 0.6 (too many at 0.5)
 
 #motif2
@@ -2474,7 +2461,7 @@ length(unassign_ddr)
 
 # IMR Subset Motifs
 
-```{r IMR cormotif analysis}
+```{r IMR cormotif analysis, warning=FALSE, message=FALSE}
 
 #extract the posterior probability that these genes belong to motifs
 imr_gene_prob <- cmf_imr$bestmotif$p.post
@@ -2542,7 +2529,7 @@ length(unassign_imr)
 
 #MCR Subset Motifs
 
-```{r MCR cormotif analysis}
+```{r MCR cormotif analysis, warning=FALSE, message=FALSE}
 
 #extract the posterior probability that these genes belong to motifs
 mcr_gene_prob <- cmf_mcr$bestmotif$p.post
@@ -2778,13 +2765,73 @@ print(piecharts)
 
 # Example Genes Subset Motifs
 
-```{r Pull out example genes for each subset}
+```{r Pull out example genes for each subset, warning=FALSE, message=FALSE}
 
 #create a loop to pull out some random example genes (log2cpm) from my matrix hc_cpm_mat
 
 #list the needed data for this
 # hc_cpm_mat
 # meta_cmf
+
+#factor my different conditions
+species_order <- c("H", "C")
+
+stimulus_order <- c("TUN", "THA", 
+                    "DOX", "NUTL", "DMSO", 
+                    "LPS", "TNFa", "H2O", 
+                    "BPA", "PFOA", "EtOH")
+
+time_order <- c("2", "24")
+
+cond_order <- c("TUN_2_H", "TUN_2_C",
+                "THA_2_H", "THA_2_C",
+                "DMSO_2_H", "DMSO_2_C",
+                "TUN_24_H", "TUN_24_C",
+                "THA_24_H", "THA_24_C",
+                "DOX_24_H", "DOX_24_C",
+                "NUTL_24_H", "NUTL_24_C",
+                "DMSO_24_H", "DMSO_24_C",
+                "LPS_24_H", "LPS_24_C",
+                "TNFa_24_H", "TNFa_24_C",
+                "H2O_24_H", "H2O_24_C",
+                "BPA_24_H", "BPA_24_C",
+                "PFOA_24_H", "PFOA_24_C",
+                "EtOH_24_H", "EtOH_24_C")
+
+#make a lookup function to make sure everything is subsetted correctly for plotting
+
+subset_stimulus_map <- list(
+  upr_all = list(
+    stimuli = c("TUN", "THA", "DMSO"),
+    times = c("2", "24")
+  ),
+  upr = list(
+    stimuli = c("TUN", "THA", "DMSO"),
+    times = c("24")
+  ),
+  ddr = list(
+    stimuli = c("DOX", "NUTL", "DMSO"),
+    times = c("24")
+  ),
+  imr = list(
+    stimuli = c("LPS", "TNFa", "H2O"),
+    times = c("24")
+  ),
+  mcr = list(
+    stimuli = c("BPA", "PFOA", "EtOH"),
+    times = c("24")
+  ),
+  all_24 = list(
+    stimuli = c(
+      "TUN", "THA", 
+      "DOX", "NUTL", "DMSO",
+      "LPS", "TNFa", "H2O",
+      "BPA", "PFOA", "EtOH"
+    ),
+    times = c("24")
+  )
+)
+
 
 #make a function to pull 5 random genes from each motif gene list
 
@@ -2847,6 +2894,7 @@ for(subset_name in names(subset_clustlike)) {
   cat("generating plots for", subset_name, "\n")
   
   motif_list <- subset_clustlike[[subset_name]]
+  subset_rules <- subset_stimulus_map[[subset_name]]
   
   for(motif_name in names(motif_list)) {
     
@@ -2854,36 +2902,72 @@ for(subset_name in names(subset_clustlike)) {
     
     if(length(motif_genes) == 0) next
     
-    #pull the genes
-    long_gene_data <- process_motif_genes(motif_genes, hc_cpm_mat, meta_cmf, n_genes = 5)
+    long_gene_data <- process_motif_genes(
+      motif_genes, hc_cpm_mat, meta_cmf, n_genes = 5
+    )
     
     if(is.null(long_gene_data)) next
     
-    #loop through each ex gene and plot
-    for(gene in unique(long_gene_data$SYMBOL)) {
+    long_gene_data <- long_gene_data[
+      long_gene_data$Stimulus %in% subset_rules$stimuli &
+      long_gene_data$Time %in% subset_rules$times,
+    ]
+    
+    if(nrow(long_gene_data) == 0) next
+    
+    #ensure all factors are ordered properly in the plots
+    long_gene_data$Stimulus <- factor(
+      long_gene_data$Stimulus,
+      levels = stimulus_order
+    )
+    
+    long_gene_data$Species <- factor(
+      long_gene_data$Species,
+      levels = species_order
+    )
+    
+    long_gene_data$Time <- factor(
+      long_gene_data$Time,
+      levels = time_order
+    )
+    
+    long_gene_data$Cond <- factor(
+      long_gene_data$Cond,
+      levels = cond_order
+    )
+    
+    #plot my genes
+    
+for(gene in unique(long_gene_data$SYMBOL)) {
+      
       gene_data <- long_gene_data %>% 
         filter(SYMBOL == gene)
       
-      p <- plot_example_gene(gene_data, gene_name = gene, motif_name = motif_name)
+      p <- plot_example_gene(
+        gene_data,
+        gene_name = gene,
+        motif_name = motif_name
+      )
       
-      #save plot to list
-      plot_name <- paste0("cmf_", subset_name, "_", motif_name, "_exgene_", gene)
+      plot_name <- paste0(
+        "cmf_", subset_name, "_", motif_name, "_exgene_", gene
+      )
+      
       ex_gene_plots[[plot_name]] <- p
       
-      #save plots using my custom function
-      save_plot(
-        plot = p,
-        filename = plot_name,
-        folder = output_folder,
-        height = 10,
-        width = 20
-      )
+      #save the plot using my custom function
+      # save_plot(
+      #   plot = p,
+      #   filename = plot_name,
+      #   folder = output_folder,
+      #   height = 12,
+      #   width = 20
+      # )
       
       print(p)
     }
   }
 }
-
 
 ```
 

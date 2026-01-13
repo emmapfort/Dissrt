@@ -1,11 +1,18 @@
 ---
-title: "RNAseq_QC"
+title: "RNAseq_Analysis"
 author: "Emma M Pfortmiller"
-date: "2025-09-26"
-output: html_document
-editor_options: 
-  chunk_output_type: console
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: journal
+    highlight: textmate
 ---
+
+editor_options: 
+  chunk_output_type: inline
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -66,7 +73,7 @@ library(magick)
 ```
 
 #Define plot theme
-```{r Custom Theme}
+```{r Custom Theme, warning=FALSE, message=FALSE}
 # Define the custom theme
 # plot_theme_custom <- function() {
 #   theme_minimal() +
@@ -116,7 +123,7 @@ theme_custom <- readRDS("data/plot_theme_custom.RDS")
 ```
 
 #Define saving plots as pdfs
-```{r pdf saving function}
+```{r pdf saving function, warning=FALSE, message=FALSE}
 
 save_plot <- function(plot, filename, 
                       folder = ".", 
@@ -144,7 +151,7 @@ output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor 
 ```
 
 #Factors and Colors
-```{r Theme Colors and Factors}
+```{r Theme Colors and Factors, warning=FALSE, message=FALSE}
 #each of these to be used after pairwise comparison save individual
 
 ####STIMULI####
@@ -226,7 +233,7 @@ ind_vec <- readRDS("data/theme/individual_vector.RDS")
 
 
 #Datasets Creation
-```{r Import Counts Tables}
+```{r Import Counts Tables, warning=FALSE, message=FALSE}
 #I have one counts table for chimpanzee and another for human
 
 #read in chimpanzee counts
@@ -247,7 +254,7 @@ h_raw_counts <- readRDS("data/counts/h_raw_counts.RDS")
 ```
 
 #Metadata
-```{r Read in Metadata Sheet}
+```{r Read in Metadata Sheet, warning=FALSE, message=FALSE}
 #I have a metadata sheet so I can associate the column names with their sample ID
 
 # metadata <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv",
@@ -265,7 +272,7 @@ chimp_metadata <- metadata[metadata$Species == "C", ]
 
 ```
 
-```{r Change Column Names}
+```{r Change Column Names, warning=FALSE, message=FALSE}
 #I want to modify the column names for each dataset to match their sample id and treatment instead of library id
 
 #first make sure that Geneid changes to Ensembl_ID
@@ -316,7 +323,7 @@ c_counts <- readRDS("data/counts/c_counts.RDS")
 ```
 
 #Combine my datasets
-```{r Join my Human and Chimp datasets together}
+```{r Join my Human and Chimp datasets together, warning=FALSE, message=FALSE}
 #make sure to sort them so that all of the genes match up
 # 
 # h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
@@ -338,7 +345,7 @@ hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 ```
 
 #QC Mapping/fC
-```{r Mapping and Counts Stats}
+```{r Mapping and Counts Stats, warning=FALSE, message=FALSE}
 #read in my excel file with all of this information
 # map_align_stats <- read_excel("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx",
 #     sheet = "Map_Align_all", col_types = c("text",
@@ -725,13 +732,13 @@ qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
 
 #save all of these plots to my designated folder
 
-for (i in seq_along(qc_map_plots_list)) {
-  save_plot(
-    plot = qc_map_plots_list[[i]],
-    filename = qc_map_plots_names[i],
-    folder = output_folder
-  )
-}
+# for (i in seq_along(qc_map_plots_list)) {
+#   save_plot(
+#     plot = qc_map_plots_list[[i]],
+#     filename = qc_map_plots_names[i],
+#     folder = output_folder
+#   )
+# }
 
 ```
 
@@ -1025,8 +1032,8 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
 ```
 
 
+# Convert Ensembl to Entrez
 
-#Convert Ensembl to Entrez
 ```{r converting ensembl id into entrez id}
 # ensembl_ids <- rownames(hc_cpm_matrix)
 # ensembl_ids_unfilt <- rownames(hc_counts)
@@ -2386,8 +2393,8 @@ dge$samples$group <- factor(metadata_2$Cond)
 dge <- calcNormFactors(dge, method = "TMM")
 
 #before making my design matrix, factor
-metadata_2$Ind_Num <- factor(metadata_2$Ind_Num, levels = unique(metadata_2$Ind_Num))
-metadata_2$Drug <- factor(metadata_2$Drug, levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH"))
+metadata_2$Ind <- factor(metadata_2$Ind, levels = unique(metadata_2$Ind))
+metadata_2$Stimuli <- factor(metadata_2$Stimulus, levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH"))
 metadata_2$Time <- factor(metadata_2$Time, levels = c("2", "24"))
 metadata_2$Species <- factor(metadata_2$Species, levels = c("C", "H"))
 metadata_2$Cond <- factor(metadata_2$Cond, levels = unique(metadata_2$Cond))
@@ -2403,7 +2410,7 @@ colnames(design) <- gsub("metadata_2\\$Cond", "", colnames(design))
 #run duplicate correlation for individual effect
 corfit <- duplicateCorrelation(object = dge$counts,
                                design = design,
-                               block = metadata_2$Ind_Num)
+                               block = metadata_2$Ind)
 
 #run voom transformation and plot it
 v <- voom(dge, design, 
@@ -6095,3 +6102,128 @@ species_specific_both_deg
 
 ```
 
+# logFC Distribution (move me back to CMF)
+
+```{r plot logFC distribution of subsets, warning=FALSE, message=FALSE}
+#I want to make a function to loop through my different subsets to get an idea of their logFC distribution
+#this will be using my toptables that I made with DE analysis previously
+
+#read in my toptables
+# toptable_combined_24 <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
+
+toptable_list_24 <- readRDS("data/de/Toptable_list_24hr.RDS")
+  
+#pull in my gene vectors
+motif_gene_sets <- list(
+  upr = upr_clustlike,
+  ddr = ddr_clustlike,
+  imr = imr_clustlike,
+  mcr = mcr_clustlike
+)
+
+motif_stimuli <- list(
+  upr = c("TUN", "THA"),
+  ddr = c("DOX", "NUTL"),
+  imr = c("LPS", "TNFa"),
+  mcr = c("BPA", "PFOA")
+)
+
+#pivot my dataframe into a long format for plotting
+toptable_long_24 <- imap_dfr(
+  toptable_list_24,
+  ~ .x %>%
+    mutate(
+      Stimulus = gsub("^V\\.|24_[HC]$", "", .y),
+      Species  = ifelse(grepl("_H$", .y), "Human", "Chimp"),
+      Time = "24"
+    )
+)
+
+#create a function to loop through my gene clusters for each 24hr subset
+plot_logFC_distribution <- function(df, gene_set, motif_name,
+                                    value = c("logFC", "absFC")) {
+  value <- match.arg(value)
+  motif_key <- tolower(motif_name)  # lowercase to match motif_stimuli
+
+  if (!motif_key %in% names(motif_stimuli)) {
+    stop("Motif name not found in motif_stimuli: ", motif_key)
+  }
+
+  plot_df <- df %>%
+    dplyr::filter(
+      Entrez_ID %in% gene_set,
+      Stimulus %in% motif_stimuli[[motif_key]]
+    ) %>%
+    mutate(absFC = abs(logFC))
+
+  if (nrow(plot_df) == 0) {
+    warning("No data to plot for motif: ", motif_key)
+    return(NULL)
+  }
+
+  plot_df <- plot_df %>% filter(!is.na(Species))
+
+  y_var <- if(value == "logFC") "logFC" else "absFC"
+  y_lab <- if(value == "logFC") "logFC" else "|logFC|"
+
+  ggplot(plot_df, aes(x = Stimulus, y = .data[[y_var]])) +
+    geom_boxplot(outlier.size = 0.3) +
+    facet_wrap(~ Species) +
+    theme_custom() +
+    labs(
+      title = paste0(y_lab, " distribution for ", motif_key),
+      x = "Stimulus",
+      y = y_lab
+    ) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      axis.title = element_text(size = 12)
+    )
+}
+
+
+
+
+#loop over the motifs
+logFC_plots_24 <- imap(
+  motif_gene_sets,
+  ~ plot_logFC_distribution(
+      df = toptable_long_24,
+      gene_set = .x,
+      motif_name = .y,
+      value = "logFC"
+    )
+)
+
+absFC_plots_24 <- imap(
+  motif_gene_sets,
+  ~ plot_logFC_distribution(
+      df = toptable_long_24,
+      gene_set = .x,
+      motif_name = .y,
+      value = "absFC"
+    )
+)
+
+#make a list of all of the plots I have
+all_plots_24 <- c(
+  setNames(logFC_plots_24,
+           paste0(names(logFC_plots_24), "_logFC_24hr")),
+  setNames(absFC_plots_24,
+           paste0(names(absFC_plots_24), "_absLogFC_24hr"))
+)
+
+print(all_plots_24)
+
+#save the plots
+for (name in names(all_plots_24)) {
+  save_plot(
+    filename = paste0("Cormotif_", name),
+    plot     = all_plots_24[[name]],
+    folder   = output_folder
+  )
+}
+
+
+```
