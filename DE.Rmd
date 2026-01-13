@@ -1,0 +1,238 @@
+---
+title: "DE"
+author: "Emma M Pfortmiller"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: journal
+    highlight: textmate
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+```
+
+#Load Libraries
+```{r Necessary Libraries, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(Biobase)
+library(limma)
+library(edgeR)
+library(edgebundleR)
+library(scales)
+library(biomaRt)
+library(ggrepel)
+library(ggfortify)
+library(corrplot)
+library(readr)
+library(org.Hs.eg.db)
+library(AnnotationDbi)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(reshape2)
+library(ggVennDiagram)
+library(UpSetR)
+library(ggpubr)
+library(VennDiagram)
+library(VennDetail)
+library(BiocParallel)
+library(RUVSeq)
+library(SummarizedExperiment)
+library(ggsignif)
+library(purrr)
+library(rstatix)
+library(ggrastr)
+library(tibble)
+library(grid)
+library(eulerr)
+library(patchwork)
+library(car)
+library(gprofiler2)
+library(forcats)
+library(broom)
+library(magick)
+```
+
+#Define plot theme
+```{r Custom Theme, warning=FALSE, message=FALSE}
+# Define the custom theme
+# plot_theme_custom <- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = "black"),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, "in"),
+# 
+#       #text and font
+#       axis.text = element_text(color = "black",
+#                                family = "Arial",
+#                                size = 8),
+#       axis.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 10),
+#       legend.text = element_text(color = "black",
+#                                  family = "Arial",
+#                                  size = 8),
+#       legend.title = element_text(color = "black",
+#                                   family = "Arial",
+#                                   size = 10),
+#       plot.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = "grey80", linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = "grey90", linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+
+theme_custom <- readRDS("data/plot_theme_custom.RDS")
+
+```
+
+#Define saving plots as pdfs
+```{r pdf saving function, warning=FALSE, message=FALSE}
+
+save_plot <- function(plot, filename, 
+                      folder = ".", 
+                      width = 8, 
+                      height = 6, 
+                      units = "in", 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
+  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  message("Saved plot as Cairo PDF: ", pdf_file)
+  message("Saved plot as PNG: ", png_file)
+}
+
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height
+```
+
+#Factors and Colors
+```{r Theme Colors and Factors, warning=FALSE, message=FALSE}
+#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+# stim_list <- list(
+#   "Tunicamycin" = "TUN",
+#   "Thapsigargin" = "THA",
+#   "Doxorubicin" = "DOX",
+#   "Nutlin-3" = "NUTL",
+#   "Lipopolysaccharides" = "LPS",
+#   "Tumor Necrosis Factor alpha" = "TNFa",
+#   "Bisphenol A" = "BPA",
+#   "Perfluorooctanoic Acid" = "PFOA"
+# )
+# stimuli_vec <- unlist(lapply(names(stim_list), function(cat) {
+#   setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+# }))
+# saveRDS(stimuli_vec, "data/theme/stimuli_fullname_vector.RDS")
+stim_vec <- readRDS("data/theme/stimuli_fullname_vector.RDS")
+
+####RESPONSE CATEGORY####
+# resp_list <- list(
+#   UPR = c("TUN", "THA"),
+#   DDR = c("DOX", "NUTL"),
+#   IMR = c("LPS", "TNFa"),
+#   MMR = c("BPA", "PFOA")
+# )
+# response_vec <- unlist(lapply(names(resp_list), function(cat) {
+#   setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+# }))
+# saveRDS(response_vec, "data/theme/response_categories_vector.RDS")
+response_vec <- readRDS("data/theme/response_categories_vector.RDS")
+
+####SPECIES####
+# spec_list <- list(
+#   Human = "H",
+#   Chimp = "C"
+# )
+# species_vec <- unlist(lapply(names(spec_list), function(cat) {
+#   setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+# }))
+# saveRDS(species_vec, "data/theme/species_vector.RDS")
+species_vec <- readRDS("data/theme/species_vector.RDS")
+
+####TIME####
+# time_list <- list(
+#   "2hr" = "2",
+#   "24hr" = "24"
+# )
+# time_vec <- unlist(lapply(names(time_list), function(cat) {
+#   setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+# }))
+# saveRDS(time_vec, "data/theme/time_vector.RDS")
+time_vec <- readRDS("data/theme/time_vector.RDS")
+
+####INDIVIDUAL####
+# ind_list <- list(
+#   H24280 = "H1",
+#   H28126 = "H2",
+#   "84-1" = "H3",
+#   H21792 = "H4",
+#   H20682 = "H5",
+#   H22422 = "H6",
+#   "78-1" = "H7",
+#   C3647 = "C1",
+#   C8861 = "C2",
+#   C4020 = "C3",
+#   C3649 = "C4",
+#   C3651 = "C5",
+#   C40280 = "C6",
+#   C4955 = "C7"
+# )
+# ind_vec <- unlist(lapply(names(ind_list), function (cat) {
+#   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+# }))
+# saveRDS(ind_vec, "data/theme/individual_vector.RDS")
+ind_vec <- readRDS("data/theme/individual_vector.RDS")
+
+```
+
+# Set up data for DE analysis
+
+```{r}
+
+```
+
