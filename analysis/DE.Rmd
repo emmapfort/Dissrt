@@ -1,0 +1,498 @@
+---
+title: "DE"
+author: "Emma M Pfortmiller"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: journal
+    highlight: textmate
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+```
+
+#Load Libraries
+```{r Necessary Libraries, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(Biobase)
+library(limma)
+library(edgeR)
+library(edgebundleR)
+library(scales)
+library(biomaRt)
+library(ggrepel)
+library(ggfortify)
+library(corrplot)
+library(readr)
+library(org.Hs.eg.db)
+library(AnnotationDbi)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(reshape2)
+library(ggVennDiagram)
+library(UpSetR)
+library(ggpubr)
+library(VennDiagram)
+library(VennDetail)
+library(BiocParallel)
+library(RUVSeq)
+library(SummarizedExperiment)
+library(ggsignif)
+library(purrr)
+library(rstatix)
+library(ggrastr)
+library(tibble)
+library(grid)
+library(eulerr)
+library(patchwork)
+library(car)
+library(gprofiler2)
+library(forcats)
+library(broom)
+library(magick)
+```
+
+#Define plot theme
+```{r Custom Theme, warning=FALSE, message=FALSE}
+# Define the custom theme
+# plot_theme_custom <- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = "black"),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = "black",
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, "in"),
+# 
+#       #text and font
+#       axis.text = element_text(color = "black",
+#                                family = "Arial",
+#                                size = 8),
+#       axis.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 10),
+#       legend.text = element_text(color = "black",
+#                                  family = "Arial",
+#                                  size = 8),
+#       legend.title = element_text(color = "black",
+#                                   family = "Arial",
+#                                   size = 10),
+#       plot.title = element_text(color = "black",
+#                                 family = "Arial",
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = "grey80", linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = "grey90", linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+
+theme_custom <- readRDS("data/plot_theme_custom.RDS")
+
+```
+
+#Define saving plots as pdfs
+```{r pdf saving function, warning=FALSE, message=FALSE}
+
+save_plot <- function(plot, filename, 
+                      folder = ".", 
+                      width = 8, 
+                      height = 6, 
+                      units = "in", 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
+  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  message("Saved plot as Cairo PDF: ", pdf_file)
+  message("Saved plot as PNG: ", png_file)
+}
+
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height
+```
+
+#Factors and Colors
+```{r Theme Colors and Factors, warning=FALSE, message=FALSE}
+#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+# stim_list <- list(
+#   "Tunicamycin" = "TUN",
+#   "Thapsigargin" = "THA",
+#   "Doxorubicin" = "DOX",
+#   "Nutlin-3" = "NUTL",
+#   "Lipopolysaccharides" = "LPS",
+#   "Tumor Necrosis Factor alpha" = "TNFa",
+#   "Bisphenol A" = "BPA",
+#   "Perfluorooctanoic Acid" = "PFOA"
+# )
+# stimuli_vec <- unlist(lapply(names(stim_list), function(cat) {
+#   setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+# }))
+# saveRDS(stimuli_vec, "data/theme/stimuli_fullname_vector.RDS")
+stim_vec <- readRDS("data/theme/stimuli_fullname_vector.RDS")
+
+####RESPONSE CATEGORY####
+# resp_list <- list(
+#   UPR = c("TUN", "THA"),
+#   DDR = c("DOX", "NUTL"),
+#   IMR = c("LPS", "TNFa"),
+#   MMR = c("BPA", "PFOA")
+# )
+# response_vec <- unlist(lapply(names(resp_list), function(cat) {
+#   setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+# }))
+# saveRDS(response_vec, "data/theme/response_categories_vector.RDS")
+response_vec <- readRDS("data/theme/response_categories_vector.RDS")
+
+####SPECIES####
+# spec_list <- list(
+#   Human = "H",
+#   Chimp = "C"
+# )
+# species_vec <- unlist(lapply(names(spec_list), function(cat) {
+#   setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+# }))
+# saveRDS(species_vec, "data/theme/species_vector.RDS")
+species_vec <- readRDS("data/theme/species_vector.RDS")
+
+####TIME####
+# time_list <- list(
+#   "2hr" = "2",
+#   "24hr" = "24"
+# )
+# time_vec <- unlist(lapply(names(time_list), function(cat) {
+#   setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+# }))
+# saveRDS(time_vec, "data/theme/time_vector.RDS")
+time_vec <- readRDS("data/theme/time_vector.RDS")
+
+####INDIVIDUAL####
+# ind_list <- list(
+#   H24280 = "H1",
+#   H28126 = "H2",
+#   "84-1" = "H3",
+#   H21792 = "H4",
+#   H20682 = "H5",
+#   H22422 = "H6",
+#   "78-1" = "H7",
+#   C3647 = "C1",
+#   C8861 = "C2",
+#   C4020 = "C3",
+#   C3649 = "C4",
+#   C3651 = "C5",
+#   C40280 = "C6",
+#   C4955 = "C7"
+# )
+# ind_vec <- unlist(lapply(names(ind_list), function (cat) {
+#   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+# }))
+# saveRDS(ind_vec, "data/theme/individual_vector.RDS")
+ind_vec <- readRDS("data/theme/individual_vector.RDS")
+
+```
+
+# Read in Dataframes
+
+```{r Read in necessary files, message=FALSE, warning=FALSE}
+#read in my counts file for my subset of samples
+hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
+
+#read in my cpm matrix (already subset)
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
+
+#read in my metadata for this subset 
+metadata_sub <- read_csv("data/counts/metadata_subset.csv")
+
+```
+
+
+# Differential Expression Analysis
+
+```{r Set up DE, warning=FALSE, message=FALSE}
+#filter my raw counts (subset of samples) to remove lowly expressed genes as above
+
+x <- hc_counts_sub[row.names(hc_cpm_matrix),]
+# dim(x)
+
+# saveRDS(x, "data/de/x_dge_counts_allind_subset.RDS")
+
+x <- readRDS("data/de/x_dge_counts_allind_subset.RDS")
+
+#use metadata_sub to match
+meta_de <- metadata_sub
+
+#ensure that the names are matched up properly
+identical(meta_de$Final_sample_name, colnames(x))
+
+colnames(x) <- meta_de$Final_sample_name
+rownames(meta_de) <- meta_de$Final_sample_name
+
+meta_de$Cond <- make.names(meta_de$Cond)
+meta_de$Ind <- as.character(meta_de$Ind)
+
+# saveRDS(meta_de, "data/de/metadata_2_de.RDS")
+# saveRDS(x, "data/de/x_counts_de.RDS")
+
+#create my DGElist object
+dge <- DGEList(counts = x)
+dge$samples$group <- factor(meta_de$Cond)
+dge <- calcNormFactors(dge, method = "TMM")
+
+# saveRDS(dge, "data/de/dge_matrix.RDS")
+
+#check the normalization factors from TMM normalization of the libraries
+dge$samples
+
+design <- model.matrix(~0 + meta_de$Cond)
+colnames(design) <- gsub("meta_de\\$Cond", "", colnames(design))
+
+#take care that this alphabetizes everything
+#currently all C are first and H are second
+#BPA, DMSO2, DMSO24, DOX, EtOH, H2O, LPS, NUTL, PFOA, THA2, THA24, TNFa, TUN2, TUN24 current order
+
+#run duplicate correlation for individual effect
+corfit <- duplicateCorrelation(object = dge$counts, design = design,
+                               block = metadata_sub$Ind)
+
+#voom transformation and plot
+v <- voom(dge, design, block = meta_de$Ind, 
+          correlation = corfit$consensus.correlation, plot = TRUE)
+
+#fit my linear model
+fit <- lmFit(v, design, block = meta_de$Ind,
+             correlation = corfit$consensus.correlation)
+
+#make my contrast matrix to compare across tx and veh within each species
+contrast_matrix <- makeContrasts(
+  V.TUN2_H = TUN_2_H - DMSO_2_H,
+  V.THA2_H = THA_2_H - DMSO_2_H,
+  V.TUN24_H = TUN_24_H - DMSO_24_H,
+  V.THA24_H = THA_24_H - DMSO_24_H,
+  V.DOX24_H = DOX_24_H - DMSO_24_H,
+  V.NUTL24_H = NUTL_24_H - DMSO_24_H,
+  V.LPS24_H = LPS_24_H - H2O_24_H,
+  V.TNFa24_H = TNFa_24_H - H2O_24_H,
+  V.BPA24_H = BPA_24_H - EtOH_24_H,
+  V.PFOA24_H = PFOA_24_H - EtOH_24_H,
+  V.TUN2_C = TUN_2_C - DMSO_2_C,
+  V.THA2_C = THA_2_C - DMSO_2_C,
+  V.TUN24_C = TUN_24_C - DMSO_24_C,
+  V.THA24_C = THA_24_C - DMSO_24_C,
+  V.DOX24_C = DOX_24_C - DMSO_24_C,
+  V.NUTL24_C = NUTL_24_C - DMSO_24_C,
+  V.LPS24_C = LPS_24_C - H2O_24_C,
+  V.TNFa24_C = TNFa_24_C - H2O_24_C,
+  V.BPA24_C = BPA_24_C - EtOH_24_C,
+  V.PFOA24_C = PFOA_24_C - EtOH_24_C,
+  levels = design
+)
+
+#apply these contrasts to compare stimuli to vehicle
+fit2 <- contrasts.fit(fit, contrast_matrix)
+fit2 <- eBayes(fit2)
+
+#plot the mean-variance trend
+plotSA(fit2, main = "final model: mean-variance trend")
+
+#now look at the summary of results to identify whether there are DEGs in each comparison
+results_summary <- decideTests(fit2, adjust.method = "BH", p.value = 0.05)
+summary(results_summary)
+
+```
+
+
+# Create Toptables
+
+```{r Toptables, warning=FALSE, message=FALSE}
+
+#2hr Human Toptables
+Toptable_V.TUN2_H <- topTable(fit = fit2, 
+                            coef = "V.TUN2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_H <- topTable(fit = fit2, 
+                            coef = "V.THA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#2hr Chimp Toptables
+Toptable_V.TUN2_C <- topTable(fit = fit2, 
+                            coef = "V.TUN2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA2_C <- topTable(fit = fit2, 
+                            coef = "V.THA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+#24hr toptables human
+
+Toptable_V.TUN24_H <- topTable(fit = fit2, 
+                            coef = "V.TUN24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_H <- topTable(fit = fit2, 
+                            coef = "V.THA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_H <- topTable(fit = fit2, 
+                            coef = "V.DOX24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_H <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_H <- topTable(fit = fit2, 
+                            coef = "V.LPS24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_H <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_H <- topTable(fit = fit2, 
+                            coef = "V.BPA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_H <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+
+#chimp 24hr toptables
+
+Toptable_V.TUN24_C <- topTable(fit = fit2, 
+                            coef = "V.TUN24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.THA24_C <- topTable(fit = fit2, 
+                            coef = "V.THA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX24_C <- topTable(fit = fit2, 
+                            coef = "V.DOX24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL24_C <- topTable(fit = fit2, 
+                            coef = "V.NUTL24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS24_C <- topTable(fit = fit2, 
+                            coef = "V.LPS24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa24_C <- topTable(fit = fit2, 
+                            coef = "V.TNFa24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA24_C <- topTable(fit = fit2, 
+                            coef = "V.BPA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA24_C <- topTable(fit = fit2, 
+                            coef = "V.PFOA24_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+
+```
+
+
+

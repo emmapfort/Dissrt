@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Emma M Pfortmiller" />
+
+
+<title>DE</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Dissrt Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="index.html">Analysis</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/emmapfort/Dissrt">
+    <span class="fab fa-github"></span>
+     
+    Source Code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">DE</h1>
+<h4 class="author">Emma M Pfortmiller</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2026-01-13
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Dissrt/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has staged changes. To know which version of the
+R Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250926code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250926)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250926code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250926)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttreeb9f416feefd58f41a44d467cb79fbb3c7ea9f907targetblankb9f416fa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/emmapfort/Dissrt/tree/b9f416feefd58f41a44d467cb79fbb3c7ea9f907" target="_blank">b9f416f</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomemmapfortDissrttreeb9f416feefd58f41a44d467cb79fbb3c7ea9f907targetblankb9f416fa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/emmapfort/Dissrt/tree/b9f416feefd58f41a44d467cb79fbb3c7ea9f907" target="_blank">b9f416f</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/cmf/
+    Ignored:    data/counts/
+    Ignored:    data/de/
+    Ignored:    data/genesets/
+    Ignored:    data/theme/
+
+Staged changes:
+    Modified1:  DE.Rmd
+    Modified2:  analysis/DE.Rmd
+    Modified:   analysis/QC_Subset.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<style type="text/css">
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+</style>
+<p>#Load Libraries</p>
+<p>#Define plot theme</p>
+<pre class="r"><code># Define the custom theme
+# plot_theme_custom &lt;- function() {
+#   theme_minimal() +
+#     theme(
+#       #line for x and y axis
+#       axis.line = element_line(linewidth = 1,
+#                                color = &quot;black&quot;),
+# 
+#       #axis ticks only on x and y, length standard
+#       axis.ticks.x = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.y = element_line(color = &quot;black&quot;,
+#                                 linewidth = 1),
+#       axis.ticks.length = unit(0.05, &quot;in&quot;),
+# 
+#       #text and font
+#       axis.text = element_text(color = &quot;black&quot;,
+#                                family = &quot;Arial&quot;,
+#                                size = 8),
+#       axis.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 10),
+#       legend.text = element_text(color = &quot;black&quot;,
+#                                  family = &quot;Arial&quot;,
+#                                  size = 8),
+#       legend.title = element_text(color = &quot;black&quot;,
+#                                   family = &quot;Arial&quot;,
+#                                   size = 10),
+#       plot.title = element_text(color = &quot;black&quot;,
+#                                 family = &quot;Arial&quot;,
+#                                 size = 12),
+# 
+#       #blank background and border
+#       panel.background = element_blank(),
+#       panel.border = element_blank(),
+# 
+#       #gridlines for alignment
+#       panel.grid.major = element_line(color = &quot;grey80&quot;, linewidth = 0.5),  #grey major grid for align in illus
+#       panel.grid.minor = element_line(color = &quot;grey90&quot;, linewidth = 0.5) #grey minor grid for align in illus
+#     )
+# }
+
+# saveRDS(plot_theme_custom, &quot;data/plot_theme_custom.RDS&quot;)
+
+theme_custom &lt;- readRDS(&quot;data/plot_theme_custom.RDS&quot;)</code></pre>
+<p>#Define saving plots as pdfs</p>
+<pre class="r"><code>save_plot &lt;- function(plot, filename, 
+                      folder = &quot;.&quot;, 
+                      width = 8, 
+                      height = 6, 
+                      units = &quot;in&quot;, 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop(&quot;Please provide a filename (without extension) for the plot.&quot;)
+
+  date_str &lt;- if (add_date) paste0(&quot;_&quot;, format(Sys.Date(), &quot;%y%m%d&quot;)) else &quot;&quot;
+  pdf_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.pdf&quot;))
+  png_file &lt;- file.path(folder, paste0(filename, date_str, &quot;.png&quot;))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = &quot;transparent&quot;)
+  ggsave(filename = png_file, plot = plot, device = &quot;png&quot;, width = width, height = height, units = units, dpi = dpi, bg = &quot;transparent&quot;)
+  message(&quot;Saved plot as Cairo PDF: &quot;, pdf_file)
+  message(&quot;Saved plot as PNG: &quot;, png_file)
+}
+
+output_folder &lt;- &quot;C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots&quot;
+
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height</code></pre>
+<p>#Factors and Colors</p>
+<pre class="r"><code>#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+# stim_list &lt;- list(
+#   &quot;Tunicamycin&quot; = &quot;TUN&quot;,
+#   &quot;Thapsigargin&quot; = &quot;THA&quot;,
+#   &quot;Doxorubicin&quot; = &quot;DOX&quot;,
+#   &quot;Nutlin-3&quot; = &quot;NUTL&quot;,
+#   &quot;Lipopolysaccharides&quot; = &quot;LPS&quot;,
+#   &quot;Tumor Necrosis Factor alpha&quot; = &quot;TNFa&quot;,
+#   &quot;Bisphenol A&quot; = &quot;BPA&quot;,
+#   &quot;Perfluorooctanoic Acid&quot; = &quot;PFOA&quot;
+# )
+# stimuli_vec &lt;- unlist(lapply(names(stim_list), function(cat) {
+#   setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+# }))
+# saveRDS(stimuli_vec, &quot;data/theme/stimuli_fullname_vector.RDS&quot;)
+stim_vec &lt;- readRDS(&quot;data/theme/stimuli_fullname_vector.RDS&quot;)
+
+####RESPONSE CATEGORY####
+# resp_list &lt;- list(
+#   UPR = c(&quot;TUN&quot;, &quot;THA&quot;),
+#   DDR = c(&quot;DOX&quot;, &quot;NUTL&quot;),
+#   IMR = c(&quot;LPS&quot;, &quot;TNFa&quot;),
+#   MMR = c(&quot;BPA&quot;, &quot;PFOA&quot;)
+# )
+# response_vec &lt;- unlist(lapply(names(resp_list), function(cat) {
+#   setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+# }))
+# saveRDS(response_vec, &quot;data/theme/response_categories_vector.RDS&quot;)
+response_vec &lt;- readRDS(&quot;data/theme/response_categories_vector.RDS&quot;)
+
+####SPECIES####
+# spec_list &lt;- list(
+#   Human = &quot;H&quot;,
+#   Chimp = &quot;C&quot;
+# )
+# species_vec &lt;- unlist(lapply(names(spec_list), function(cat) {
+#   setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+# }))
+# saveRDS(species_vec, &quot;data/theme/species_vector.RDS&quot;)
+species_vec &lt;- readRDS(&quot;data/theme/species_vector.RDS&quot;)
+
+####TIME####
+# time_list &lt;- list(
+#   &quot;2hr&quot; = &quot;2&quot;,
+#   &quot;24hr&quot; = &quot;24&quot;
+# )
+# time_vec &lt;- unlist(lapply(names(time_list), function(cat) {
+#   setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+# }))
+# saveRDS(time_vec, &quot;data/theme/time_vector.RDS&quot;)
+time_vec &lt;- readRDS(&quot;data/theme/time_vector.RDS&quot;)
+
+####INDIVIDUAL####
+# ind_list &lt;- list(
+#   H24280 = &quot;H1&quot;,
+#   H28126 = &quot;H2&quot;,
+#   &quot;84-1&quot; = &quot;H3&quot;,
+#   H21792 = &quot;H4&quot;,
+#   H20682 = &quot;H5&quot;,
+#   H22422 = &quot;H6&quot;,
+#   &quot;78-1&quot; = &quot;H7&quot;,
+#   C3647 = &quot;C1&quot;,
+#   C8861 = &quot;C2&quot;,
+#   C4020 = &quot;C3&quot;,
+#   C3649 = &quot;C4&quot;,
+#   C3651 = &quot;C5&quot;,
+#   C40280 = &quot;C6&quot;,
+#   C4955 = &quot;C7&quot;
+# )
+# ind_vec &lt;- unlist(lapply(names(ind_list), function (cat) {
+#   setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+# }))
+# saveRDS(ind_vec, &quot;data/theme/individual_vector.RDS&quot;)
+ind_vec &lt;- readRDS(&quot;data/theme/individual_vector.RDS&quot;)</code></pre>
+<div id="read-in-dataframes" class="section level1">
+<h1>Read in Dataframes</h1>
+<pre class="r"><code>#read in my counts file for my subset of samples
+hc_counts_sub &lt;- readRDS(&quot;data/counts/hc_counts_subset_entrez.RDS&quot;)
+
+#read in my cpm matrix (already subset)
+hc_cpm_matrix &lt;- readRDS(&quot;data/counts/hc_cpm_filtered_matrix_subset.RDS&quot;)
+
+#read in my metadata for this subset 
+metadata_sub &lt;- read_csv(&quot;data/counts/metadata_subset.csv&quot;)</code></pre>
+</div>
+<div id="differential-expression-analysis" class="section level1">
+<h1>Differential Expression Analysis</h1>
+<pre class="r"><code>#filter my raw counts (subset of samples) to remove lowly expressed genes as above
+
+x &lt;- hc_counts_sub[row.names(hc_cpm_matrix),]
+# dim(x)
+
+# saveRDS(x, &quot;data/de/x_dge_counts_allind_subset.RDS&quot;)
+
+x &lt;- readRDS(&quot;data/de/x_dge_counts_allind_subset.RDS&quot;)
+
+#use metadata_sub to match
+meta_de &lt;- metadata_sub
+
+#ensure that the names are matched up properly
+identical(meta_de$Final_sample_name, colnames(x))</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<pre class="r"><code>colnames(x) &lt;- meta_de$Final_sample_name
+rownames(meta_de) &lt;- meta_de$Final_sample_name
+
+meta_de$Cond &lt;- make.names(meta_de$Cond)
+meta_de$Ind &lt;- as.character(meta_de$Ind)
+
+# saveRDS(meta_de, &quot;data/de/metadata_2_de.RDS&quot;)
+# saveRDS(x, &quot;data/de/x_counts_de.RDS&quot;)
+
+#create my DGElist object
+dge &lt;- DGEList(counts = x)
+dge$samples$group &lt;- factor(meta_de$Cond)
+dge &lt;- calcNormFactors(dge, method = &quot;TMM&quot;)
+
+# saveRDS(dge, &quot;data/de/dge_matrix.RDS&quot;)
+
+#check the normalization factors from TMM normalization of the libraries
+dge$samples</code></pre>
+<pre><code>               group lib.size norm.factors
+TUN_2_C1     TUN_2_C  4959120    0.8274652
+THA_2_C1     THA_2_C  7407002    0.8388147
+DMSO_2_C1   DMSO_2_C  6447319    0.8277064
+TUN_24_C1   TUN_24_C  5920073    0.8223902
+THA_24_C1   THA_24_C  5605707    0.9282232
+DOX_24_C1   DOX_24_C  4915306    0.6852739
+NUTL_24_C1 NUTL_24_C  5968030    0.8527996
+DMSO_24_C1 DMSO_24_C  4163362    0.8510154
+LPS_24_C1   LPS_24_C  5540367    0.8262713
+TNFa_24_C1 TNFa_24_C  5461910    0.8500622
+H2O_24_C1   H2O_24_C  6343704    0.8316516
+BPA_24_C1   BPA_24_C  5806762    0.7918941
+PFOA_24_C1 PFOA_24_C  5763792    0.8332842
+EtOH_24_C1 EtOH_24_C  5329162    0.8255942
+TUN_2_C2     TUN_2_C  3669613    0.9760496
+THA_2_C2     THA_2_C  3835409    1.0457465
+DMSO_2_C2   DMSO_2_C  4098895    0.9925365
+TUN_24_C2   TUN_24_C  3915885    1.0341810
+THA_24_C2   THA_24_C  3723396    0.9797107
+DOX_24_C2   DOX_24_C  3475457    1.1264528
+NUTL_24_C2 NUTL_24_C  3510587    0.9951095
+DMSO_24_C2 DMSO_24_C  3818926    0.9726100
+LPS_24_C2   LPS_24_C  4140244    0.9601131
+TNFa_24_C2 TNFa_24_C  3740690    0.9837099
+H2O_24_C2   H2O_24_C  3890138    0.9538141
+BPA_24_C2   BPA_24_C  3939470    0.9598972
+PFOA_24_C2 PFOA_24_C  4189725    0.9652969
+EtOH_24_C2 EtOH_24_C  3571535    0.9800994
+TUN_2_C3     TUN_2_C  4010528    1.0143085
+THA_2_C3     THA_2_C  4087377    1.0867888
+DMSO_2_C3   DMSO_2_C  3331058    1.0281897
+TUN_24_C3   TUN_24_C  3772938    1.0495732
+THA_24_C3   THA_24_C  3628245    1.0557194
+DOX_24_C3   DOX_24_C  2749174    1.1421786
+NUTL_24_C3 NUTL_24_C  3817234    1.0822000
+DMSO_24_C3 DMSO_24_C  5146135    1.0798687
+LPS_24_C3   LPS_24_C  3371202    1.0302273
+TNFa_24_C3 TNFa_24_C  3768725    1.0513896
+H2O_24_C3   H2O_24_C  3045735    1.0425282
+BPA_24_C3   BPA_24_C  4024472    1.0525834
+PFOA_24_C3 PFOA_24_C  4158259    1.0401244
+EtOH_24_C3 EtOH_24_C  3078091    1.0443458
+TUN_2_C4     TUN_2_C  5442200    1.0258397
+THA_2_C4     THA_2_C  4842067    1.0941637
+DMSO_2_C4   DMSO_2_C  8294030    1.0507750
+TUN_24_C4   TUN_24_C  6084143    1.0723319
+THA_24_C4   THA_24_C  4752713    1.0542360
+DOX_24_C4   DOX_24_C  5587235    1.2378495
+NUTL_24_C4 NUTL_24_C  5424888    1.0433478
+DMSO_24_C4 DMSO_24_C  4936901    1.0322069
+LPS_24_C4   LPS_24_C  5044954    1.0239242
+TNFa_24_C4 TNFa_24_C  5449243    1.0173841
+H2O_24_C4   H2O_24_C  6114673    1.0155054
+BPA_24_C4   BPA_24_C  5448746    1.0284361
+PFOA_24_C4 PFOA_24_C  5170408    1.0337958
+EtOH_24_C4 EtOH_24_C  4687966    1.0416165
+TUN_2_C5     TUN_2_C  5260281    0.8959149
+DMSO_2_C5   DMSO_2_C  4980521    0.9150542
+TUN_24_C5   TUN_24_C  2422629    0.9663321
+THA_24_C5   THA_24_C  5220437    0.9338753
+DOX_24_C5   DOX_24_C  3857127    0.9379252
+NUTL_24_C5 NUTL_24_C  5431835    0.9607412
+DMSO_24_C5 DMSO_24_C  6072407    0.9439351
+LPS_24_C5   LPS_24_C  4927576    0.9359844
+TNFa_24_C5 TNFa_24_C  3324595    0.9542558
+H2O_24_C5   H2O_24_C  3415761    0.9319109
+BPA_24_C5   BPA_24_C  4828093    0.9989147
+PFOA_24_C5 PFOA_24_C  2729739    0.9668128
+EtOH_24_C5 EtOH_24_C  4543163    0.9876224
+TUN_2_C6     TUN_2_C  4132658    0.9435674
+THA_2_C6     THA_2_C  5287746    1.0344496
+DMSO_2_C6   DMSO_2_C  4281498    0.9484976
+TUN_24_C6   TUN_24_C  4642733    1.0033246
+THA_24_C6   THA_24_C  3658060    0.9831190
+DOX_24_C6   DOX_24_C  3544684    0.9549855
+NUTL_24_C6 NUTL_24_C  4481917    0.9811213
+DMSO_24_C6 DMSO_24_C  2687838    0.9945722
+LPS_24_C6   LPS_24_C  3299381    1.0397990
+TNFa_24_C6 TNFa_24_C  4596178    0.9443678
+H2O_24_C6   H2O_24_C  5662044    0.9662587
+BPA_24_C6   BPA_24_C  4081570    1.0223036
+PFOA_24_C6 PFOA_24_C  4478352    0.9924562
+EtOH_24_C6 EtOH_24_C  4526909    0.9963390
+TUN_2_C7     TUN_2_C  4021553    1.0734842
+THA_2_C7     THA_2_C  3638538    1.0967124
+DMSO_2_C7   DMSO_2_C  4396029    1.0775258
+TUN_24_C7   TUN_24_C  4867408    1.1030082
+THA_24_C7   THA_24_C  4874929    1.0320511
+DOX_24_C7   DOX_24_C 10856556    1.0930037
+NUTL_24_C7 NUTL_24_C  4774607    1.0827795
+DMSO_24_C7 DMSO_24_C  5061193    1.0998111
+LPS_24_C7   LPS_24_C  4713485    1.0527685
+TNFa_24_C7 TNFa_24_C  5033060    1.0676786
+H2O_24_C7   H2O_24_C  4909794    1.0786616
+BPA_24_C7   BPA_24_C  5500744    1.0744277
+PFOA_24_C7 PFOA_24_C  4973477    1.0795022
+EtOH_24_C7 EtOH_24_C  5864356    1.0900827
+TUN_2_H1     TUN_2_H  3927492    1.0407090
+THA_2_H1     THA_2_H  4477304    1.1737657
+DMSO_2_H1   DMSO_2_H  5131738    1.1621535
+TUN_24_H1   TUN_24_H  5063593    1.1343096
+THA_24_H1   THA_24_H  4161183    1.0143056
+DOX_24_H1   DOX_24_H  3830291    1.2342547
+NUTL_24_H1 NUTL_24_H  4109224    1.1999306
+DMSO_24_H1 DMSO_24_H  4884450    1.1491010
+LPS_24_H1   LPS_24_H  4714234    1.1306675
+TNFa_24_H1 TNFa_24_H  3652733    1.0618520
+H2O_24_H1   H2O_24_H  5644094    1.0461864
+BPA_24_H1   BPA_24_H  4939444    1.0836678
+PFOA_24_H1 PFOA_24_H  3516211    1.0987721
+EtOH_24_H1 EtOH_24_H  5021963    1.1554326
+TUN_2_H2     TUN_2_H  4084086    0.9746956
+THA_2_H2     THA_2_H  4334715    1.0004025
+DMSO_2_H2   DMSO_2_H  3795254    0.9936030
+TUN_24_H2   TUN_24_H  2368177    0.9993921
+THA_24_H2   THA_24_H  3755675    0.9624449
+DOX_24_H2   DOX_24_H  3675934    1.1199444
+NUTL_24_H2 NUTL_24_H  5622940    1.0014470
+DMSO_24_H2 DMSO_24_H  4466963    0.9902182
+LPS_24_H2   LPS_24_H  3953259    0.9789006
+TNFa_24_H2 TNFa_24_H  4558984    0.9482547
+H2O_24_H2   H2O_24_H  4393881    0.9845595
+BPA_24_H2   BPA_24_H  4262074    0.9724784
+PFOA_24_H2 PFOA_24_H  4637013    0.9889370
+EtOH_24_H2 EtOH_24_H  4045494    0.9847932
+TUN_2_H3     TUN_2_H  4624289    0.9107778
+THA_2_H3     THA_2_H  4671793    0.9845150
+DMSO_2_H3   DMSO_2_H  4456642    0.9192210
+TUN_24_H3   TUN_24_H   829325    0.9539374
+THA_24_H3   THA_24_H  4447384    0.9255098
+DOX_24_H3   DOX_24_H  3517136    0.8333112
+NUTL_24_H3 NUTL_24_H  4836535    0.9288940
+DMSO_24_H3 DMSO_24_H  4938430    0.9359783
+LPS_24_H3   LPS_24_H  5750646    0.9256010
+TNFa_24_H3 TNFa_24_H  7009774    0.8982110
+H2O_24_H3   H2O_24_H  9615797    0.9267303
+BPA_24_H3   BPA_24_H  3949790    0.9569316
+PFOA_24_H3 PFOA_24_H   158890    1.0312532
+EtOH_24_H3 EtOH_24_H  4850466    0.9208235
+TUN_2_H4     TUN_2_H  4736981    0.9654103
+THA_2_H4     THA_2_H  5126455    0.9837877
+DMSO_2_H4   DMSO_2_H  5532136    0.9503962
+TUN_24_H4   TUN_24_H  5531052    0.9419443
+THA_24_H4   THA_24_H  5640304    0.9726737
+DOX_24_H4   DOX_24_H  5837993    0.9887585
+NUTL_24_H4 NUTL_24_H  4600568    0.9673994
+DMSO_24_H4 DMSO_24_H  3931849    0.9670037
+LPS_24_H4   LPS_24_H  3368315    0.9658248
+TNFa_24_H4 TNFa_24_H  4620515    0.9353418
+H2O_24_H4   H2O_24_H  5519677    0.9636465
+BPA_24_H4   BPA_24_H  4790327    0.9270243
+PFOA_24_H4 PFOA_24_H  6228314    0.9400187
+EtOH_24_H4 EtOH_24_H  5056429    0.9731401
+TUN_2_H5     TUN_2_H  3821591    1.0196187
+THA_2_H5     THA_2_H  3945095    0.9736086
+DMSO_2_H5   DMSO_2_H  2953839    0.9584474
+TUN_24_H5   TUN_24_H  3983888    1.0275336
+THA_24_H5   THA_24_H  1500011    1.0331216
+DOX_24_H5   DOX_24_H  4181520    1.0726851
+NUTL_24_H5 NUTL_24_H  3669772    1.0558622
+DMSO_24_H5 DMSO_24_H  4899358    1.0161433
+LPS_24_H5   LPS_24_H  4353197    0.9836018
+TNFa_24_H5 TNFa_24_H  4229938    1.0121347
+H2O_24_H5   H2O_24_H  4933369    1.0209506
+BPA_24_H5   BPA_24_H  4807144    1.0173453
+PFOA_24_H5 PFOA_24_H  4168658    0.9920302
+EtOH_24_H5 EtOH_24_H  3892381    0.9857585
+TUN_2_H6     TUN_2_H  4525698    0.9885124
+THA_2_H6     THA_2_H  4559540    1.1224974
+DMSO_2_H6   DMSO_2_H  3210000    1.0124781
+TUN_24_H6   TUN_24_H  5011550    1.0341890
+THA_24_H6   THA_24_H  4061609    1.0658931
+DOX_24_H6   DOX_24_H  3884364    1.1873340
+NUTL_24_H6 NUTL_24_H  4920507    1.1534941
+DMSO_24_H6 DMSO_24_H  4735457    1.0253493
+LPS_24_H6   LPS_24_H  5276684    1.0476686
+TNFa_24_H6 TNFa_24_H  4717845    1.0274493
+H2O_24_H6   H2O_24_H  4757930    1.0310121
+BPA_24_H6   BPA_24_H  4110573    1.0305040
+PFOA_24_H6 PFOA_24_H  2824459    1.0556768
+EtOH_24_H6 EtOH_24_H  4304232    1.0285413
+TUN_2_H7     TUN_2_H  3361581    0.9640236
+THA_2_H7     THA_2_H  3860049    1.0723629
+DMSO_2_H7   DMSO_2_H  4422725    0.9835484
+TUN_24_H7   TUN_24_H  4579622    1.0016906
+THA_24_H7   THA_24_H  3100180    1.0211045
+DOX_24_H7   DOX_24_H  4245160    1.1396404
+NUTL_24_H7 NUTL_24_H  4557525    1.0305386
+DMSO_24_H7 DMSO_24_H  5147989    1.0388553
+LPS_24_H7   LPS_24_H  4935561    1.0028201
+TNFa_24_H7 TNFa_24_H  3610061    1.0281842
+H2O_24_H7   H2O_24_H  3396148    1.0136277
+BPA_24_H7   BPA_24_H  5007831    1.0244740
+PFOA_24_H7 PFOA_24_H  4037671    0.9534338
+EtOH_24_H7 EtOH_24_H  4289786    1.0075961</code></pre>
+<pre class="r"><code>design &lt;- model.matrix(~0 + meta_de$Cond)
+colnames(design) &lt;- gsub(&quot;meta_de\\$Cond&quot;, &quot;&quot;, colnames(design))
+
+#take care that this alphabetizes everything
+#currently all C are first and H are second
+#BPA, DMSO2, DMSO24, DOX, EtOH, H2O, LPS, NUTL, PFOA, THA2, THA24, TNFa, TUN2, TUN24 current order
+
+#run duplicate correlation for individual effect
+corfit &lt;- duplicateCorrelation(object = dge$counts, design = design,
+                               block = metadata_sub$Ind)
+
+#voom transformation and plot
+v &lt;- voom(dge, design, block = meta_de$Ind, 
+          correlation = corfit$consensus.correlation, plot = TRUE)</code></pre>
+<p><img src="figure/DE.Rmd/Set%20up%20DE-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#fit my linear model
+fit &lt;- lmFit(v, design, block = meta_de$Ind,
+             correlation = corfit$consensus.correlation)
+
+#make my contrast matrix to compare across tx and veh within each species
+contrast_matrix &lt;- makeContrasts(
+  V.TUN2_H = TUN_2_H - DMSO_2_H,
+  V.THA2_H = THA_2_H - DMSO_2_H,
+  V.TUN24_H = TUN_24_H - DMSO_24_H,
+  V.THA24_H = THA_24_H - DMSO_24_H,
+  V.DOX24_H = DOX_24_H - DMSO_24_H,
+  V.NUTL24_H = NUTL_24_H - DMSO_24_H,
+  V.LPS24_H = LPS_24_H - H2O_24_H,
+  V.TNFa24_H = TNFa_24_H - H2O_24_H,
+  V.BPA24_H = BPA_24_H - EtOH_24_H,
+  V.PFOA24_H = PFOA_24_H - EtOH_24_H,
+  V.TUN2_C = TUN_2_C - DMSO_2_C,
+  V.THA2_C = THA_2_C - DMSO_2_C,
+  V.TUN24_C = TUN_24_C - DMSO_24_C,
+  V.THA24_C = THA_24_C - DMSO_24_C,
+  V.DOX24_C = DOX_24_C - DMSO_24_C,
+  V.NUTL24_C = NUTL_24_C - DMSO_24_C,
+  V.LPS24_C = LPS_24_C - H2O_24_C,
+  V.TNFa24_C = TNFa_24_C - H2O_24_C,
+  V.BPA24_C = BPA_24_C - EtOH_24_C,
+  V.PFOA24_C = PFOA_24_C - EtOH_24_C,
+  levels = design
+)
+
+#apply these contrasts to compare stimuli to vehicle
+fit2 &lt;- contrasts.fit(fit, contrast_matrix)
+fit2 &lt;- eBayes(fit2)
+
+#plot the mean-variance trend
+plotSA(fit2, main = &quot;final model: mean-variance trend&quot;)</code></pre>
+<p><img src="figure/DE.Rmd/Set%20up%20DE-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#now look at the summary of results to identify whether there are DEGs in each comparison
+results_summary &lt;- decideTests(fit2, adjust.method = &quot;BH&quot;, p.value = 0.05)
+summary(results_summary)</code></pre>
+<pre><code>       V.TUN2_H V.THA2_H V.TUN24_H V.THA24_H V.DOX24_H V.NUTL24_H V.LPS24_H
+Down          0      660      1554      1917      4297        653         0
+NotSig    13739    12364     10712     10051      5420      12440     13739
+Up            0      715      1473      1771      4022        646         0
+       V.TNFa24_H V.BPA24_H V.PFOA24_H V.TUN2_C V.THA2_C V.TUN24_C V.THA24_C
+Down            0         0          0        0      373      1662      1995
+NotSig      13689     13739      13739    13739    12762     10574      9785
+Up             50         0          0        0      604      1503      1959
+       V.DOX24_C V.NUTL24_C V.LPS24_C V.TNFa24_C V.BPA24_C V.PFOA24_C
+Down        4329        497         0         15         0          0
+NotSig      5341      12594     13727      13575     13739      13739
+Up          4069        648        12        149         0          0</code></pre>
+</div>
+<div id="create-toptables" class="section level1">
+<h1>Create Toptables</h1>
+<pre class="r"><code>#2hr Human Toptables
+Toptable_V.TUN2_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TUN2_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.THA2_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.THA2_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+#2hr Chimp Toptables
+Toptable_V.TUN2_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TUN2_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.THA2_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.THA2_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+#24hr toptables human
+
+Toptable_V.TUN24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TUN24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.THA24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.THA24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.DOX24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.DOX24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.NUTL24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.NUTL24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.LPS24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.LPS24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.TNFa24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TNFa24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.BPA24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.BPA24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.PFOA24_H &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.PFOA24_H&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+
+#chimp 24hr toptables
+
+Toptable_V.TUN24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TUN24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.THA24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.THA24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.DOX24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.DOX24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.NUTL24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.NUTL24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.LPS24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.LPS24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.TNFa24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.TNFa24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.BPA24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.BPA24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)
+
+Toptable_V.PFOA24_C &lt;- topTable(fit = fit2, 
+                            coef = &quot;V.PFOA24_C&quot;,
+                            number = nrow(x), 
+                            adjust.method = &quot;BH&quot;, 
+                            p.value = 1, 
+                            sort.by = &quot;none&quot;)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.4.2 (2024-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22000)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] magick_2.9.0                broom_1.0.8                
+ [3] gprofiler2_0.2.3            car_3.1-3                  
+ [5] carData_3.0-5               patchwork_1.3.0            
+ [7] eulerr_7.0.2                ggrastr_1.0.2              
+ [9] rstatix_0.7.2               ggsignif_0.6.4             
+[11] RUVSeq_1.40.0               EDASeq_2.40.0              
+[13] ShortRead_1.64.0            GenomicAlignments_1.42.0   
+[15] SummarizedExperiment_1.36.0 MatrixGenerics_1.18.1      
+[17] matrixStats_1.5.0           Rsamtools_2.22.0           
+[19] GenomicRanges_1.58.0        Biostrings_2.74.0          
+[21] GenomeInfoDb_1.42.3         XVector_0.46.0             
+[23] BiocParallel_1.40.0         VennDetail_1.22.0          
+[25] VennDiagram_1.7.3           futile.logger_1.4.3        
+[27] ggpubr_0.6.0                UpSetR_1.4.0               
+[29] ggVennDiagram_1.5.2         reshape2_1.4.4             
+[31] circlize_0.4.16             ComplexHeatmap_2.22.0      
+[33] org.Hs.eg.db_3.20.0         AnnotationDbi_1.68.0       
+[35] IRanges_2.40.0              S4Vectors_0.44.0           
+[37] corrplot_0.95               ggfortify_0.4.17           
+[39] ggrepel_0.9.6               biomaRt_2.62.1             
+[41] scales_1.4.0                edgebundleR_0.1.4          
+[43] edgeR_4.4.0                 limma_3.62.1               
+[45] Biobase_2.66.0              BiocGenerics_0.52.0        
+[47] lubridate_1.9.4             forcats_1.0.0              
+[49] stringr_1.5.1               dplyr_1.1.4                
+[51] purrr_1.0.4                 readr_2.1.5                
+[53] tidyr_1.3.1                 tibble_3.2.1               
+[55] ggplot2_3.5.2               tidyverse_2.0.0            
+[57] workflowr_1.7.1            
+
+loaded via a namespace (and not attached):
+  [1] later_1.4.2             BiocIO_1.16.0           bitops_1.0-9           
+  [4] filelock_1.0.3          R.oo_1.27.1             XML_3.99-0.18          
+  [7] lifecycle_1.0.4         httr2_1.1.2             pwalign_1.2.0          
+ [10] doParallel_1.0.17       rprojroot_2.0.4         vroom_1.6.5            
+ [13] MASS_7.3-61             processx_3.8.6          lattice_0.22-6         
+ [16] backports_1.5.0         magrittr_2.0.3          plotly_4.10.4          
+ [19] sass_0.4.10             rmarkdown_2.29          jquerylib_0.1.4        
+ [22] yaml_2.3.10             httpuv_1.6.16           DBI_1.2.3              
+ [25] RColorBrewer_1.1-3      abind_1.4-8             zlibbioc_1.52.0        
+ [28] R.utils_2.13.0          RCurl_1.98-1.17         rappdirs_0.3.3         
+ [31] git2r_0.36.2            GenomeInfoDbData_1.2.13 codetools_0.2-20       
+ [34] DelayedArray_0.32.0     xml2_1.3.8              tidyselect_1.2.1       
+ [37] shape_1.4.6.1           UCSC.utils_1.2.0        farver_2.1.2           
+ [40] BiocFileCache_2.14.0    jsonlite_2.0.0          GetoptLong_1.0.5       
+ [43] Formula_1.2-5           iterators_1.0.14        foreach_1.5.2          
+ [46] tools_4.4.2             progress_1.2.3          Rcpp_1.0.14            
+ [49] glue_1.8.0              gridExtra_2.3           SparseArray_1.6.0      
+ [52] xfun_0.52               withr_3.0.2             formatR_1.14           
+ [55] fastmap_1.2.0           latticeExtra_0.6-30     callr_3.7.6            
+ [58] digest_0.6.37           timechange_0.3.0        R6_2.6.1               
+ [61] mime_0.13               colorspace_2.1-1        jpeg_0.1-11            
+ [64] RSQLite_2.3.9           R.methodsS3_1.8.2       generics_0.1.4         
+ [67] data.table_1.17.0       rtracklayer_1.66.0      prettyunits_1.2.0      
+ [70] httr_1.4.7              htmlwidgets_1.6.4       S4Arrays_1.6.0         
+ [73] whisker_0.4.1           pkgconfig_2.0.3         gtable_0.3.6           
+ [76] blob_1.2.4              hwriter_1.3.2.1         htmltools_0.5.8.1      
+ [79] clue_0.3-66             png_0.1-8               knitr_1.50             
+ [82] lambda.r_1.2.4          rstudioapi_0.17.1       tzdb_0.5.0             
+ [85] rjson_0.2.23            curl_6.0.1              cachem_1.1.0           
+ [88] GlobalOptions_0.1.2     vipor_0.4.7             parallel_4.4.2         
+ [91] restfulr_0.0.15         pillar_1.10.2           vctrs_0.6.5            
+ [94] promises_1.3.2          dbplyr_2.5.0            xtable_1.8-4           
+ [97] cluster_2.1.6           beeswarm_0.4.0          evaluate_1.0.3         
+[100] GenomicFeatures_1.58.0  cli_3.6.3               locfit_1.5-9.12        
+[103] compiler_4.4.2          futile.options_1.0.1    rlang_1.1.6            
+[106] crayon_1.5.3            aroma.light_3.36.0      interp_1.1-6           
+[109] ps_1.9.1                ggbeeswarm_0.7.2        getPass_0.2-4          
+[112] plyr_1.8.9              fs_1.6.6                stringi_1.8.7          
+[115] viridisLite_0.4.2       deldir_2.0-4            lazyeval_0.2.2         
+[118] Matrix_1.7-1            hms_1.1.3               bit64_4.5.2            
+[121] KEGGREST_1.46.0         statmod_1.5.0           shiny_1.10.0           
+[124] igraph_2.1.4            memoise_2.0.1           bslib_0.9.0            
+[127] bit_4.5.0              </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
