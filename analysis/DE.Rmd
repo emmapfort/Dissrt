@@ -491,6 +491,97 @@ Toptable_V.PFOA24_C <- topTable(fit = fit2,
                             p.value = 1, 
                             sort.by = "none")
 
+#make two lists: one that contains all of these toptables and one with just 24hr toptables
+ttbl_list <- list(
+  TUN_2_H = Toptable_V.TUN2_H,
+  TUN_2_C = Toptable_V.TUN2_C,
+  THA_2_H = Toptable_V.THA2_H,
+  THA_2_C = Toptable_V.THA2_C,
+  TUN_24_H = Toptable_V.TUN24_H,
+  TUN_24_C = Toptable_V.TUN24_C,
+  THA_24_H = Toptable_V.THA24_H,
+  THA_24_C = Toptable_V.THA24_C,
+  DOX_24_H = Toptable_V.DOX24_H,
+  DOX_24_C = Toptable_V.DOX24_C,
+  NUTL_24_H = Toptable_V.NUTL24_H,
+  NUTL_24_C = Toptable_V.NUTL24_C,
+  LPS_24_H = Toptable_V.LPS24_H,
+  LPS_24_C = Toptable_V.LPS24_C,
+  TNFa_24_H = Toptable_V.TNFa24_H,
+  TNFa_24_C = Toptable_V.TNFa24_C,
+  BPA_24_H = Toptable_V.BPA24_H,
+  BPA_24_C = Toptable_V.BPA24_C,
+  PFOA_24_H = Toptable_V.PFOA24_H,
+  PFOA_24_C = Toptable_V.PFOA24_C
+)
+
+ttbl_list_24 <- list(
+  TUN_24_H = Toptable_V.TUN24_H,
+  TUN_24_C = Toptable_V.TUN24_C,
+  THA_24_H = Toptable_V.THA24_H,
+  THA_24_C = Toptable_V.THA24_C,
+  DOX_24_H = Toptable_V.DOX24_H,
+  DOX_24_C = Toptable_V.DOX24_C,
+  NUTL_24_H = Toptable_V.NUTL24_H,
+  NUTL_24_C = Toptable_V.NUTL24_C,
+  LPS_24_H = Toptable_V.LPS24_H,
+  LPS_24_C = Toptable_V.LPS24_C,
+  TNFa_24_H = Toptable_V.TNFa24_H,
+  TNFa_24_C = Toptable_V.TNFa24_C,
+  BPA_24_H = Toptable_V.BPA24_H,
+  BPA_24_C = Toptable_V.BPA24_C,
+  PFOA_24_H = Toptable_V.PFOA24_H,
+  PFOA_24_C = Toptable_V.PFOA24_C
+)
+
+#add in SYMBOL from Entrez_ID for each of these toptables
+#make a mapping table first so I can easily do this in the future
+entrez2symbol <- AnnotationDbi::select(
+  org.Hs.eg.db,
+  keys = unique(unlist(lapply(ttbl_list, rownames))),
+  keytype = "ENTREZID",
+  column = "SYMBOL"
+)
+
+# ttbl_list <- imap(
+#   ttbl_list,
+#   ~ .x %>%
+#     rownames_to_column(var = "Entrez_ID") %>%
+#     left_join(entrez2symbol, by = c("Entrez_ID" = "ENTREZID"))
+# )
+
+#save this toptable list as an object so I can reference it later
+# saveRDS(ttbl_list, "data/de/toptable_list_subset_updated_symbolentrez.RDS")
+# saveRDS(ttbl_list_24, "data/de/toptable_list_24hr_updated_symbolentrez.RDS")
+ttbl_list <- readRDS("data/de/toptable_list_subset_updated_symbolentrez.RDS")
+ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
+
+#now I want to make a long-form dataframe 
+# combined_ttbl <- imap_dfr(
+#   ttbl_list,
+#   ~ {
+#     parts <- str_match(.y, "^(.+)_([0-9]+)_([HC])$")
+# 
+#     .x %>%
+#       mutate(
+#         Stimulus = parts[2],
+#         Time     = parts[3],
+#         Species  = parts[4]
+#       )
+#   }
+# )
+
+#save this long toptable for later when plotting
+# saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolentrez.RDS")
+combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolentrez.RDS")
+
+#now cut this down to only include the 24hr samples now too
+combined_ttbl_24 <- combined_ttbl %>% 
+  dplyr::filter(Time == "24")
+
+#save this as an object so I can read it in later
+# saveRDS(combined_ttbl_24, "data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
 
 ```
 
