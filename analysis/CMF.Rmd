@@ -2857,10 +2857,12 @@ prob_filt_upr_1_all <- rownames(upr_gene_prob_all[(upr_gene_prob_all[,1] < 0.5
                                            & upr_gene_prob_all[,3] < 0.5
                                            & upr_gene_prob_all[,4] < 0.5
                                            & upr_gene_prob_all[,5] < 0.5
-                                           & upr_gene_prob_all[,6] < 0.5),]) #all white boxes
+                                           & upr_gene_prob_all[,6] < 0.5
+                                           & upr_gene_prob_all[,7] < 0.5
+                                           & upr_gene_prob_all[,8] < 0.5),]) #all white boxes
 
 length(prob_filt_upr_1_all)
-#11,199 genes
+#11,196 genes
 
 #intersect the clustlike and p.post together
 fin_upr_1_all <- intersect(clust1_upr_all, prob_filt_upr_1_all)
@@ -2868,39 +2870,53 @@ cat("Number of genes passing both filters:", length(fin_upr_1_all), "\n")
 
 #10,781 genes pass both filters here
 
-prob_filt_upr_2 <- rownames(upr_gene_prob[(upr_gene_prob[,1] < 0.5
-                                           & upr_gene_prob[,2] > 0.5 
-                                           & upr_gene_prob[,3] < 0.5
-                                           & upr_gene_prob[,4] > 0.5),])
-length(prob_filt_upr_2)
-#125 genes
+prob_filt_upr_2_all <- rownames(upr_gene_prob_all[(upr_gene_prob_all[,1] < 0.5
+                                           & upr_gene_prob_all[,2] < 0.5 
+                                           & upr_gene_prob_all[,3] < 0.5
+                                           & upr_gene_prob_all[,4] < 0.5
+                                           & upr_gene_prob_all[,5] > 0.5
+                                           & upr_gene_prob_all[,6] > 0.5
+                                           & upr_gene_prob_all[,7] > 0.5
+                                           & upr_gene_prob_all[,8] > 0.5),])
+length(prob_filt_upr_2_all)
+#2,053 genes
 
 #intersect the clustlike and p.post together
-fin_upr_2 <- intersect(clust2_upr, prob_filt_upr_2)
-cat("Number of genes passing both filters:", length(fin_upr_2), "\n")
+fin_upr_2_all <- intersect(clust2_upr_all, prob_filt_upr_2_all)
+cat("Number of genes passing both filters:", length(fin_upr_2_all), "\n")
+#2044 genes passing
 
-prob_filt_upr_3 <- rownames(upr_gene_prob[(upr_gene_prob[,1] > 0.5
-                                           & upr_gene_prob[,2] < 0.5 
-                                           & upr_gene_prob[,3] > 0.5
-                                           & upr_gene_prob[,4] < 0.5),])
-length(prob_filt_upr_3)
-#137 genes
-
-#intersect the clustlike and p.post together
-fin_upr_3 <- intersect(clust3_upr, prob_filt_upr_3)
-cat("Number of genes passing both filters:", length(fin_upr_3), "\n")
-
-prob_filt_upr_4 <- rownames(upr_gene_prob[(upr_gene_prob[,1] > 0.5
-                                           & upr_gene_prob[,2] > 0.5 
-                                           & upr_gene_prob[,3] > 0.5
-                                           & upr_gene_prob[,4] > 0.5),])
-length(prob_filt_upr_4)
-#2,136 genes
+prob_filt_upr_3_all <- rownames(upr_gene_prob_all[(upr_gene_prob_all[,1] < 0.5
+                                           & upr_gene_prob_all[,2] < 0.5 
+                                           & upr_gene_prob_all[,3] > 0.5
+                                           & upr_gene_prob_all[,4] > 0.5
+                                           & upr_gene_prob_all[,5] > 0.5
+                                           & upr_gene_prob_all[,6] > 0.5
+                                           & upr_gene_prob_all[,7] > 0.5
+                                           & upr_gene_prob_all[,8] > 0.5),])
+length(prob_filt_upr_3_all)
+#236 genes
 
 #intersect the clustlike and p.post together
-fin_upr_4 <- intersect(clust4_upr, prob_filt_upr_4)
-cat("Number of genes passing both filters:", length(fin_upr_4), "\n")
+fin_upr_3_all <- intersect(clust3_upr_all, prob_filt_upr_3_all)
+cat("Number of genes passing both filters:", length(fin_upr_3_all), "\n")
+#236 genes pass both
 
+prob_filt_upr_4_all <- rownames(upr_gene_prob_all[(upr_gene_prob_all[,1] < 0.5
+                                           & upr_gene_prob_all[,2] < 0.5 
+                                           & upr_gene_prob_all[,3] > 0.5
+                                           & upr_gene_prob_all[,4] > 0.5
+                                           & upr_gene_prob_all[,5] < 0.5
+                                           & upr_gene_prob_all[,6] < 0.5
+                                           & upr_gene_prob_all[,7] < 0.5
+                                           & upr_gene_prob_all[,8] < 0.5),])
+length(prob_filt_upr_4_all)
+#235 genes
+
+#intersect the clustlike and p.post together
+fin_upr_4_all <- intersect(clust4_upr_all, prob_filt_upr_4_all)
+cat("Number of genes passing both filters:", length(fin_upr_4_all), "\n")
+#235 genes passing both
 
 ```
 
@@ -2910,6 +2926,59 @@ cat("Number of genes passing both filters:", length(fin_upr_4), "\n")
 ddr_gene_prob <- cmf_ddr$bestmotif$p.post
 rownames(ddr_gene_prob) <- rownames(expr_ddr)
 
+prob_filt_ddr_1 <- rownames(ddr_gene_prob[(ddr_gene_prob[,1] < 0.5
+                                           & ddr_gene_prob[,2] < 0.5 
+                                           & ddr_gene_prob[,3] < 0.5
+                                           & ddr_gene_prob[,4] < 0.5),])
+length(prob_filt_ddr_1)
+#8146 genes
+
+#intersect the clustlike and p.post together
+fin_ddr_1 <- intersect(clust1_ddr, prob_filt_ddr_1)
+cat("Number of genes passing both filters:", length(fin_ddr_1), "\n")
+#2116 genes passing both - why so few?
+
+
+prob_filt_ddr_2 <- rownames(ddr_gene_prob[(ddr_gene_prob[,1] > 0.5
+                                           & ddr_gene_prob[,2] > 0.5 
+                                           & ddr_gene_prob[,3] > 0.5
+                                           & ddr_gene_prob[,4] > 0.5),])
+length(prob_filt_ddr_2)
+#361 genes
+
+#intersect the clustlike and p.post together
+fin_ddr_2 <- intersect(clust2_ddr, prob_filt_ddr_2)
+cat("Number of genes passing both filters:", length(fin_ddr_2), "\n")
+#8 genes passing both??
+
+
+
+prob_filt_ddr_3 <- rownames(ddr_gene_prob[(ddr_gene_prob[,1] < 0.5
+                                           & ddr_gene_prob[,2] < 0.5 
+                                           & ddr_gene_prob[,3] > 0.5
+                                           & ddr_gene_prob[,4] > 0.5),])
+length(prob_filt_ddr_3)
+#281 genes
+
+#intersect the clustlike and p.post together
+fin_ddr_3 <- intersect(clust3_ddr, prob_filt_ddr_3)
+cat("Number of genes passing both filters:", length(fin_ddr_3), "\n")
+#2 genes passing both??
+
+
+prob_filt_ddr_4 <- rownames(ddr_gene_prob[(ddr_gene_prob[,1] > 0.5
+                                           & ddr_gene_prob[,2] > 0.5 
+                                           & ddr_gene_prob[,3] < 0.5
+                                           & ddr_gene_prob[,4] < 0.5),])
+length(prob_filt_ddr_4)
+#4,916 genes
+
+#intersect the clustlike and p.post together
+fin_ddr_4 <- intersect(clust4_ddr, prob_filt_ddr_4)
+cat("Number of genes passing both filters:", length(fin_ddr_4), "\n")
+#733 genes passing both?? so few
+
+#I need to investigate further what the clustlike vs p.post are doing to where most of the genes don't overlap here
 
 ```
 
@@ -3155,10 +3224,10 @@ combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RD
 
 #pull in my gene vectors
 motif_gene_sets <- list(
-  upr = upr_clustlike,
-  ddr = ddr_clustlike,
-  imr = imr_clustlike,
-  mmr = mmr_clustlike
+  upr_c = upr_clustlike,
+  ddr_c = ddr_clustlike,
+  imr_c = imr_clustlike,
+  mmr_c = mmr_clustlike
 )
 
 motif_stimuli <- list(
@@ -3169,15 +3238,15 @@ motif_stimuli <- list(
 )
 
 #pivot my dataframe into a long format for plotting
-toptable_long_24 <- imap_dfr(
-  toptable_list_24,
-  ~ .x %>%
-    mutate(
-      Stimulus = gsub("^V\\.|24_[HC]$", "", .y),
-      Species  = ifelse(grepl("_H$", .y), "Human", "Chimp"),
-      Time = "24"
-    )
-)
+# toptable_long_24 <- imap_dfr(
+#   toptable_list_24,
+#   ~ .x %>%
+#     mutate(
+#       Stimulus = gsub("^V\\.|24_[HC]$", "", .y),
+#       Species  = ifelse(grepl("_H$", .y), "Human", "Chimp"),
+#       Time = "24"
+#     )
+# )
 
 #create a function to loop through my gene clusters for each 24hr subset
 plot_logFC_distribution <- function(df, gene_set, motif_name,
@@ -3267,3 +3336,142 @@ for (name in names(all_plots_24)) {
 
 
 ```
+
+# Log2FC distribution
+
+```{r plot the logFC distribution for each motif}
+
+#I want to make a function to loop through my different subsets to get an idea of their logFC distribution
+#this will be using my toptables that I made with DE analysis previously
+
+#read in my toptable list and my long toptable dataframe for 24hr samples
+ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+
+#pull in my gene vectors
+motif_gene_sets <- list(
+  upr = upr_clustlike,
+  ddr = ddr_clustlike,
+  imr = imr_clustlike,
+  mmr = mmr_clustlike
+)
+
+motif_stimuli <- list(
+  upr = c("TUN", "THA"),
+  ddr = c("DOX", "NUTL"),
+  imr = c("LPS", "TNFa"),
+  mmr = c("BPA", "PFOA")
+)
+
+
+plot_logFC_distribution <- function(df, y_var = c("logFC", "absFC"), title, stim_col, resp_group) {
+  y_var <- match.arg(y_var)
+  y_lab <- ifelse(y_var == "logFC", "logFC", "|logFC|")
+  
+  # Define the fixed Condition order per response group
+  cond_levels <- list(
+    upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
+    ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
+    imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
+    mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+  )
+  
+  #ensure Condition is a factor in the correct order for each response group
+  df <- df %>%
+    mutate(
+      Condition = factor(Condition, levels = cond_levels[[resp_group]])
+    )
+  
+  ggplot(df, aes(x = Condition, y = .data[[y_var]], fill = Stimulus)) +
+    geom_boxplot() +
+    scale_fill_manual(values = stim_col) +
+    xlab("Condition") +
+    ylab(y_lab) +
+    ggtitle(title) +
+    theme_custom() 
+}
+
+#define the condition order for each response group
+cond_levels <- list(
+  upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
+  ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
+  imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
+  mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+)
+
+#loop through all response groups
+for (resp in names(motif_gene_sets)) {
+  
+  message("Processing response group: ", resp)
+  
+  motif_list <- motif_gene_sets[[resp]]
+  stim_prefix <- motif_stimuli[[resp]]
+  
+  # Subset to relevant stimuli and create Condition column
+  ttbl_resp <- combined_ttbl_24 %>%
+    filter(Stimulus %in% stim_prefix) %>%
+    mutate(
+      Stimulus = factor(Stimulus, levels = stim_prefix),  #maintain order of stimuli
+      Condition = paste0(Stimulus, "_24_", Species)
+    )
+  
+  # Ensure Condition has the fixed order for this response group
+  ttbl_resp$Condition <- factor(ttbl_resp$Condition, levels = cond_levels[[resp]])
+  
+  for (motif_name in names(motif_list)) {
+    
+    genes <- motif_list[[motif_name]]
+    n_genes <- length(genes)
+    
+    df_motif <- ttbl_resp %>%
+      filter(Entrez_ID %in% genes) %>%
+      mutate(absFC = abs(logFC))
+    
+    #logFC plot
+    p_logFC <- plot_logFC_distribution(
+      df         = df_motif,
+      y_var      = "logFC",
+      title      = paste0(motif_name, " logFC (n = ", n_genes, ")"),
+      stim_col   = stim_col[stim_prefix],
+      resp_group = resp
+      )
+
+    
+    print(p_logFC)
+    
+    save_plot(
+      filename = paste0("Motif_", motif_name, "_logFC"),
+      plot = p_logFC,
+      folder = output_folder,
+      width = 6,
+      height = 6
+    )
+    
+    #abs(logFC) plot
+    p_absFC <- plot_logFC_distribution(
+      df         = df_motif,
+      y_var      = "absFC",
+      title      = paste0(motif_name, " |logFC| (n = ", n_genes, ")"),
+      stim_col   = stim_col[stim_prefix],
+      resp_group = resp
+      )
+    
+    print(p_absFC)
+    
+    save_plot(
+      filename = paste0("Motif_", motif_name, "_abslogFC"),
+      plot = p_absFC,
+      folder = output_folder,
+      width = 6,
+      height = 6
+    )
+  }
+}
+
+
+```
+
+```{r }
+
+```
+

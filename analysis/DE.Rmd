@@ -575,13 +575,47 @@ ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
 # saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolentrez.RDS")
 combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolentrez.RDS")
 
-#now cut this down to only include the 24hr samples now too
-combined_ttbl_24 <- combined_ttbl %>% 
-  dplyr::filter(Time == "24")
+#now make a 24hr only version
+# combined_ttbl_24 <- imap_dfr(
+#   ttbl_list_24,
+#   ~ {
+#     parts <- str_match(.y, "^(.+)_([0-9]+)_([HC])$")
+#     
+#     .x %>%
+#       # no need for rownames_to_column() if Entrez_ID already exists
+#       mutate(
+#         Stimulus = parts[2],
+#         Time     = parts[3],  # should always be "24"
+#         Species  = parts[4]
+#       )
+#   }
+# ) %>%
+#   distinct(Entrez_ID, Stimulus, Species, .keep_all = TRUE)
+
+
+
+
+#I want to add two columns to my toptable - Condition and Response category
+#cut down my metadata_24 to have no duplicates so I can use it to add these columns
+metadata_24_unique <- metadata_24 %>%
+  distinct(Stimulus, Species, .keep_all = TRUE) 
+
+# combined_ttbl_24 <- combined_ttbl_24 %>%
+#   mutate(absFC = abs(logFC)) %>%
+#   left_join(
+#     metadata_24_unique %>%
+#       select(Stimulus, Species, Response, Cond),
+#     by = c("Stimulus", "Species")
+#   ) %>% 
+#   dplyr::select(Entrez_ID, SYMBOL, logFC, absFC,
+#                 AveExpr, t, P.Value, adj.P.Val, B,
+#                 Stimulus, Time, everything())
 
 #save this as an object so I can read it in later
 # saveRDS(combined_ttbl_24, "data/de/combined_toptable_long_24hr_symbolentrez.RDS")
 combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+
+
 
 ```
 
