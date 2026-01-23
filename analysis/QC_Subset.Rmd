@@ -459,6 +459,9 @@ metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 
 hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
 
+#I want to also remove an outlier sample based on my initial PCA analysis - PFOA_24_H3 is not clustering with other samples.
+
+
 
 ```
 
@@ -792,6 +795,7 @@ print(qc_map_plots_list)
 Convert my dataframe to log2cpm and filter out lowly-expressed genes via rowMeans.
 
 ```{r Filter with rowMeans, message=FALSE, warning=FALSE}
+
 #first, convert to log2cpm
 
 #ensure that Entrez_ID are the rownames
@@ -820,6 +824,8 @@ dim(hc_cpm_matrix_sub)
 #now keep the name that is used in the rest of the data to make it easier, assume from now onward that this will be on the 195-sample subset of libraries
 
 hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
+
+
 
 #plot this out to show the filtering
 hist(hc_cpm_matrix, 
@@ -857,7 +863,7 @@ print(hc_cpm_filt_boxplot)
 
 # Principal Component Analysis
 
-Perform PCA analysis on subset of data.
+Perform PCA analysis on subset of data. At this stage, I removed an outlier sample PFOA 24hr H3 which was not clustering with the rest of these data.
 
 ```{r PCA Plots, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 
