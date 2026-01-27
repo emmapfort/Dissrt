@@ -2074,37 +2074,37 @@ compid_upr_all <- data.frame(Cond1 = c(1, 2, 3, 4, 7, 8, 9, 10),
 #this one has the outlier PFOA_24_H3 removed
 
 #make my expr_list
-expr_list <- list(
-  upr_all = expr_upr_all, 
-  upr = expr_upr, 
-  ddr = expr_ddr, 
-  imr = expr_imr, 
-  mmr = expr_mmr)
+# expr_list <- list(
+#   upr_all = expr_upr_all, 
+#   upr = expr_upr, 
+#   ddr = expr_ddr, 
+#   imr = expr_imr, 
+#   mmr = expr_mmr)
 
 #make my list of groupids
-groupid_list <- list(
-  upr_all = groupid_upr_all, 
-  upr = groupid_upr, 
-  ddr = groupid_ddr, 
-  imr = groupid_imr, 
-  mmr = groupid_mmr)
+# groupid_list <- list(
+#   upr_all = groupid_upr_all, 
+#   upr = groupid_upr, 
+#   ddr = groupid_ddr, 
+#   imr = groupid_imr, 
+#   mmr = groupid_mmr)
 
 #make my list of compids
-compid_list <- list(
-  upr_all = compid_upr_all, 
-  upr = compid_upr, 
-  ddr = compid_ddr, 
-  imr = compid_imr, 
-  mmr = compid_mmr)
+# compid_list <- list(
+#   upr_all = compid_upr_all, 
+#   upr = compid_upr, 
+#   ddr = compid_ddr, 
+#   imr = compid_imr, 
+#   mmr = compid_mmr)
 
 #store the fits in a list
-cmf_fit_list <- list()
+# cmf_fit_list <- list()
 
 #store the plots into a list to print later
-cmf_plot_list <- list()
+# cmf_plot_list <- list()
 
 #set seed once for reproducibility
-set.seed(19191)
+# set.seed(19191)
 
 # for (name in names(expr_list)) {
 # 
@@ -2160,55 +2160,55 @@ cmf_upr_all <- readRDS("data/cmf/subset/cormotif_fit_matrix_upr_allk30.RDS")
 cmf_upr <- readRDS("data/cmf/subset/cormotif_fit_matrix_uprk30.RDS")
 cmf_ddr <- readRDS("data/cmf/subset/cormotif_fit_matrix_ddrk30.RDS")
 cmf_imr <- readRDS("data/cmf/subset/cormotif_fit_matrix_imrk30.RDS")
-# cmf_mmr <- readRDS("data/cmf/subset/cormotif_fit_matrix_mmrk30.RDS")
+cmf_mmr_old <- readRDS("data/cmf/subset/cormotif_fit_matrix_mmrk30.RDS")
 
 cmf_data_list <- list(
   upr_all = cmf_upr_all,
   upr = cmf_upr,
   ddr = cmf_ddr,
   imr = cmf_imr,
-  mmr = cmf_mmr
+  mmr = cmf_mmr_old
 )
 
 #make two lists so I can store the IC/motif plots
 cmf_ic_plots <- list()
 cmf_motif_plots <- list()
 
-# for(name in names(cmf_data_list)) {
-#   
-#   cat("processing subset:", name, "\n")
-#   
-#   fit <- cmf_data_list[[name]]
-#   
-#   plotIC(fit)
-#   ic_plot <- recordPlot()
-#   ic_name <- paste0("cmf_ic_", name)
-#   
-#   cmf_ic_plots[[ic_name]] <- ic_plot
-#   
-#   save_plot(
-#     plot = ic_plot,
-#     filename = paste0(ic_name, "_EMP"),
-#     folder = output_folder
-#   )
-#   
-#   #now do the same for the motifs plot
-#   
-#   plotMotif(fit)
-#   mtf_plot <- recordPlot()
-#   mtf_name <- paste0("cmf_motif_", name)
-#   
-#   cmf_motif_plots[[mtf_name]] <- mtf_plot
-#   
-#   save_plot(
-#     plot = mtf_plot,
-#     filename = paste0(mtf_name, "_EMP"),
-#     folder = output_folder
-#   )
-#   
-#   cat("finished subset:", name, "\n\n")
-#   
-# }
+for(name in names(cmf_data_list)) {
+
+  cat("processing subset:", name, "\n")
+
+  fit <- cmf_data_list[[name]]
+
+  plotIC(fit)
+  ic_plot <- recordPlot()
+  ic_name <- paste0("cmf_ic_", name)
+
+  cmf_ic_plots[[ic_name]] <- ic_plot
+
+  # save_plot(
+  #   plot = ic_plot,
+  #   filename = paste0(ic_name, "_EMP"),
+  #   folder = output_folder
+  # )
+
+  #now do the same for the motifs plot
+
+  plotMotif(fit)
+  mtf_plot <- recordPlot()
+  mtf_name <- paste0("cmf_motif_", name)
+
+  cmf_motif_plots[[mtf_name]] <- mtf_plot
+
+  # save_plot(
+  #   plot = mtf_plot,
+  #   filename = paste0(mtf_name, "_EMP"),
+  #   folder = output_folder
+  # )
+
+  cat("finished subset:", name, "\n\n")
+
+}
 
 
 #now that I've saved each of these images, let's dive into characterizing each of these motifs
@@ -2223,18 +2223,18 @@ cmf_motif_plots <- list()
 #I haven't changed this one to have no outlier
 
 #fit cormotif model
-set.seed(19191)
+# set.seed(19191)
 #only set seed once for reproducibility
 
-cmf_mmr_rm <- cormotiffit(
-  exprs = expr_mmr,
-  groupid = groupid_mmr,
-  compid = compid_mmr,
-  K  = 1:20,
-  max.iter = 10000,
-  BIC = TRUE,
-  runtype = "logCPM"
-)
+# cmf_mmr_rm <- cormotiffit(
+#   exprs = expr_mmr,
+#   groupid = groupid_mmr,
+#   compid = compid_mmr,
+#   K  = 1:20,
+#   max.iter = 10000,
+#   BIC = TRUE,
+#   runtype = "logCPM"
+# )
 
 #save this so you have it for later
 
@@ -2243,8 +2243,8 @@ cmf_mmr_rm <- cormotiffit(
 cmf_mmr <- readRDS("data/cmf/cormotif_fitmatrix_mmr_nooutlier_k20.RDS")
 
 #plot the motifs and save them
-plotIC(cmf_mmr_rm)
-plotMotif(cmf_mmr_rm)
+plotIC(cmf_mmr)
+plotMotif(cmf_mmr)
 
 
 ```
@@ -2255,10 +2255,18 @@ plotMotif(cmf_mmr_rm)
 
 I have two subsets within this, upr and upr_all. upr_all contains both 2 hour and 24 hour timepoints, whereas upr only contains the 24 hour data. I am going to start by investigating upr 24hr only.
 
-```{r UPR cormotif analysis, message=FALSE, warning=FALSE}
+```{r UPR cormotif analysis, message=TRUE, warning=FALSE}
 #start by looking at the cluster likelihood for each of these motifs
 
 # cmf_upr <- readRDS("data/cmf/subset/cormotif_fit_matrix_uprk30.RDS")
+
+#initialize list for my genes for each cluster
+upr_clustlike <- list(
+  upr_c1 = character(0),
+  upr_c2 = character(0),
+  upr_c3 = character(0),
+  upr_c4 = character(0)
+)
 
 #extract the posterior probability that these genes belong to motifs
 upr_gene_prob <- cmf_upr$bestmotif$p.post
@@ -2268,15 +2276,6 @@ rownames(upr_gene_prob) <- rownames(expr_upr)
 upr_assign_mtf <- apply(upr_gene_prob, 1, which.max)
 max_probs_upr <- apply(upr_gene_prob, 1, max)
 
-#combine these into a dataframe - motif assigned genes (p.post)
-upr_clust_df <- upr_gene_prob %>%
-  as.data.frame() %>%
-  rownames_to_column("Gene") %>%
-  mutate(
-    Assigned_Motif = upr_assign_mtf[Gene],
-    Max_Probability = max_probs_upr[Gene]
-  )
-  
 #extract the cluster likelihood - which DEGs are most likely to be in this cluster
 upr_clust_prob <- cmf_upr$bestmotif$clustlike
 rownames(upr_clust_prob) <- rownames(upr_gene_prob)
@@ -2285,67 +2284,68 @@ rownames(upr_clust_prob) <- rownames(upr_gene_prob)
 
 #now go through each of these motifs' clustlike to assign a set of genes for each
 
-#motif1
-#filter 1: clustlike
-clust1_upr <- 
-  upr_clust_prob %>%
+#combine these into a dataframe - motif assigned genes (p.post)
+upr_clust_df <- upr_gene_prob %>%
   as.data.frame() %>%
-  filter(V1 > 0.6 & V2 < 0.5 & V3 < 0.5 & V4 < 0.5) %>% 
-  rownames
-length(clust1_upr)
-#11,171 genes w/ cutoff of 0.6 (too many at 0.5)
+  rownames_to_column("Gene") %>%
+  mutate(
+    Assigned_Motif = upr_assign_mtf[Gene],
+    Max_Probability = max_probs_upr[Gene]
+  )
 
-#motif2
-clust2_upr <- 
-  upr_clust_prob %>% 
-  as.data.frame() %>% 
-  filter(V1 < 0.5 & V2 > 0.01 & V3 < 0.5 & V4 < 0.5) %>% 
-  rownames
-length(clust2_upr)
-#141 genes with 0.01 cutoff
+#copy the clustlike matrix
+upr_prob_df <-as.data.frame(upr_clust_prob)
 
-#motif3
-clust3_upr <- 
-  upr_clust_prob %>%
-  as.data.frame() %>%
-  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.01 & V4 < 0.5) %>% 
-  rownames
-length(clust3_upr)
-#151 genes w/ cutoff of 0.01
+#keep track of genes already assigned
+assigned_genes_upr <- character(0)
 
-#motif4
-clust4_upr <- 
-  upr_clust_prob %>% 
-  as.data.frame() %>% 
-  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 & V4 > 0.4) %>% 
-  rownames
-length(clust4_upr)
-#2,218 genes with 0.6 cutoff
+#motif 1
+clust1_upr <- rownames(upr_prob_df)[
+  upr_prob_df$V1 > 0.6 &
+  upr_prob_df$V2 < 0.5 &
+  upr_prob_df$V3 < 0.5 &
+  upr_prob_df$V4 < 0.5
+]
+clust1_upr <- setdiff(clust1_upr, assigned_genes_upr)
+upr_clustlike$upr_c1 <- clust1_upr
+assigned_genes_upr <- c(assigned_genes_upr, clust1_upr)
 
+# motif 2
+clust2_upr <- rownames(upr_prob_df)[
+  upr_prob_df$V1 < 0.5 &
+  upr_prob_df$V2 > 0.01 &
+  upr_prob_df$V3 < 0.5 &
+  upr_prob_df$V4 < 0.5
+]
+clust2_upr <- setdiff(clust2_upr, assigned_genes_upr)
+upr_clustlike$upr_c2 <- clust2_upr
+assigned_genes_upr <- c(assigned_genes_upr, clust2_upr)
 
-#first check that each list of genes is unique
-upr_clustlike <- list(
-  upr_c1 = clust1_upr,
-  upr_c2 = clust2_upr,
-  upr_c3 = clust3_upr,
-  upr_c4 = clust4_upr
-)
+# motif 3
+clust3_upr <- rownames(upr_prob_df)[
+  upr_prob_df$V1 < 0.5 &
+  upr_prob_df$V2 < 0.5 &
+  upr_prob_df$V3 > 0.01 &
+  upr_prob_df$V4 < 0.5
+]
+clust3_upr <- setdiff(clust3_upr, assigned_genes_upr)
+upr_clustlike$upr_c3 <- clust3_upr
+assigned_genes_upr <- c(assigned_genes_upr, clust3_upr)
 
-length(upr_clustlike) == length(unique(upr_clustlike))
-#each of these gene lists is unique
-
-assign_upr <- unique(unlist(upr_clustlike))
+# motif 4
+clust4_upr <- rownames(upr_prob_df)[
+  upr_prob_df$V1 < 0.5 &
+  upr_prob_df$V2 < 0.5 &
+  upr_prob_df$V3 < 0.5 &
+  upr_prob_df$V4 > 0.3
+]
+clust4_upr <- setdiff(clust4_upr, assigned_genes_upr)
+upr_clustlike$upr_c4 <- clust4_upr
+assign_upr <- c(assigned_genes_upr, clust4_upr)
 length(assign_upr)
-all_genes <- rownames(hc_cpm_matrix_24)
 unassign_upr <- setdiff(all_genes, assign_upr)
 length(unassign_upr)
-
-#13401 genes are assigned to a motif with these cutoffs presently
-#338 unassigned genes
-
-#13,583 genes assigned to a motif with these new cutoffs
-#156 unassigned genes when I change the cutoffs to be less stringent
-
+#156 genes unassigned
 
 ```
 
@@ -2448,15 +2448,27 @@ length(unassign_upr_all)
 
 ```{r DDR subset cormotif clustlike, message=FALSE, warning=FALSE}
 
-#extract the posterior probability that these genes belong to motifs
+#initialize list for DDR motifs
+ddr_clustlike <- list(
+  ddr_c1 = character(0),
+  ddr_c2 = character(0),
+  ddr_c3 = character(0),
+  ddr_c4 = character(0)
+)
+
+#extract posterior probabilities (not used for assignment here, just for reference)
 ddr_gene_prob <- cmf_ddr$bestmotif$p.post
 rownames(ddr_gene_prob) <- rownames(expr_ddr)
 
-#assign each gene to a motif with max post prob
+#assign each gene to a motif with max post prob (for reference)
 ddr_assign_mtf <- apply(ddr_gene_prob, 1, which.max)
 max_probs_ddr <- apply(ddr_gene_prob, 1, max)
 
-#combine these into a dataframe - motif assigned genes (p.post)
+#extract cluster likelihood - clustlike
+ddr_clust_prob <- cmf_ddr$bestmotif$clustlike
+rownames(ddr_clust_prob) <- rownames(ddr_gene_prob)
+
+#combine posterior info into a dataframe (optional)
 ddr_clust_df <- ddr_gene_prob %>%
   as.data.frame() %>%
   rownames_to_column("Gene") %>%
@@ -2464,78 +2476,63 @@ ddr_clust_df <- ddr_gene_prob %>%
     Assigned_Motif = ddr_assign_mtf[Gene],
     Max_Probability = max_probs_ddr[Gene]
   )
-  
-#extract the cluster likelihood - which DEGs are most likely to be in this cluster
-ddr_clust_prob <- cmf_ddr$bestmotif$clustlike
-rownames(ddr_clust_prob) <- rownames(ddr_gene_prob)
 
-# write.csv(ddr_clust_prob,"data/cmf/subset/cormotif_ddr_clusterlikelihood.csv")
+#copy clustlike matrix to a dataframe
+ddr_prob_df <- as.data.frame(ddr_clust_prob)
 
-#now go through each of these motifs' clustlike to assign a set of genes for each
+#keep track of genes already assigned
+assigned_genes_ddr <- character(0)
 
-#motif1
-#filter 1: clustlike
-clust1_ddr <- 
-  ddr_clust_prob %>%
-  as.data.frame() %>%
-  filter(V1 > 0.6 
-         & V2 < 0.5 
-         & V3 < 0.5 
-         & V4 < 0.5) %>% 
-  rownames
-length(clust1_ddr)
-#7633 genes w/ cutoff of 0.6 (too many at 0.5)
+#assign genes to motifs/clusters
+#motif 1
+clust1_ddr <- rownames(ddr_prob_df)[
+  ddr_prob_df$V1 > 0.6 &
+  ddr_prob_df$V2 < 0.5 &
+  ddr_prob_df$V3 < 0.5 &
+  ddr_prob_df$V4 < 0.5
+]
+clust1_ddr <- setdiff(clust1_ddr, assigned_genes_ddr)
+ddr_clustlike$ddr_c1 <- clust1_ddr
+assigned_genes_ddr <- c(assigned_genes_ddr, clust1_ddr)
 
-#motif2
-clust2_ddr <- 
-  ddr_clust_prob %>% 
-  as.data.frame() %>% 
-  filter(V1 < 0.5 & 
-           V2 > 0.05 & 
-           V3 < 0.5 & 
-           V4 < 0.5) %>% 
-  rownames
-length(clust2_ddr)
-#509 genes with 0.05 cutoff
+#motif 2
+clust2_ddr <- rownames(ddr_prob_df)[
+  ddr_prob_df$V1 < 0.5 &
+  ddr_prob_df$V2 > 0.05 &
+  ddr_prob_df$V3 < 0.5 &
+  ddr_prob_df$V4 < 0.5
+]
+clust2_ddr <- setdiff(clust2_ddr, assigned_genes_ddr)
+ddr_clustlike$ddr_c2 <- clust2_ddr
+assigned_genes_ddr <- c(assigned_genes_ddr, clust2_ddr)
 
-#motif3
-clust3_ddr <- 
-  ddr_clust_prob %>%
-  as.data.frame() %>%
-  filter(V1 < 0.5 & V2 < 0.5 & V3 > 0.05 & V4 < 0.5) %>% 
-  rownames
-length(clust3_ddr)
-#407 genes w/ cutoff of 0.05
+#motif 3
+clust3_ddr <- rownames(ddr_prob_df)[
+  ddr_prob_df$V1 < 0.5 &
+  ddr_prob_df$V2 < 0.5 &
+  ddr_prob_df$V3 > 0.05 &
+  ddr_prob_df$V4 < 0.5
+]
+clust3_ddr <- setdiff(clust3_ddr, assigned_genes_ddr)
+ddr_clustlike$ddr_c3 <- clust3_ddr
+assigned_genes_ddr <- c(assigned_genes_ddr, clust3_ddr)
 
-#motif4
-clust4_ddr <- 
-  ddr_clust_prob %>% 
-  as.data.frame() %>% 
-  filter(V1 < 0.5 & V2 < 0.5 & V3 < 0.5 & V4 > 0.05) %>% 
-  rownames
-length(clust4_ddr)
-#5,043 genes with 0.05 cutoff
-
-
-#first check that each list of genes is unique
-ddr_clustlike <- list(
-  ddr_c1 = clust1_ddr,
-  ddr_c2 = clust2_ddr,
-  ddr_c3 = clust3_ddr,
-  ddr_c4 = clust4_ddr
-)
-
-length(ddr_clustlike) == length(unique(ddr_clustlike))
-#each of these gene lists is unique
-
-assign_ddr <- unique(unlist(ddr_clustlike))
-length(assign_ddr)
-all_genes <- rownames(hc_cpm_matrix_24)
+#motif 4
+clust4_ddr <- rownames(ddr_prob_df)[
+  ddr_prob_df$V1 < 0.5 &
+  ddr_prob_df$V2 < 0.5 &
+  ddr_prob_df$V3 < 0.5 &
+  ddr_prob_df$V4 > 0.05
+]
+clust4_ddr <- setdiff(clust4_ddr, assigned_genes_ddr)
+ddr_clustlike$ddr_c4 <- clust4_ddr
+assign_ddr <- c(assigned_genes_ddr, clust4_ddr)
 unassign_ddr <- setdiff(all_genes, assign_ddr)
 length(unassign_ddr)
 
-#13284 genes are assigned to a motif with these cutoffs presently
-#455 unassigned genes
+#check totals
+length(unique(unlist(ddr_clustlike)))        #number of genes assigned to motifs
+length(all_genes) - length(unique(unlist(ddr_clustlike)))  #nunassigned genes
 
 ```
 
@@ -2543,69 +2540,43 @@ length(unassign_ddr)
 
 ```{r IMR cormotif analysis, warning=FALSE, message=FALSE}
 
-#extract the posterior probability that these genes belong to motifs
-imr_gene_prob <- cmf_imr$bestmotif$p.post
-rownames(imr_gene_prob) <- rownames(expr_imr)
-
-#assign each gene to a motif with max post prob
-imr_assign_mtf <- apply(imr_gene_prob, 1, which.max)
-max_probs_imr <- apply(imr_gene_prob, 1, max)
-
-#combine these into a dataframe - motif assigned genes (p.post)
-imr_clust_df <- imr_gene_prob %>%
-  as.data.frame() %>%
-  rownames_to_column("Gene") %>%
-  mutate(
-    Assigned_Motif = imr_assign_mtf[Gene],
-    Max_Probability = max_probs_imr[Gene]
-  )
-  
-#extract the cluster likelihood - which DEGs are most likely to be in this cluster
-imr_clust_prob <- cmf_imr$bestmotif$clustlike
-rownames(imr_clust_prob) <- rownames(imr_gene_prob)
-
-# write.csv(imr_clust_prob,"data/cmf/subset/cormotif_imr_clusterlikelihood.csv")
-
-#now go through each of these motifs' clustlike to assign a set of genes for each
-
-#motif1
-#filter 1: clustlike
-clust1_imr <- 
-  imr_clust_prob %>%
-  as.data.frame() %>%
-  filter(V1 > 0.8 & V2 < 0.5) %>% 
-  rownames
-length(clust1_imr)
-#13,603 genes w/ cutoff of 0.8 (too many at 0.5)
-
-#motif2
-clust2_imr <- 
-  imr_clust_prob %>% 
-  as.data.frame() %>% 
-  filter(V1 < 0.5 & V2 > 0.5) %>% 
-  rownames
-length(clust2_imr)
-#84 genes with 0.5 cutoff
-#all cutoffs only have 84 genes
-
-
-#first check that each list of genes is unique
+#initialize list for IMR motifs
 imr_clustlike <- list(
-  imr_c1 = clust1_imr,
-  imr_c2 = clust2_imr
+  imr_c1 = character(0),
+  imr_c2 = character(0)
 )
 
-length(imr_clustlike) == length(unique(imr_clustlike))
-#each of these gene lists is unique
+#copy clustlike probabilities to dataframe
+imr_prob_df <- as.data.frame(cmf_imr$bestmotif$clustlike)
+rownames(imr_prob_df) <- rownames(expr_imr)
 
-assign_imr <- unique(unlist(imr_clustlike))
-length(assign_imr)
-all_genes <- rownames(hc_cpm_matrix_24)
+#track assigned genes for mutual exclusivity
+assigned_genes_imr <- character(0)
+
+#motif 1
+clust1_imr <- rownames(imr_prob_df)[
+  imr_prob_df$V1 > 0.8 & 
+  imr_prob_df$V2 < 0.5
+]
+clust1_imr <- setdiff(clust1_imr, assigned_genes_imr)
+imr_clustlike$imr_c1 <- clust1_imr
+assigned_genes_imr <- c(assigned_genes_imr, clust1_imr)
+
+#motif 2
+clust2_imr <- rownames(imr_prob_df)[
+  imr_prob_df$V1 < 0.5 & 
+  imr_prob_df$V2 > 0.5
+]
+clust2_imr <- setdiff(clust2_imr, assigned_genes_imr)
+imr_clustlike$imr_c2 <- clust2_imr
+assign_imr <- c(assigned_genes_imr, clust2_imr)
 unassign_imr <- setdiff(all_genes, assign_imr)
 length(unassign_imr)
 
-#13687 genes are assigned to a motif with these cutoffs presently
-#52 unassigned genes
+#check totals
+length(unique(unlist(imr_clustlike)))      #number of assigned genes
+length(all_genes) - length(unique(unlist(imr_clustlike)))  #unassigned genes
+
 
 ```
 
@@ -2613,61 +2584,225 @@ length(unassign_imr)
 
 ```{r mmr cormotif analysis, warning=FALSE, message=FALSE}
 
-#extract the posterior probability that these genes belong to motifs
-mmr_gene_prob <- cmf_mmr$bestmotif$p.post
-rownames(mmr_gene_prob) <- rownames(expr_mmr)
-
-#assign each gene to a motif with max post prob
-mmr_assign_mtf <- apply(mmr_gene_prob, 1, which.max)
-max_probs_mmr <- apply(mmr_gene_prob, 1, max)
-
-#combine these into a dataframe - motif assigned genes (p.post)
-mmr_clust_df <- mmr_gene_prob %>%
-  as.data.frame() %>%
-  rownames_to_column("Gene") %>%
-  mutate(
-    Assigned_Motif = mmr_assign_mtf[Gene],
-    Max_Probability = max_probs_mmr[Gene]
-  )
-  
-#extract the cluster likelihood - which DEGs are most likely to be in this cluster
-mmr_clust_prob <- cmf_mmr$bestmotif$clustlike
-rownames(mmr_clust_prob) <- rownames(mmr_gene_prob)
-
-# write.csv(mmr_clust_prob,"data/cmf/subset/cormotif_mmr_clusterlikelihood.csv")
-
-#now go through each of these motifs' clustlike to assign a set of genes for each
-
-#motif1 (only one)
-#filter 1: clustlike
-clust1_mmr <- 
-  mmr_clust_prob %>%
-  as.data.frame() %>%
-  filter(V1 > 0.6) %>% 
-  rownames
-length(clust1_mmr)
-#13739 genes (same number as my total number of genes?)
-
+#initialize list for MMR motif
 mmr_clustlike <- list(
-  mmr_c1 = clust1_mmr
+  mmr_c1 = character(0)
 )
 
-assign_mmr <- mmr_clustlike
-all_genes <- rownames(hc_cpm_matrix_24)
-unassign_mmr <- setdiff(all_genes, clust1_mmr)
+#copy clustlike probabilities to dataframe
+mmr_prob_df <- as.data.frame(cmf_mmr$bestmotif$clustlike)
+rownames(mmr_prob_df) <- rownames(expr_mmr)
+
+#track assigned genes (mutual exclusivity)
+assigned_genes_mmr <- character(0)
+
+#motif 1
+clust1_mmr <- rownames(mmr_prob_df)[
+  mmr_prob_df$V1 > 0.6
+]
+clust1_mmr <- setdiff(clust1_mmr, assigned_genes_mmr)
+mmr_clustlike$mmr_c1 <- clust1_mmr
+assign_mmr <- c(assigned_genes_mmr, clust1_mmr)
+unassign_mmr <- setdiff(all_genes, assign_mmr)
 length(unassign_mmr)
 
-#13739 genes are assigned to the one motif with the cutoff I used
-#0 unassigned genes
-
+#check totals
+length(unique(unlist(mmr_clustlike)))      #should equal number of assigned genes
+length(all_genes) - length(unique(unlist(mmr_clustlike)))  #unassigned genes
 ```
 
 
 # Use posterior probability to assign motif genes
 
-## UPR Subset Motifs
+## 24hr All Samples Subset
 
 ```{r p.post and clustlike together, warning=FALSE, message=FALSE}
+
+#assign the posterior probability for each subset
+#extract the posterior probability that these genes belong to motifs
+gene_prob_all24 <- cmf_fit_24$bestmotif$p.post
+rownames(gene_prob_all24) <- rownames(expr_24)
+gene_probs24 <- gene_prob_all24
+
+#assign each gene to a motif with max post prob
+assigned_motifs24 <- apply(gene_probs24, 1, which.max)
+max_probs24 <- apply(gene_probs24, 1, max)
+
+#now take my motif gene lists that I used cluster likelihood on and layer over the p.post to get my final gene list with more specificity
+
+#gene-level posterior pattern (p.post) filter step on the previous clustlike lists
+prob_filt_24_1 <- rownames(gene_probs24[(gene_probs24[,1] < 0.5
+                                         & gene_probs24[,2] < 0.5 
+                                         & gene_probs24[,3] < 0.5
+                                         & gene_probs24[,4] < 0.5
+                                         & gene_probs24[,5] < 0.5
+                                         & gene_probs24[,6] < 0.5
+                                         & gene_probs24[,7] < 0.5
+                                         & gene_probs24[,8] < 0.5
+                                         & gene_probs24[,9] < 0.5
+                                         & gene_probs24[,10] < 0.5
+                                         & gene_probs24[,11] < 0.5
+                                         & gene_probs24[,12] < 0.5
+                                         & gene_probs24[,13] < 0.5
+                                         & gene_probs24[,14] < 0.5
+                                         & gene_probs24[,15] < 0.5
+                                         & gene_probs24[,16] < 0.5),]) #all white
+
+length(prob_filt_24_1)
+#7,094 genes
+
+#intersect the clustlike and p.post together
+fin_24_1 <- intersect(clust1_24, prob_filt_24_1)
+cat("Number of genes passing both filters:", length(fin_24_1), "\n")
+
+#6,818 genes pass both filters here
+
+prob_filt_24_2 <- rownames(gene_probs24[(gene_probs24[,1] < 0.5
+                                         & gene_probs24[,2] < 0.5 
+                                         & gene_probs24[,3] < 0.5
+                                         & gene_probs24[,4] < 0.5
+                                         & gene_probs24[,5] < 0.5
+                                         & gene_probs24[,6] < 0.5
+                                         & gene_probs24[,7] > 0.5
+                                         & gene_probs24[,8] > 0.5
+                                         & gene_probs24[,9] > 0.1
+                                         & gene_probs24[,10] < 0.5
+                                         & gene_probs24[,11] < 0.5
+                                         & gene_probs24[,12] < 0.5
+                                         & gene_probs24[,13] > 0.1
+                                         & gene_probs24[,14] > 0.1
+                                         & gene_probs24[,15] > 0.1
+                                         & gene_probs24[,16] > 0.5),])
+length(prob_filt_24_2)
+#1048 genes
+
+#intersect the clustlike and p.post together
+fin_24_2 <- intersect(clust2_24, prob_filt_24_2)
+cat("Number of genes passing both filters:", length(fin_24_2), "\n")
+
+prob_filt_24_3 <- rownames(gene_probs24[(gene_probs24[,1] > 0.5
+                                         & gene_probs24[,2] > 0.5 
+                                         & gene_probs24[,3] > 0.5
+                                         & gene_probs24[,4] > 0.5
+                                         & gene_probs24[,5] > 0.2
+                                         & gene_probs24[,6] > 0.2
+                                         & gene_probs24[,7] < 0.5
+                                         & gene_probs24[,8] < 0.5
+                                         & gene_probs24[,9] > 0.2
+                                         & gene_probs24[,10] < 0.5
+                                         & gene_probs24[,11] < 0.5
+                                         & gene_probs24[,12] < 0.5
+                                         & gene_probs24[,13] > 0.2
+                                         & gene_probs24[,14] < 0.5
+                                         & gene_probs24[,15] > 0.2
+                                         & gene_probs24[,16] < 0.5),])
+length(prob_filt_24_3)
+#381 genes
+
+#intersect the clustlike and p.post together
+fin_24_3 <- intersect(clust3_24, prob_filt_24_3)
+cat("Number of genes passing both filters:", length(fin_24_3), "\n")
+
+prob_filt_24_4 <- rownames(gene_probs24[(gene_probs24[,1] < 0.5
+                                         & gene_probs24[,2] < 0.5 
+                                         & gene_probs24[,3] < 0.5
+                                         & gene_probs24[,4] < 0.5
+                                         & gene_probs24[,5] > 0.3
+                                         & gene_probs24[,6] > 0.3
+                                         & gene_probs24[,7] > 0.5
+                                         & gene_probs24[,8] > 0.5
+                                         & gene_probs24[,9] > 0.3
+                                         & gene_probs24[,10] < 0.5
+                                         & gene_probs24[,11] > 0.1
+                                         & gene_probs24[,12] < 0.5
+                                         & gene_probs24[,13] > 0.1
+                                         & gene_probs24[,14] > 0.1
+                                         & gene_probs24[,15] > 0.1
+                                         & gene_probs24[,16] > 0.1),])
+length(prob_filt_24_4)
+#14 genes
+
+#intersect the clustlike and p.post together
+fin_24_4 <- intersect(clust4_24, prob_filt_24_4)
+cat("Number of genes passing both filters:", length(fin_24_4), "\n")
+
+
+prob_filt_24_5 <- rownames(gene_probs24[(gene_probs24[,1] > 0.3
+                                         & gene_probs24[,2] > 0.5 
+                                         & gene_probs24[,3] > 0.1
+                                         & gene_probs24[,4] > 0.3
+                                         & gene_probs24[,5] > 0.3
+                                         & gene_probs24[,6] > 0.5
+                                         & gene_probs24[,7] > 0.5
+                                         & gene_probs24[,8] > 0.5
+                                         & gene_probs24[,9] < 0.5
+                                         & gene_probs24[,10] > 0.5
+                                         & gene_probs24[,11] > 0.5
+                                         & gene_probs24[,12] > 0.2
+                                         & gene_probs24[,13] > 0.1
+                                         & gene_probs24[,14] > 0.3
+                                         & gene_probs24[,15] > 0.5
+                                         & gene_probs24[,16] > 0.2),])
+length(prob_filt_24_5)
+#3 genes
+
+#intersect the clustlike and p.post together
+fin_24_5 <- intersect(clust5_24, prob_filt_24_5)
+cat("Number of genes passing both filters:", length(fin_24_5), "\n")
+
+
+prob_filt_24_6 <- rownames(gene_probs24[(gene_probs24[,1] > 0.5
+                                         & gene_probs24[,2] > 0.5 
+                                         & gene_probs24[,3] > 0.5
+                                         & gene_probs24[,4] > 0.5
+                                         & gene_probs24[,5] > 0.2
+                                         & gene_probs24[,6] > 0.2
+                                         & gene_probs24[,7] > 0.5
+                                         & gene_probs24[,8] > 0.5
+                                         & gene_probs24[,9] < 0.5
+                                         & gene_probs24[,10] < 0.5
+                                         & gene_probs24[,11] < 0.5
+                                         & gene_probs24[,12] < 0.5
+                                         & gene_probs24[,13] > 0.2
+                                         & gene_probs24[,14] > 0.2
+                                         & gene_probs24[,15] > 0.2
+                                         & gene_probs24[,16] < 0.5),])
+length(prob_filt_24_6)
+#200 genes
+
+#intersect the clustlike and p.post together
+fin_24_6 <- intersect(clust6_24, prob_filt_24_6)
+cat("Number of genes passing both filters:", length(fin_24_6), "\n")
+#196 genes pass both
+
+#now make a list of these gene sets for later analysis
+all24_clustpost <- list(
+  all24_c1 = fin_24_1,
+  all24_c2 = fin_24_2,
+  all24_c3 = fin_24_3,
+  all24_c4 = fin_24_4,
+  all24_c5 = fin_24_5,
+  all24_c6 = fin_24_6
+)
+
+length(all24_clustpost) == length(unique(all24_clustpost))
+#each of these gene lists is unique
+
+assign_24_cp <- unique(unlist(all24_clustpost))
+length(assign_24_cp)
+#8,431 genes assigned
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_24_cp <- setdiff(all_genes, assign_24_cp)
+length(unassign_24_cp)
+#5,308 genes unassigned
+
+
+```
+
+
+## UPR Subset Motifs
+
+```{r p.post and clustlike together upr, warning=FALSE, message=FALSE}
 #Above, I filtered my motif gene lists only on the cluster likelihood
 #Now, I will add in the posterior probability based on the studies (pairwise comparisons)
 
@@ -2727,10 +2862,10 @@ cat("Number of genes passing both filters:", length(fin_upr_4), "\n")
 
 #now make a list of these gene sets for later analysis
 upr_clustpost <- list(
-  upr_cp1 = fin_upr_1,
-  upr_cp2 = fin_upr_2,
-  upr_cp3 = fin_upr_3,
-  upr_cp4 = fin_upr_4
+  upr_c1 = fin_upr_1,
+  upr_c2 = fin_upr_2,
+  upr_c3 = fin_upr_3,
+  upr_c4 = fin_upr_4
 )
 
 length(upr_clustpost) == length(unique(upr_clustpost))
@@ -2897,10 +3032,10 @@ cat("Number of genes passing both filters:", length(fin_ddr_4), "\n")
 
 #now make a list of these gene sets for later analysis
 ddr_clustpost <- list(
-  ddr_cp1 = fin_ddr_1,
-  ddr_cp2 = fin_ddr_2,
-  ddr_cp3 = fin_ddr_3,
-  ddr_cp4 = fin_ddr_4
+  ddr_c1 = fin_ddr_1,
+  ddr_c2 = fin_ddr_2,
+  ddr_c3 = fin_ddr_3,
+  ddr_c4 = fin_ddr_4
 )
 
 length(ddr_clustpost) == length(unique(ddr_clustpost))
@@ -2950,8 +3085,8 @@ cat("Number of genes passing both filters:", length(fin_imr_2), "\n")
 
 #now make a list of these gene sets for later analysis
 imr_clustpost <- list(
-  imr_cp1 = fin_imr_1,
-  imr_cp2 = fin_imr_2
+  imr_c1 = fin_imr_1,
+  imr_c2 = fin_imr_2
 )
 
 length(imr_clustpost) == length(unique(imr_clustpost))
@@ -2987,7 +3122,17 @@ fin_mmr_1 <- intersect(clust1_mmr, prob_filt_mmr_1)
 cat("Number of genes passing both filters:", length(fin_mmr_1), "\n")
 #0 genes passing both
 
-#there's nothing in this set, so we can disregard it for now.
+mmr_clustpost <- list(
+  mmr_c1 = fin_mmr_1
+)
+
+assign_mmr_cp <- unique(unlist(mmr_clustpost))
+length(assign_mmr_cp)
+#0 genes assigned
+all_genes <- rownames(hc_cpm_matrix_24)
+unassign_mmr_cp <- setdiff(all_genes, assign_mmr_cp)
+length(unassign_mmr_cp)
+#13,739 genes unassigned
 
 ```
 
@@ -3001,7 +3146,7 @@ cat("Number of genes passing both filters:", length(fin_mmr_1), "\n")
 
 #make a loop for a stacked barplot that goes through each of my gene lists to plot them
 
-subset_names <- c("upr", "upr_cp", "ddr", "ddr_cp", "imr", "imr_cp", "mmr")
+subset_names <- c("upr", "upr_cp", "ddr", "ddr_cp", "imr", "imr_cp", "mmr", "mmr_cp")
 
 subset_registry <- list(
   upr = list(
@@ -3024,13 +3169,17 @@ subset_registry <- list(
     assign = imr_clustlike,
     unassign = unassign_imr
   ),
-  imr = list(
+  imr_cp = list(
     assign = imr_clustpost,
     unassign = unassign_imr_cp
   ),
   mmr = list(
     assign = mmr_clustlike,
     unassign = unassign_mmr
+  ),
+  mmr_cp = list(
+    assign = mmr_clustpost,
+    unassign = unassign_mmr_cp
   )
   
 )
@@ -3176,6 +3325,74 @@ for (nm in names(barplots)) {
   )
 
 }
+
+```
+
+
+# Venn Diagrams of Motif Clusters
+
+```{r motif venn diagrams, message=FALSE, warning=FALSE}
+#I want to make venn diagrams between each of my motif sets to ensure that there is no overlap between them
+
+#define subset_clustlike
+subset_clustlike <- list(
+  upr = upr_clustlike,
+  upr_cp = upr_clustpost,
+  ddr = ddr_clustlike,
+  ddr_cp = ddr_clustpost,
+  imr = imr_clustlike,
+  imr_cp = imr_clustpost,
+  mmr = mmr_clustlike
+)
+
+#store all plots in a list
+venn_plots <- list()
+
+for (subset_name in names(subset_clustlike)) {
+  
+  message("Processing subset: ", subset_name)
+  
+  motif_list <- subset_clustlike[[subset_name]]
+  
+  # drop empty motifs
+  motif_list <- motif_list[sapply(motif_list, length) > 0]
+  
+  # need at least 2 motifs for a Venn
+  if (length(motif_list) < 2) {
+    message("  Skipping ", subset_name, ": <2 motifs")
+    next
+  }
+  
+  #make venn
+  p <- ggVennDiagram(
+    motif_list,
+    category.names = names(motif_list)
+  ) +
+    ggtitle(paste0("Cormotif motifs: ", toupper(subset_name))) +
+    theme(
+      plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+      text = element_text(size = 10)
+    )
+  
+  #store plot
+  venn_plots[[subset_name]] <- p
+  
+  #print plots
+  print(p)
+  
+  #save
+  save_plot(
+    plot     = p,
+    filename = paste0("Venn_", subset_name),
+    folder   = output_folder,
+    width    = 8,
+    height   = 6
+  )
+}
+
+
+
+
 
 ```
 
@@ -3394,9 +3611,11 @@ for(gene in unique(long_gene_data$SYMBOL)) {
 
 # Response Genes Compared Clustlike vs Clust+p.Post
 
-```{r pull example genes from two sets, clustlike and clust with p.post filtering, warning=FALSE, message=FALSE}
+```{r plot response genes clust vs clustppost, message=FALSE, warning=FALSE}
+#ensure expression matrix is a data.frame
+hc_cpm_mat <- hc_cpm_mat %>% as.data.frame()
 
-#factor orders
+#factor my different conditions
 species_order <- c("H", "C")
 
 stimulus_order <- c("TUN", "THA", 
@@ -3421,147 +3640,205 @@ cond_order <- c("TUN_2_H", "TUN_2_C",
                 "PFOA_24_H", "PFOA_24_C",
                 "EtOH_24_H", "EtOH_24_C")
 
-#subset stimulus rules
+ind_order <- c("H1", "H2", "H3", "H4", "H5", "H6", "H7",
+               "C1", "C2", "C3", "C4", "C5", "C6", "C7")
+
+#make a lookup function to make sure everything is subsetted correctly for plotting
+
 subset_stimulus_map <- list(
-  upr = list(stimuli = c("TUN", "THA", "DMSO"), times = c("24")),
-  upr_cp = list(stimuli = c("TUN", "THA", "DMSO"), times = c("24")),
-  ddr = list(stimuli = c("DOX", "NUTL", "DMSO"), times = c("24")),
-  ddr_cp = list(stimuli = c("DOX", "NUTL", "DMSO"), times = c("24")),
-  imr = list(stimuli = c("LPS", "TNFa", "H2O"), times = c("24")),
-  imr_cp = list(stimuli = c("LPS", "TNFa", "H2O"), times = c("24")),
-  mmr = list(stimuli = c("BPA", "PFOA", "EtOH"), times = c("24"))
+  upr = list(
+    stimuli = c("TUN", "THA", "DMSO"),
+    times = c("24")
+  ),
+  upr_cp = list(
+    stimuli = c("TUN", "THA", "DMSO"),
+    times = c("24")
+  )
+  # ddr = list(
+  #   stimuli = c("DOX", "NUTL", "DMSO"),
+  #   times = c("24")
+  # ),
+  # ddr_cp = list(
+  #   stimuli = c("DOX", "NUTL", "DMSO"),
+  #   times = c("24")
+  # ),
+  # imr = list(
+  #   stimuli = c("LPS", "TNFa", "H2O"),
+  #   times = c("24")
+  # ),
+  # imr_cp = list(
+  #   stimuli = c("LPS", "TNFa", "H2O"),
+  #   times = c("24")
+  # ),
+  # mmr = list(
+  #   stimuli = c("BPA", "PFOA", "EtOH"),
+  #   times = c("24")
+  # )
+  
 )
 
-#make a function to process through my gene lists and pick out 5 genes
-process_motif_genes <- function(gene_vec, expr_mat, meta_df) {
-
-  gene_vec <- gene_vec[gene_vec %in% expr_mat$Entrez_ID]
-  if (length(gene_vec) == 0) return(NULL)
-
-  gene_mat <- expr_mat[expr_mat$Entrez_ID %in% gene_vec, , drop = FALSE]
-
-  long_gene_data <- gene_mat %>%
+#pull expression for a FIXED gene set
+process_motif_genes <- function(example_gene_ids, expr_mat, meta_df, cluster_label) {
+  
+  # Keep only genes present in the expression matrix
+  example_gene_ids <- example_gene_ids[example_gene_ids %in% expr_mat$Entrez_ID]
+  if(length(example_gene_ids) == 0) return(NULL)
+  
+  gene_mat <- expr_mat[expr_mat$Entrez_ID %in% example_gene_ids, , drop = FALSE]
+  
+  long_data <- gene_mat %>%
     pivot_longer(
       cols = where(is.numeric),
       names_to = "Sample",
       values_to = "log2cpm"
     ) %>%
-    left_join(meta_df, by = c("Sample" = "Final_sample_name"))
-
-  long_gene_data
+    left_join(meta_df, by = c("Sample" = "Final_sample_name")) %>%
+    mutate(ClusterType = cluster_label)
+  
+  return(long_data)
 }
 
-#make a plot function
-plot_example_gene <- function(gene_data, gene_name, motif_name, label_suffix) {
 
+#plotting function
+plot_example_gene <- function(gene_data, gene_name, motif_name) {
+  
   ggplot(gene_data, aes(x = Cond, y = log2cpm, fill = Stimulus)) +
     geom_boxplot(outlier.shape = NA) +
-    geom_point(
-      aes(color = Ind),
-      size = 2, alpha = 0.9,
-      position = position_identity()
-    ) +
+    geom_point(aes(color = Ind),
+               size = 2, alpha = 0.9,
+               position = position_identity()) +
     scale_fill_manual(values = stim_col) +
-    scale_color_manual(values = ind_col) +
-    ggtitle(
-      paste(
-        "log2cpm expression", gene_name,
-        "cluster", motif_name, label_suffix
-      )
-    ) +
+    scale_color_discrete() +
+    facet_wrap(~ClusterType, nrow = 1) +
+    ggtitle(paste("log2cpm expression", gene_name, motif_name)) +
     labs(x = "Condition", y = "log2cpm") +
     theme_custom()
 }
 
 
-#define cluster/motif gene lists
+#motif lists
 subset_clustlike <- list(
-  upr = upr_clustlike,
-  ddr = ddr_clustlike,
-  imr = imr_clustlike,
-  mmr = mmr_clustlike
+  upr    = upr_clustlike
+  # ddr    = ddr_clustlike,
+  # imr    = imr_clustlike,
+  # mmr    = mmr_clustlike
 )
 
 subset_clustpost <- list(
-  upr = upr_clustpost,
-  ddr = ddr_clustpost,
-  imr = imr_clustpost
+  upr    = upr_clustpost
+  # ddr    = ddr_clustpost,
+  # imr    = imr_clustpost
 )
 
-#loop through and plot
+
+#find genes from each motif to plot for both sets
+example_gene_lookup <- list()
+
+for(subset_name in names(subset_clustpost)) {
+  
+  motif_list <- subset_clustpost[[subset_name]]
+  
+  for(motif_name in names(motif_list)) {
+    
+    genes <- motif_list[[motif_name]]
+    genes <- intersect(genes, hc_cpm_mat$Entrez_ID)
+    
+    if(length(genes) == 0) next
+    
+    example_gene_lookup[[paste0(subset_name, "_", motif_name)]] <-
+      sample(genes, size = min(5, length(genes)))
+  }
+}
+
+#sample example genes ONCE per motif
 ex_gene_plots <- list()
 
-for (subset_name in names(subset_clustlike)) {
-
+for(subset_name in names(subset_clustlike)) {
+  
   cat("Generating plots for", subset_name, "\n")
-
-  motif_list_clust <- subset_clustlike[[subset_name]]
-  motif_list_cp    <- subset_clustpost[[subset_name]]
+  
+  motif_list_clustlike <- subset_clustlike[[subset_name]]
+  motif_list_clustpost  <- subset_clustpost[[subset_name]]
   subset_rules     <- subset_stimulus_map[[subset_name]]
-
-  #skip if no clust+p.post version (mmr)
-  if (is.null(motif_list_cp)) {
-    cat("  Skipping clust+p.post for", subset_name, "\n")
-    next
-  }
-
-  for (motif_name in names(motif_list_clust)) {
-
-    genes_clust <- motif_list_clust[[motif_name]]
-    genes_cp    <- motif_list_cp[[motif_name]]
-
-    shared_genes <- intersect(genes_clust, genes_cp)
-    shared_genes <- shared_genes[shared_genes %in% hc_cpm_mat$Entrez_ID]
-
-    if (length(shared_genes) == 0) next
-
-    n_pull <- min(5, length(shared_genes))
-    example_genes <- sample(shared_genes, n_pull)
-
-    for (set_type in c("clustlike", "clustpost")) {
-
-      long_gene_data <- process_motif_genes(
-        gene_vec = example_genes,
-        expr_mat = hc_cpm_mat,
-        meta_df  = meta_cmf
-      )
-
-      if (is.null(long_gene_data)) next
-
-      long_gene_data <- long_gene_data %>%
-        filter(
-          Stimulus %in% subset_rules$stimuli,
-          Time %in% subset_rules$times,
-          Entrez_ID %in% example_genes
-        ) %>%
-        mutate(
-          Stimulus = factor(Stimulus, levels = stimulus_order),
-          Species  = factor(Species, levels = species_order),
-          Time     = factor(Time, levels = time_order),
-          Cond     = factor(Cond, levels = cond_order)
+  
+  for(motif_name in names(motif_list_clustlike)) {
+    
+    #skip if no example genes
+    key <- paste0(subset_name, "_", motif_name)
+    if(!key %in% names(example_gene_lookup)) next
+    example_gene_ids <- example_gene_lookup[[key]]
+    
+    #pull clustlike genes
+    long_clustlike <- process_motif_genes(
+      example_gene_ids,
+      hc_cpm_mat,
+      meta_cmf,
+      cluster_label = "clustlike"
+    )
+    
+    # Pull clustpost genes (only if motif exists in clustpost)
+    long_clustpost <- NULL
+    if(!is.null(motif_list_clustpost)) {
+      genes_clustpost <- motif_list_clustpost[[motif_name]]
+      genes_clustpost <- intersect(genes_clustpost, example_gene_ids)
+      if(length(genes_clustpost) > 0) {
+        long_clustpost <- process_motif_genes(
+          genes_clustpost,
+          hc_cpm_mat,
+          meta_cmf,
+          cluster_label = "clustlike + p.post"
         )
-
-      if (nrow(long_gene_data) == 0) next
-
-      for (gene in unique(long_gene_data$SYMBOL)) {
-
-        gene_data <- long_gene_data %>% filter(SYMBOL == gene)
-
-        p <- plot_example_gene(
-          gene_data,
-          gene_name   = gene,
-          motif_name  = motif_name,
-          label_suffix = set_type
-        )
-
-        plot_name <- paste0(
-          "cmf_", subset_name, "_", motif_name, "_",
-          set_type, "_exgene_", gene
-        )
-
-        ex_gene_plots[[plot_name]] <- p
-        print(p)
       }
+    }
+    
+    # Combine for faceting
+    long_gene_data <- bind_rows(long_clustlike, long_clustpost)
+    if(is.null(long_gene_data) || nrow(long_gene_data) == 0) next
+    
+    # Subset for stimulus and time
+    long_gene_data <- long_gene_data[
+      long_gene_data$Stimulus %in% subset_rules$stimuli &
+      long_gene_data$Time     %in% subset_rules$times,
+    ]
+    
+    # Factor ordering
+    long_gene_data$Stimulus <- factor(long_gene_data$Stimulus, 
+                                      levels = stimulus_order)
+    long_gene_data$Species  <- factor(long_gene_data$Species, 
+                                      levels = species_order)
+    long_gene_data$Time     <- factor(long_gene_data$Time,
+                                      levels = time_order)
+    long_gene_data$Cond     <- factor(long_gene_data$Cond, 
+                                      levels = cond_order)
+    long_gene_data$Ind      <- factor(long_gene_data$Ind,
+                                      levels = ind_order)
+    
+    # Plot each gene
+    for(gene in unique(long_gene_data$SYMBOL)) {
+      
+      gene_data <- long_gene_data %>% filter(SYMBOL == gene)
+      
+      p <- plot_example_gene(
+        gene_data,
+        gene_name  = gene,
+        motif_name = motif_name
+      )
+      
+      plot_name <- paste0(
+        "cmf_", subset_name, "_", motif_name, "_exgene_", gene
+      )
+      
+      ex_gene_plots[[plot_name]] <- p
+      
+      # Save and print
+      save_plot(
+        plot     = p,
+        filename = plot_name,
+        folder   = output_folder,
+        height   = 12,
+        width    = 20
+      )
+      print(p)
     }
   }
 }
@@ -3600,7 +3877,7 @@ plot_logFC_distribution <- function(df, y_var = c("logFC", "absFC"), title, stim
   y_var <- match.arg(y_var)
   y_lab <- ifelse(y_var == "logFC", "logFC", "|logFC|")
   
-  # Define the fixed Condition order per response group
+  #define the fixed Condition order per response group
   cond_levels <- list(
     upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
     ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
@@ -3639,7 +3916,7 @@ for (resp in names(motif_gene_sets)) {
   motif_list <- motif_gene_sets[[resp]]
   stim_prefix <- motif_stimuli[[resp]]
   
-  # Subset to relevant stimuli and create Condition column
+  #subset to relevant stimuli and create Condition column
   ttbl_resp <- combined_ttbl_24 %>%
     filter(Stimulus %in% stim_prefix) %>%
     mutate(
@@ -3647,7 +3924,7 @@ for (resp in names(motif_gene_sets)) {
       Condition = paste0(Stimulus, "_24_", Species)
     )
   
-  # Ensure Condition has the fixed order for this response group
+  #ensure Condition has the fixed order for this response group
   ttbl_resp$Condition <- factor(ttbl_resp$Condition, levels = cond_levels[[resp]])
   
   for (motif_name in names(motif_list)) {
@@ -3702,27 +3979,185 @@ for (resp in names(motif_gene_sets)) {
 
 
 ```
+
+
+#logFC distributions clustlike vs clustlike + p.post sets
+
+```{r logFC distribtions clustlike vs clustpost, warning=FALSE, message=FALSE}
+#I want to make a function to loop through my different subsets to get an idea of their logFC distribution
+#this will be using my toptables that I made with DE analysis previously
+
+#read in my toptable list and my long toptable dataframe for 24hr samples
+ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+
+#define your motif gene sets for each response group
+motif_gene_sets <- list(
+  upr    = upr_clustlike,
+  upr_cp = upr_clustpost,
+  ddr    = ddr_clustlike,
+  ddr_cp = ddr_clustpost,
+  imr    = imr_clustlike,
+  imr_cp = imr_clustpost,
+  mmr    = mmr_clustlike,
+  mmr_cp = mmr_clustpost
+)
+
+#also define which stimuli correspond to each response group
+motif_stimuli <- list(
+  upr    = c("TUN", "THA"),
+  upr_cp = c("TUN", "THA"),
+  ddr    = c("DOX", "NUTL"),
+  ddr_cp = c("DOX", "NUTL"),
+  imr    = c("LPS", "TNFa"),
+  imr_cp = c("LPS", "TNFa"),
+  mmr    = c("BPA", "PFOA"),
+  mmr_cp = c("BPA", "PFOA")
+)
+
+#define the fixed condition order for each response group
+cond_levels <- list(
+  upr    = c("TUN_24_H", "TUN_24_C", "THA_24_H", "THA_24_C"),
+  upr_cp = c("TUN_24_H", "TUN_24_C", "THA_24_H", "THA_24_C"),
+  ddr    = c("DOX_24_H", "DOX_24_C", "NUTL_24_H", "NUTL_24_C"),
+  ddr_cp = c("DOX_24_H", "DOX_24_C", "NUTL_24_H", "NUTL_24_C"),
+  imr    = c("LPS_24_H", "LPS_24_C",  "TNFa_24_H","TNFa_24_C"),
+  imr_cp = c("LPS_24_H", "LPS_24_C", "TNFa_24_H","TNFa_24_C"),
+  mmr    = c("BPA_24_H", "BPA_24_C", "PFOA_24_H", "PFOA_24_C"),
+  mmr_cp = c("BPA_24_H", "BPA_24_C", "PFOA_24_H", "PFOA_24_C")
+)
+
+
+#function to calculate medians per Condition + ClusterType
+compute_medians <- function(df, y_var) {
+  df %>%
+    group_by(Condition, ClusterType) %>%
+    summarise(Median = median(.data[[y_var]], na.rm = TRUE), .groups = "drop")
+}
+
+#faceted plotting function
+plot_logFC_distribution_facet <- function(df, y_var = c("logFC", "absFC"), title, stim_col) {
+  y_var <- match.arg(y_var)
+  y_lab <- ifelse(y_var == "logFC", "logFC", "|logFC|")
+  
+  medians <- compute_medians(df, y_var)
+  
+  ggplot(df, aes(x = Condition, y = .data[[y_var]], fill = Stimulus)) +
+    geom_boxplot(outlier.shape = NA) +
+    scale_fill_manual(values = stim_col) +
+    facet_wrap(~ClusterType, nrow = 1, scales = "free_x") +
+    geom_text(data = medians, aes(x = Condition, y = Median, label = round(Median, 2)),
+              vjust = -0.5, inherit.aes = FALSE, size = 3) +
+    labs(x = "Condition", y = y_lab, title = title) +
+    theme_custom()
+}
+
+#loop through response groups
+for (resp in names(motif_gene_sets)) {
+  
+  message("Processing response group: ", resp)
+  
+  motif_list <- motif_gene_sets[[resp]]
+  stim_prefix <- motif_stimuli[[resp]]
+  
+  #subset to relevant stimuli and create Condition column
+  ttbl_resp <- combined_ttbl_24 %>%
+    filter(Stimulus %in% stim_prefix) %>%
+    mutate(
+      Stimulus  = factor(Stimulus, levels = stim_prefix),
+      Condition = paste0(Stimulus, "_24_", Species)
+    )
+  
+  #ensure Condition has the fixed order for this response group
+  ttbl_resp$Condition <- factor(ttbl_resp$Condition, levels = cond_levels[[resp]])
+  
+  for (motif_name in names(motif_list)) {
+    
+    #pull genes from clustlike and clustpost
+    genes_like <- if(!is.null(subset_clustlike[[resp]])) subset_clustlike[[resp]][[motif_name]] else NULL
+    genes_post <- if(!is.null(subset_clustpost[[resp]])) subset_clustpost[[resp]][[motif_name]] else NULL
+    
+    #keep only genes present in DE table
+    genes_like <- intersect(genes_like, ttbl_resp$Entrez_ID)
+    genes_post <- intersect(genes_post, ttbl_resp$Entrez_ID)
+    
+    if (length(genes_like) == 0 & length(genes_post) == 0) next
+    
+    #combine into a single data frame with ClusterType label
+    df_like <- ttbl_resp %>% filter(Entrez_ID %in% genes_like) %>% mutate(ClusterType = "clustlike", absFC = abs(logFC))
+    df_post <- ttbl_resp %>% filter(Entrez_ID %in% genes_post) %>% mutate(ClusterType = "clustlike + p.post", absFC = abs(logFC))
+    
+    df_motif <- bind_rows(df_like, df_post)
+    n_genes <- n_distinct(df_motif$Entrez_ID)
+    
+    #plot logFC
+    p_logFC <- plot_logFC_distribution_facet(df_motif, y_var = "logFC",
+                                             title = paste0(motif_name, " logFC (n = ", n_genes, ")"),
+                                             stim_col = stim_col[stim_prefix])
+    
+    print(p_logFC)
+    
+    save_plot(
+      filename = paste0("Motif_", motif_name, "_logFC_facet"),
+      plot     = p_logFC,
+      folder   = output_folder,
+      width    = 12,
+      height   = 8
+    )
+    
+    #plot abs(logFC)
+    p_absFC <- plot_logFC_distribution_facet(df_motif, y_var = "absFC",
+                                             title = paste0(motif_name, " |logFC| (n = ", n_genes, ")"),
+                                             stim_col = stim_col[stim_prefix])
+    
+    print(p_absFC)
+    
+    save_plot(
+      filename = paste0("Motif_", motif_name, "_abslogFC_facet"),
+      plot     = p_absFC,
+      folder   = output_folder,
+      width    = 12,
+      height   = 8
+    )
+    
+  }
+}
+
+
+
+```
+
+
 # GO KEGG Pathway Analysis All Motifs
 
-```{r GO KEGG all motifs}
-#now I want to assess the pathways associated with the genes in each of these gene lists per cluster
 
-## ================================
-## Pathway analysis for Cormotif motifs
-## GO:BP + KEGG using gprofiler2
-## ================================
+```{r GO KEGG all motifs, message=FALSE, warning=FALSE}
+#do pathway analysis for both of my motif groups to visualize the biological pathways associated with each set 
+motif_sets_clustlike <- list(
+  upr = upr_clustlike,
+  ddr = ddr_clustlike,
+  imr = imr_clustlike,
+  mmr = mmr_clustlike
+)
 
-library(dplyr)
-library(ggplot2)
-library(gprofiler2)
-library(purrr)
+motif_sets_clustpost <- list(
+  upr = upr_clustpost,
+  ddr = ddr_clustpost,
+  imr = imr_clustpost,
+  mmr = mmr_clustpost
+)
 
-## ----------------
-## Helper: safe gProfiler run
-## ----------------
+#make list containers for the plots
+gost_results_clustlike <- list()
+gost_results_clustpost <- list()
+
+gost_plots_clustlike   <- list()
+gost_plots_clustpost   <- list()
+
+#make a gost plot function for gobp and kegg
 run_gost_safe <- function(genes, bg_genes) {
   if (length(genes) < 10) return(NULL)
-  
+
   res <- tryCatch(
     gost(
       query = as.matrix(genes),
@@ -3737,30 +4172,26 @@ run_gost_safe <- function(genes, bg_genes) {
     ),
     error = function(e) NULL
   )
-  
+
   if (is.null(res) || is.null(res$result) || nrow(res$result) == 0) {
     return(NULL)
   }
-  
+
   res
 }
 
-## ----------------
-## Helper: dotplot (MATCHES YOUR OLD THEME)
-## ----------------
+#plotting function
 plot_enrichment_dotplot <- function(df, title, ylab_txt) {
-  
+
   if (nrow(df) == 0) return(NULL)
-  
+
   df %>%
     slice_min(order_by = p_value, n = 10) %>%
     mutate(log_val = -log10(p_value)) %>%
     ggplot(
       aes(
         x = log_val,
-        y = reorder(term_name, p_value),
-        col = intersection_size,
-        size = intersection_size
+        y = reorder(term_name, p_value)
       )
     ) +
     geom_point() +
@@ -3768,101 +4199,258 @@ plot_enrichment_dotplot <- function(df, title, ylab_txt) {
     xlab(expression("-log"[10]~"p-value")) +
     ylab(ylab_txt) +
     scale_y_discrete(labels = scales::label_wrap(30)) +
-    guides(
-      col = "none",
-      size = guide_legend(title = "# of intersected \n genes")
-    ) +
-    theme_bw() +
-    theme(
-      plot.title = element_text(size = rel(1.5), hjust = 0.5),
-      axis.title = element_text(size = 15, colour = "black"),
-      axis.ticks = element_line(linewidth = 1.5),
-      axis.line  = element_line(linewidth = 1.5),
-      axis.text  = element_text(size = 10, colour = "black"),
-      strip.text = element_text(size = 15, colour = "black", face = "bold")
-    )
+    theme_custom()
 }
 
-## ----------------
-## Main loop: response group -> motif
-## ----------------
-gost_results <- list()
-gost_plots   <- list()
+#run one motif set
+run_gost_for_set <- function(motif_sets, set_label) {
 
-for (resp in names(motif_gene_sets)) {
-  
-  message("Processing response group: ", resp)
-  
-  gost_results[[resp]] <- list()
-  gost_plots[[resp]]   <- list()
-  
-  for (motif_name in names(motif_gene_sets[[resp]])) {
-    
-    genes <- motif_gene_sets[[resp]][[motif_name]]
-    message("  Motif ", motif_name, " (n = ", length(genes), ")")
-    
-    gost_res <- run_gost_safe(genes, all_genes)
-    
-    if (is.null(gost_res)) {
-      message("    → No enriched pathways, skipping")
-      next
-    }
-    
-    res_tbl <- gost_res$result %>%
-      dplyr::select(
-        source,
-        term_id,
-        term_name,
-        intersection_size,
-        term_size,
-        p_value
-      )
-    
-    gost_results[[resp]][[motif_name]] <- res_tbl
-    
-    ## ---- GO:BP ----
-    go_tbl <- res_tbl %>% filter(source == "GO:BP")
-    if (nrow(go_tbl) > 0) {
-      gost_plots[[resp]][[paste0(motif_name, "_GO_BP")]] <-
-        plot_enrichment_dotplot(
+  gost_results <- list()
+  gost_plots   <- list()
+
+  for (resp in names(motif_sets)) {
+
+    message("Processing ", set_label, " response group: ", resp)
+
+    for (motif_name in names(motif_sets[[resp]])) {
+
+      genes <- motif_sets[[resp]][[motif_name]]
+      message("  Motif ", motif_name, " (n = ", length(genes), ")")
+
+      gost_res <- run_gost_safe(genes, all_genes)
+
+      if (is.null(gost_res)) {
+        message("    → No enriched pathways, skipping")
+        next
+      }
+
+      res_tbl <- gost_res$result %>%
+        dplyr::select(
+          source,
+          term_id,
+          term_name,
+          intersection_size,
+          term_size,
+          p_value
+        )
+
+      gost_results[[resp]][[motif_name]] <- res_tbl
+
+      ## ---- GO:BP ----
+      go_tbl <- res_tbl %>% filter(source == "GO:BP")
+      if (nrow(go_tbl) > 0) {
+        p_go <- plot_enrichment_dotplot(
           go_tbl,
           title = paste0(
             toupper(resp), " ", motif_name,
-            " Enriched GO:BP Terms"
+            " (", set_label, ") GO:BP"
           ),
           ylab_txt = "GO:BP term"
         )
-    }
-    
-    ## ---- KEGG ----
-    kegg_tbl <- res_tbl %>% filter(source == "KEGG")
-    if (nrow(kegg_tbl) > 0) {
-      gost_plots[[resp]][[paste0(motif_name, "_KEGG")]] <-
-        plot_enrichment_dotplot(
+
+        plot_name <- paste0(resp, "_", motif_name, "_", set_label, "_GO_BP")
+
+        gost_plots[[plot_name]] <- p_go
+        print(p_go)
+
+        save_plot(
+          plot     = p_go,
+          filename = plot_name,
+          folder   = output_folder,
+          width    = 7,
+          height   = 5
+        )
+      }
+
+      ## ---- KEGG ----
+      kegg_tbl <- res_tbl %>% filter(source == "KEGG")
+      if (nrow(kegg_tbl) > 0) {
+        p_kegg <- plot_enrichment_dotplot(
           kegg_tbl,
           title = paste0(
             toupper(resp), " ", motif_name,
-            " Enriched KEGG Pathways"
+            " (", set_label, ") KEGG"
           ),
           ylab_txt = "KEGG pathway"
         )
+
+        plot_name <- paste0(resp, "_", motif_name, "_", set_label, "_KEGG")
+
+        gost_plots[[plot_name]] <- p_kegg
+        print(p_kegg)
+
+        save_plot(
+          plot     = p_kegg,
+          filename = plot_name,
+          folder   = output_folder,
+          width    = 7,
+          height   = 5
+        )
+      }
     }
+  }
+
+  list(
+    results = gost_results,
+    plots   = gost_plots
+  )
+}
+
+
+#run clustlike
+clustlike_out <- run_gost_for_set(motif_sets_clustlike, "clustlike")
+# gost_results_clustlike <- clustlike_out$results
+# gost_plots_clustlike   <- clustlike_out$plots
+
+#run clustpost
+clustpost_out <- run_gost_for_set(motif_sets_clustpost, "clustpost")
+# gost_results_clustpost <- clustpost_out$results
+# gost_plots_clustpost   <- clustpost_out$plots
+
+#print the plots so I can visualize them
+for (grp in names(gost_plots_clustlike)) {
+  for (nm in names(gost_plots_clustlike[[grp]])) {
+    print(gost_plots_clustlike[[grp]][[nm]])
   }
 }
 
-## ----------------
-## Example: save all plots
-## ----------------
-for (resp in names(gost_plots)) {
-  for (nm in names(gost_plots[[resp]])) {
-    ggsave(
-      filename = paste0(resp, "_", nm, ".pdf"),
-      plot     = gost_plots[[resp]][[nm]],
-      width    = 7,
-      height   = 5
+#print the clustpost plots as well
+for (grp in names(gost_plots_clustpost)) {
+  for (nm in names(gost_plots_clustpost[[grp]])) {
+    print(gost_plots_clustpost[[grp]][[nm]])
+  }
+}
+
+#save plots for clustlike and clustpost
+for (grp in names(gost_plots_clustlike)) {
+  for (nm in names(gost_plots_clustlike[[grp]])) {
+    save_plot(
+      filename = paste0("clustlike_", grp, "_", nm),
+      plot     = gost_plots_clustlike[[grp]][[nm]],
+      folder   = output_folder,
+      width    = 6,
+      height   = 8
     )
   }
 }
+
+for (grp in names(gost_plots_clustpost)) {
+  for (nm in names(gost_plots_clustpost[[grp]])) {
+    save_plot(
+      filename = paste0("clustpost_", grp, "_", nm),
+      plot     = gost_plots_clustpost[[grp]][[nm]],
+      folder   = output_folder,
+      width    = 6,
+      height   = 8
+    )
+  }
+}
+
+
+```
+
+## GWAS CVD Comparisons
+
+I want to use GWAS associations for cardiovascular disease (CVD) and heart failure (HF) obtained from the GWAS catalog and compare overlap with my motif gene sets. Are these genes typically present in certain gene clusters?
+
+
+Cerezo M et al., doi.org/10.1093/nar/gkae1070 Nucleic Acids Research, Volume 53, Issue D1, 6 January 2025, Pages D998–D1005
+
+
+```{r GWAS CVD + HF genes, warning=FALSE, message=FALSE}
+#I pulled data from the GWAS catalog for HF associations
+# https://www.ebi.ac.uk/gwas/efotraits/EFO_0003144
+#I also pulled data from the GWAS catalog for CVD associations
+# https://www.ebi.ac.uk/gwas/efotraits/EFO_0000319
+
+#HF GWAS data
+# hf_gwas_all <- read_delim("D:/DXR Project/GWAS/gwas-association-downloaded_2025-11-13-EFO_0003144-withChildTraits.tsv",
+#     delim = "\t", escape_double = FALSE,
+#     trim_ws = TRUE)
+# View(hf_gwas_all)
+
+# saveRDS(hf_gwas_all, "data/genesets/GWAS/hf_gwas_associations_EFO_0003144.RDS")
+
+#extract mapped genes and ensure each are unique
+# hf_gwas_mapped <- subset(hf_gwas_all, !is.na(MAPPED_GENE) & MAPPED_GENE != "")
+#830 mapped genes, now make sure that they're unique
+# hf_gwas_genes <- unique(hf_gwas_mapped$MAPPED_GENE)
+#494 genes left after filtering for unique gene symbols
+# now translate this into Entrez_ID for ease of analysis
+
+# convert to Entrez_ID
+# gene_conversion <- AnnotationDbi::select(
+#   org.Hs.eg.db,
+#   keys = hf_gwas_genes,
+#   keytype = "SYMBOL",
+#   columns = c("ENTREZID")
+# )
+
+# Remove duplicates or missing IDs
+# hf_gwas_genes <- gene_conversion %>%
+#   filter(!is.na(ENTREZID)) %>%
+#   distinct(SYMBOL, .keep_all = TRUE)
+
+#change the colname to Entrez_ID
+# colnames(hf_gwas_genes)[colnames(hf_gwas_genes) == "ENTREZID"] <- "Entrez_ID"
+# saveRDS(hf_gwas_genes, "data/genesets/GWAS/hf_gwas_genes_symbolentrez_mapped.RDS")
+
+#read in the final list of genes (both SYMBOL and Entrez_ID)
+hf_gwas_genes <- readRDS("data/genesets/GWAS/hf_gwas_genes_symbolentrez_mapped.RDS")
+#make a version with just the entrez id to combine with other gene sets
+#change the colname to Entrez_ID
+hf_gwas_genes_list <- hf_gwas_genes$Entrez_ID
+
+#CVD GWAS data
+# cvd_gwas_all <- read_delim("data/genesets/GWAS/gwas-association-downloaded_2026-01-26-EFO_0000319-withChildTraits.tsv",
+#     delim = "\t", escape_double = FALSE,
+#     trim_ws = TRUE)
+# View(cvd_gwas_all)
+
+#save the raw data
+# saveRDS(cvd_gwas_all, "data/genesets/GWAS/cvd_gwas_associations_EFO_0000319.RDS")
+
+#extract mapped genes and ensure each are unique
+# cvd_gwas_mapped <- subset(cvd_gwas_all, !is.na(MAPPED_GENE) & MAPPED_GENE != "")
+#19,204 mapped genes, now make sure that they're unique
+# cvd_gwas_genes <- unique(cvd_gwas_mapped$MAPPED_GENE)
+#6,631 genes left after filtering for unique gene symbols
+# now translate this into Entrez_ID for ease of analysis
+
+# convert to Entrez_ID
+# gene_conversion <- AnnotationDbi::select(
+#   org.Hs.eg.db,
+#   keys = cvd_gwas_genes,
+#   keytype = "SYMBOL",
+#   columns = c("ENTREZID")
+# )
+
+# Remove duplicates or missing IDs
+# cvd_gwas_genes <- gene_conversion %>%
+#   filter(!is.na(ENTREZID)) %>%
+#   distinct(SYMBOL, .keep_all = TRUE)
+
+#change the colname to Entrez_ID
+# colnames(cvd_gwas_genes)[colnames(cvd_gwas_genes) == "ENTREZID"] <- "Entrez_ID"
+
+
+# saveRDS(cvd_gwas_genes, "data/genesets/GWAS/cvd_gwas_genes_symbolentrez_mapped.RDS")
+
+#read in the final list of genes (both SYMBOL and Entrez_ID)
+cvd_gwas_genes <- readRDS("data/genesets/GWAS/cvd_gwas_genes_symbolentrez_mapped.RDS")
+#make a version with just the entrez id to combine with other gene sets
+#change the colname to Entrez_ID
+cvd_gwas_genes_list <- cvd_gwas_genes$Entrez_ID
+
+```
+
+
+```{r overlap GWAS with cluster gene lists, warning=FALSE, message=FALSE, include=FALSE}
+
+## Overlap GWAS genes with Clusters
+
+
+# I want to take my HF and CVD GWAS associations obtained above and look at the proportion of these genes which overlap with my cluster gene lists across subsets.
 
 ```
 

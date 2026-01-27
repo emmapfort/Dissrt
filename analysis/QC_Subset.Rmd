@@ -1014,9 +1014,10 @@ metadata_24 <- metadata_sub %>%
 #now make my matrices into only 24hr samples
 hc_cpm_unfilt_24 <- hc_cpm_unfilt_sub[, metadata_24$Final_sample_name, drop = FALSE]
 
-hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
-
+# hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
 # saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
+
+hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
 
 #prcomp transformation
 prcomp_hc_unfilt_24 <- prcomp(t(hc_cpm_unfilt_24),
@@ -1152,7 +1153,7 @@ print(pca_24_list)
 #     folder = output_folder
 #   )
 # }
-
+# 
 # save_plot(
 #   plot = filt24_PC1_PC2,
 #   filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
@@ -1466,6 +1467,178 @@ print(all_plots_subset_pca)
 
 
 ```
+
+## Subsets 24hr Only
+
+```{r Subset 24hr samples into response groups PCA, warning=FALSE, message=FALSE}
+
+#ensure that your metadata only has 24hr samples in it
+metadata_sub24 <- metadata_sub %>% 
+  dplyr::filter(Time != "2")
+
+# hc_cpm_mat_24
+
+ind_num <- metadata_sub24$Ind
+
+metadata_sub24$Stimulus <- factor(
+  metadata_sub24$Stimulus,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+#UPR Subset
+upr_tx <- c("TUN", "THA", "DMSO")
+upr_meta24 <- metadata_sub24 %>% 
+  dplyr::filter(Stimulus %in% upr_tx)
+upr_cpm24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% upr_meta24$Final_sample_name] 
+upr_cols <- list(
+  TUN = "#5A874A",
+  THA = "#C4E1AE",
+  DMSO = "#999999"
+)
+
+#DDR Subset
+ddr_tx <- c("DOX", "NUTL", "DMSO")
+ddr_meta24 <- metadata_sub24 %>% 
+  dplyr::filter(Stimulus %in% ddr_tx)
+ddr_cpm24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% ddr_meta24$Final_sample_name]  
+ddr_cols <- c(
+  "DOX" = "#3B4DA3", 
+  "NUTL" = "#A0CFF8",
+  "DMSO" = "#999999")
+
+#IMR Subset
+imr_tx <- c("LPS", "TNFa", "H2O")
+imr_meta24 <- metadata_sub24 %>% 
+  dplyr::filter(Stimulus %in% imr_tx)
+imr_cpm24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% imr_meta24$Final_sample_name]  
+imr_cols <-  c(
+  "LPS" = "#C0329A", 
+  "TNFa" = "#F09DD6", 
+  "H2O" = "#777777")
+
+#MMR Subset
+mmr_tx <- c("BPA", "PFOA", "EtOH")
+mmr_meta24 <- metadata_sub24 %>% 
+  dplyr::filter(Stimulus %in% mmr_tx) %>% 
+  dplyr::filter(Final_sample_name != "PFOA_24_H3")
+mmr_cpm24 <- hc_cpm_mat_24[, colnames(hc_cpm_mat_24) %in% mmr_meta24$Final_sample_name]  
+mmr_cpm24 %>% 
+  # as.data.frame %>%
+  # dplyr::select(-PFOA_24_H3) %>% 
+  as.matrix()
+mmr_cols <- c(
+  "BPA" = "#7359A6", 
+  "PFOA" = "#D7BDF3", 
+  "EtOH" = "#555555")
+mmr_ind_num <- c("C1", "C1", "C1",
+                 "C2", "C2", "C2", 
+                 "C3", "C3", "C3",
+                 "C4", "C4", "C4", 
+                 "C5", "C5", "C5", 
+                 "C6", "C6", "C6", 
+                 "C7", "C7", "C7", 
+                 "H1", "H1", "H1", 
+                 "H2", "H2", "H2", 
+                 "H3", "H3", 
+                 "H4", "H4", "H4",
+                 "H5", "H5", "H5", 
+                 "H6", "H6", "H6", 
+                 "H7", "H7", "H7"
+)
+
+#now make a function to plot these PCA plots in subsets
+make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_num, stim_col) {
+  #filter metadata
+  keep_idx <- metadata$Stimulus %in% subset_drugs
+  meta_sub <- metadata[keep_idx, ]
+  meta_sub$Ind_label <- ind_num[keep_idx]
+  
+  #subset expression matrix to same samples
+  hc_matrix_sub <- hc_matrix[, keep_idx]
+  
+  #run PCA on subset
+  prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
+  
+  ## PC1/PC2
+  p1 <- autoplot(prcomp_sub, data = meta_sub,
+                 colour = "Stimulus", shape = "Species", size = 4,
+                 x = 1, y = 2) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC1/PC2")) +
+    coord_cartesian(clip = "off") +
+    theme_custom()
+  
+  ## PC2/PC3
+  p2 <- autoplot(prcomp_sub, data = meta_sub,
+                 colour = "Stimulus", shape = "Species", 
+                 size = 4, x = 2, y = 3) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC2/PC3")) +
+    coord_cartesian(clip = "off") +
+    theme_custom()
+  
+  ## PC3/PC4
+  p3 <- autoplot(prcomp_sub, data = meta_sub,
+                 colour = "Stimulus", shape = "Species", 
+                 size = 4, x = 3, y = 4) +
+    geom_text_repel(aes(label = Ind_label),
+                    max.overlaps = 100,
+                    segment.color = "grey",
+                    segment.size = 0.1) +
+    scale_color_manual(values = stim_col) +
+    ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC3/PC4")) +
+    coord_cartesian(clip = "off") +
+    theme_custom()
+  
+  list(p1 = p1, p2 = p2, p3 = p3)
+}
+
+# ---- Run for each subset ----
+upr_plots24 <- make_pca_plots24("UPR", c("TUN", "THA", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
+ddr_plots24 <- make_pca_plots24("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
+imr_plots24 <- make_pca_plots24("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
+mmr_plots24 <- make_pca_plots24("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
+mmr_plots24_rmout <- make_pca_plots24("MMR", c("BPA", "PFOA", "EtOH"), mmr_cpm24, mmr_meta24, mmr_ind_num, stim_col)
+
+all_plots_subset_pca24 <- list(
+  upr24_PC1_PC2 = upr_plots24$p1,
+  upr24_PC2_PC3 = upr_plots24$p2,
+  upr24_PC3_PC4 = upr_plots24$p3,
+  ddr24_PC1_PC2 = ddr_plots24$p1,
+  ddr24_PC2_PC3 = ddr_plots24$p2,
+  ddr24_PC3_PC4 = ddr_plots24$p3,
+  imr24_PC1_PC2 = imr_plots24$p1,
+  imr24_PC2_PC3 = imr_plots24$p2,
+  imr24_PC3_PC4 = imr_plots24$p3,
+  mmr24_PC1_PC2 = mmr_plots24$p1,
+  mmr24_PC2_PC3 = mmr_plots24$p2,
+  mmr24_PC3_PC4 = mmr_plots24$p3,
+  mmr24_PC1_PC2_rmout = mmr_plots24_rmout$p1,
+  mmr24_PC2_PC3_rmout = mmr_plots24_rmout$p2,
+  mmr24_PC3_PC4_rmout = mmr_plots24_rmout$p3
+)
+
+print(all_plots_subset_pca24)
+
+# Loop through each plot and save
+for (plot_name in names(all_plots_subset_pca24)) {
+  save_plot(
+    plot = all_plots_subset_pca24[[plot_name]],
+    filename = paste0("Subset_24hr_PCA_", plot_name, "_EMP"),
+    folder = output_folder
+    )
+}
+```
+
 
 
 # Correlation Heatmaps

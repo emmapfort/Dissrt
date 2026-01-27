@@ -340,7 +340,7 @@ summary(results_summary)
 ```
 
 
-# Create Toptables
+## Create Toptables
 
 ```{r Toptables, warning=FALSE, message=FALSE}
 
@@ -597,6 +597,7 @@ combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolentrez.RDS")
 
 #I want to add two columns to my toptable - Condition and Response category
 #cut down my metadata_24 to have no duplicates so I can use it to add these columns
+metadata_24 <- readRDS("data/de/metadata_24hr_symbolentrez.RDS")
 metadata_24_unique <- metadata_24 %>%
   distinct(Stimulus, Species, .keep_all = TRUE) 
 
@@ -623,97 +624,160 @@ combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RD
 
 # Interaction Analysis
 
-I want to further delve into my analysis by looking at differences between species after treatment. I will do this using an interaction analysis to assess Species x Condition interactions. 
+I want to further delve into my analysis by looking at differences between species after exposure to stimuli. I will do this using an interaction analysis to assess Species x Condition interactions. My Condition will be stimulus exposure at a particular timepoint.
 
 ```{r interaction analysis}
-#Set up my model matrix for THA for now, and then branch out to other treatments
+#Set up my model matrix for all stimuli, and then analyze THA further
 
-x <- readRDS("data/de/x_dge_counts_allind_subset.RDS")
+x <- readRDS("data/de/x_dge_counts_allind_subset.RDS") 
+#restrict to only 24hr samples for ease right now
+x_int <- x[, !grepl("_2_", colnames(x))]
 
-#use metadata_sub to match
-meta_de <- metadata_sub
+#use metadata_sub to match + restrict to 24hr as well
+meta_int <- metadata_sub %>% 
+  dplyr::filter(Time != "2")
+
+meta_int$Vehicle <- NA
+meta_int$Vehicle[meta_int$Stimulus %in% c("TUN","THA","DOX","NUTL")] <- "DMSO"
+meta_int$Vehicle[meta_int$Stimulus %in% c("BPA","PFOA")] <- "EtOH"
+meta_int$Vehicle[meta_int$Stimulus %in% c("LPS","TNFa")] <- "H2O"
+
+meta_int$Vehicle <- factor(meta_int$Vehicle)
+#level Species so that Chimp is the baseline (first one is baseline)
+meta_int$sp <- factor(meta_int$Species, levels = c("C", "H"))
+meta_int$st <- factor(meta_int$Stimulus)
 
 #ensure that the names are matched up properly
-identical(meta_de$Final_sample_name, colnames(x))
+identical(meta_int$Final_sample_name, colnames(x_int))
 
-colnames(x) <- meta_de$Final_sample_name
-rownames(meta_de) <- meta_de$Final_sample_name
+colnames(x_int) <- meta_int$Final_sample_name
+rownames(meta_int) <- meta_int$Final_sample_name
 
-meta_de$Cond <- make.names(meta_de$Cond)
-meta_de$Ind <- as.character(meta_de$Ind)
+meta_int$Cond <- make.names(meta_int$Cond)
+meta_int$Ind <- as.character(meta_int$Ind)
 
-# saveRDS(meta_de, "data/de/metadata_2_de.RDS")
-# saveRDS(x, "data/de/x_counts_de.RDS")
+# saveRDS(meta_int, "data/de/metadata_interaction_24hr.RDS")
+# saveRDS(x_int, "data/de/x_counts_de_interaction_24hr.RDS")
 
 #create my DGElist object
-dge <- DGEList(counts = x)
-dge$samples$group <- factor(meta_de$Cond)
-dge <- calcNormFactors(dge, method = "TMM")
+dge_int <- DGEList(counts = x_int)
+dge_int$samples$group <- factor(meta_int$Cond)
+dge_int <- calcNormFactors(dge_int, method = "TMM")
 
-# saveRDS(dge, "data/de/dge_matrix.RDS")
+# saveRDS(dge_int, "data/de/dge_matrix_interaction_24hr.RDS")
 
 #check the normalization factors from TMM normalization of the libraries
-dge$samples
-
+dge_int$samples
+#properly TMM normalized
 
 #here is where I alter my model.matrix to include interaction analysis
+#I already ensured that all metadata was factored properly
 
-sp <- c("")
-
-design <- model.matrix(~sp*stim + meta_de$Cond)
-colnames(design) <- gsub("meta_de\\$Cond", "", colnames(design))
+design_int <- model.matrix(~ sp * st, data = meta_int)
+rownames(design_int) <- meta_int$Final_sample_name            #assign sample names
+#clean up the column names so they're easy to identify
+colnames(design_int) <- gsub(":", ".", colnames(design_int))
+colnames(design_int) <- gsub("spH", "H", colnames(design_int))
 
 #take care that this alphabetizes everything
 #currently all C are first and H are second
 #BPA, DMSO2, DMSO24, DOX, EtOH, H2O, LPS, NUTL, PFOA, THA2, THA24, TNFa, TUN2, TUN24 current order
 
-#run duplicate correlation for individual effect
-corfit <- duplicateCorrelation(object = dge$counts, design = design,
-                               block = metadata_sub$Ind)
+#run voom for the first time to remove mean-variance relationship precision weights
+v1_int <- voom(dge_int, design_int, plot = TRUE)
 
-#voom transformation and plot
-v <- voom(dge, design, block = meta_de$Ind, 
-          correlation = corfit$consensus.correlation, plot = TRUE)
+#estimate correlation between replicate samples
+corfit1_int <- duplicateCorrelation(object = v1_int, design = design_int,
+                                    block = meta_int$Ind)
 
-#fit my linear model
-fit <- lmFit(v, design, block = meta_de$Ind,
-             correlation = corfit$consensus.correlation)
+#voom transformation again with duplicate correlation added and plot
+v2_int <- voom(dge_int, design_int, block = meta_int$Ind, 
+          correlation = corfit1_int$consensus.correlation, plot = TRUE)
+
+#run duplicate correlation for individual effect again
+corfit2_int <- duplicateCorrelation(object = v2_int, design = design_int,
+                               block = meta_int$Ind)
+
+#fit my linear model for expression values of each gene
+fit_int <- lmFit(v2_int, design_int, block = meta_int$Ind,
+             correlation = corfit2_int$consensus.correlation)
+
+#empirical Bayes moderation using info across all genes for more precise gene-wise variability
+fit_int <- eBayes(fit = fit_int)
 
 #make my contrast matrix to compare across tx and veh within each species
-contrast_matrix <- makeContrasts(
-  V.TUN2_H = TUN_2_H - DMSO_2_H,
-  V.THA2_H = THA_2_H - DMSO_2_H,
-  V.TUN24_H = TUN_24_H - DMSO_24_H,
-  V.THA24_H = THA_24_H - DMSO_24_H,
-  V.DOX24_H = DOX_24_H - DMSO_24_H,
-  V.NUTL24_H = NUTL_24_H - DMSO_24_H,
-  V.LPS24_H = LPS_24_H - H2O_24_H,
-  V.TNFa24_H = TNFa_24_H - H2O_24_H,
-  V.BPA24_H = BPA_24_H - EtOH_24_H,
-  V.PFOA24_H = PFOA_24_H - EtOH_24_H,
-  V.TUN2_C = TUN_2_C - DMSO_2_C,
-  V.THA2_C = THA_2_C - DMSO_2_C,
-  V.TUN24_C = TUN_24_C - DMSO_24_C,
-  V.THA24_C = THA_24_C - DMSO_24_C,
-  V.DOX24_C = DOX_24_C - DMSO_24_C,
-  V.NUTL24_C = NUTL_24_C - DMSO_24_C,
-  V.LPS24_C = LPS_24_C - H2O_24_C,
-  V.TNFa24_C = TNFa_24_C - H2O_24_C,
-  V.BPA24_C = BPA_24_C - EtOH_24_C,
-  V.PFOA24_C = PFOA_24_C - EtOH_24_C,
-  levels = design
+#only work with THA for right now, so comment out the rest of the interactions so that I can focus on that stimulus
+#interactions are differences of differences! i don't have an implicit difference because I have three different vehicles, so I must spell them out specifically
+#it is very important that I don't make any comparisons with the 'baseline' because I have multiple vehicles, so it doesn't create a pairwise comparison that is biologically valid
+cm_int <- makeContrasts(
+  # H_TUN = stTUN + H.stTUN - stDMSO + H.stDMSO,
+  H_THA = stTHA + H.stTHA - stDMSO + H.stDMSO,
+  # H_DOX = stDOX + H.stDOX - stDMSO + H.stDMSO,
+  # H_NUTL = stNUTL + H.stNUTL - stDMSO + H.stDMSO,
+  # H_LPS = stLPS + H.stLPS - stH2O + H.stH2O,
+  # H_TNFa = stTNFa + H.stTNFa -stH2O + H.stH2O,
+  # H_BPA = stBPA + H.stBPA - stEtOH + H.stEtOH,
+  # H_PFOA = stPFOA + H.stPFOA - stEtOH + H.stEtOH, #human stim - vehicle DEGs
+  # C_TUN = stTUN - stDMSO,
+  C_THA = stTHA - stDMSO,
+  # C_DOX = stDOX - stDMSO,
+  # C_NUTL = stNUTL - stDMSO,
+  # C_LPS = stLPS - stH2O,
+  # C_TNFa = stTNFa - stH2O,
+  # C_BPA = stBPA - stEtOH,
+  # C_PFOA = stPFOA - stEtOH, #chimp stim - vehicle DEGs
+  # int_TUN = H.stTUN - H.stDMSO,
+  int_THA = H.stTHA - H.stDMSO,
+  # int_DOX = H.stDOX - H.stDMSO,
+  # int_NUTL = H.stNUTL - H.stDMSO,
+  # int_LPS = H.stLPS - H.stH2O,
+  # int_TNFa = H.stTNFa - H.stH2O,
+  # int_BPA = H.stBPA - H.stEtOH,
+  # int_PFOA = H.stPFOA - H.stEtOH #interactions between H and C
+  levels = design_int
 )
 
-#apply these contrasts to compare stimuli to vehicle
-fit2 <- contrasts.fit(fit, contrast_matrix)
-fit2 <- eBayes(fit2)
+#apply these contrasts to compare stimuli to vehicle 
+fit2_int <- contrasts.fit(fit_int, cm_int)
+fit2_int <- eBayes(fit2_int)
 
 #plot the mean-variance trend
-plotSA(fit2, main = "final model: mean-variance trend")
+plotSA(fit2_int, main = "final model: mean-variance trend")
 
 #now look at the summary of results to identify whether there are DEGs in each comparison
-results_summary <- decideTests(fit2, adjust.method = "BH", p.value = 0.05)
-summary(results_summary)
+results_summary_int <- decideTests(fit2_int, adjust.method = "BH", p.value = 0.05)
+summary(results_summary_int)
+
+#now I can create toptables with these interaction data
+```
+
+## Create Toptables from Interactions
+
+```{r interaction analysis toptables}
+#now go ahead and put together toptables for each of these comparisons
+
+#first start with toptables with all genes in them, not only significant ones
+H_THA <- topTable(fit2_int, 
+                  coef = 1,
+                  adjust.method = "BH",
+                  number = Inf, 
+                  sort.by = "none")
+C_THA <- topTable(fit2_int,
+                  coef = 2,
+                  adjust.method = "BH",
+                  number = Inf,
+                  sort.by = "none")
+int_THA <- topTable(fit2_int,
+                    coef = 3,
+                    adjust.method = "BH",
+                    number = Inf,
+                    sort.by = "none")
+
+#now create toptables that only include the significant DEGs based on adj.P
+sig.H_THA <- H_THA[H_THA$adj.P.Val < 0.05, ]
+sig.C_THA <- C_THA[C_THA$adj.P.Val < 0.05, ]
+sig.int_THA <- int_THA[int_THA$adj.P.Val < 0.05, ]
+
 
 
 ```
