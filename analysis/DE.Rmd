@@ -131,15 +131,41 @@ save_plot <- function(plot, filename,
                       units = "in", 
                       dpi = 300, 
                       add_date = TRUE) {
+  
   if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
 
   date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
   pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
   png_file <- file.path(folder, paste0(filename, date_str, ".png"))
-  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
-  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
-  message("Saved plot as Cairo PDF: ", pdf_file)
+  
+  #add conditions for recorded plots and ggsave
+  if (inherits(plot, "recordedplot")) {
+    
+    #pdf save
+    pdf(pdf_file, width = width, height = height, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+    #png save
+    png(png_file, width = width, height = height, units = units, res = dpi, bg = "transparent")
+    replayPlot(plot)
+    dev.off()
+    
+  } else {
+    
+    #save pdf
+    ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, 
+         width = width, height = height, units = units, bg = "transparent")
+    
+    #save png
+    ggsave(filename = png_file, plot = plot, device = "png", 
+         width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  
+  message("Saved plot as PDF: ", pdf_file)
   message("Saved plot as PNG: ", png_file)
+  
+  }
+  
 }
 
 output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
@@ -250,7 +276,7 @@ metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 ```{r Set up DE, warning=FALSE, message=FALSE}
 #filter my raw counts (subset of samples) to remove lowly expressed genes as above
 
-x <- hc_counts_sub[row.names(hc_cpm_matrix),]
+# x <- hc_counts_sub[row.names(hc_cpm_matrix),]
 # dim(x)
 
 # saveRDS(x, "data/de/x_dge_counts_allind_subset.RDS")
@@ -480,7 +506,7 @@ Toptable_V.TNFa24_C <- topTable(fit = fit2,
 Toptable_V.BPA24_C <- topTable(fit = fit2, 
                             coef = "V.BPA24_C",
                             number = nrow(x), 
-                            adjust.method = "BH", 
+                            adjust.method = "BH" 
                             p.value = 1, 
                             sort.by = "none")
 
@@ -622,30 +648,51 @@ combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RD
 
 
 
-# Interaction Analysis
+# Interaction Analysis UPR + DDR Only
 
-I want to further delve into my analysis by looking at differences between species after exposure to stimuli. I will do this using an interaction analysis to assess Species x Condition interactions. My Condition will be stimulus exposure at a particular timepoint.
-
-```{r interaction analysis}
+```{r interaction analysis modeling upr ddr, warning=FALSE, message=FALSE}
 #Set up my model matrix for all stimuli, and then analyze THA further
 
 x <- readRDS("data/de/x_dge_counts_allind_subset.RDS") 
-#restrict to only 24hr samples for ease right now
+
+#restrict to only 24hr samples
 x_int <- x[, !grepl("_2_", colnames(x))]
 
-#use metadata_sub to match + restrict to 24hr as well
-meta_int <- metadata_sub %>% 
-  dplyr::filter(Time != "2")
+#stimuli + vehicle to KEEP
+int_stim <- c("TUN", "THA", "DOX", "NUTL")
+int_veh  <- "DMSO"
+
+#keep only desired stimulus prefixes
+keep_prefix <- paste0("^(", paste(c(int_stim, int_veh), collapse = "|"), ")_")
+keep_cols   <- grepl(keep_prefix, colnames(x_int))
+x_int <- x_int[, keep_cols, drop = FALSE]
+
+#subset metadata to same samples
+meta_int <- metadata_sub %>%
+  dplyr::filter(
+    Time != "2",
+    Stimulus %in% c(int_stim, int_veh)
+  )
+
+rownames(meta_int) <- meta_int$Final_sample_name
+
+stopifnot(identical(colnames(x_int), rownames(meta_int)))
+
 
 meta_int$Vehicle <- NA
 meta_int$Vehicle[meta_int$Stimulus %in% c("TUN","THA","DOX","NUTL")] <- "DMSO"
-meta_int$Vehicle[meta_int$Stimulus %in% c("BPA","PFOA")] <- "EtOH"
-meta_int$Vehicle[meta_int$Stimulus %in% c("LPS","TNFa")] <- "H2O"
 
 meta_int$Vehicle <- factor(meta_int$Vehicle)
+
+
 #level Species so that Chimp is the baseline (first one is baseline)
 meta_int$sp <- factor(meta_int$Species, levels = c("C", "H"))
-meta_int$st <- factor(meta_int$Stimulus)
+#ensure that the stimuli are factors
+meta_int$st <- factor(
+  meta_int$Stimulus,
+  levels = c("DMSO", "TUN", "THA", "DOX", "NUTL"
+  )
+)
 
 #ensure that the names are matched up properly
 identical(meta_int$Final_sample_name, colnames(x_int))
@@ -680,8 +727,6 @@ colnames(design_int) <- gsub(":", ".", colnames(design_int))
 colnames(design_int) <- gsub("spH", "H", colnames(design_int))
 
 #take care that this alphabetizes everything
-#currently all C are first and H are second
-#BPA, DMSO2, DMSO24, DOX, EtOH, H2O, LPS, NUTL, PFOA, THA2, THA24, TNFa, TUN2, TUN24 current order
 
 #run voom for the first time to remove mean-variance relationship precision weights
 v1_int <- voom(dge_int, design_int, plot = TRUE)
@@ -702,40 +747,26 @@ corfit2_int <- duplicateCorrelation(object = v2_int, design = design_int,
 fit_int <- lmFit(v2_int, design_int, block = meta_int$Ind,
              correlation = corfit2_int$consensus.correlation)
 
-#empirical Bayes moderation using info across all genes for more precise gene-wise variability
-fit_int <- eBayes(fit = fit_int)
+#empirical Bayes moderation using info across all genes for more precise gene-wise variability - DON't RUN BEFORE Contrasts.Fit!
+# fit_int <- eBayes(fit = fit_int)
 
 #make my contrast matrix to compare across tx and veh within each species
-#only work with THA for right now, so comment out the rest of the interactions so that I can focus on that stimulus
-#interactions are differences of differences! i don't have an implicit difference because I have three different vehicles, so I must spell them out specifically
-#it is very important that I don't make any comparisons with the 'baseline' because I have multiple vehicles, so it doesn't create a pairwise comparison that is biologically valid
 cm_int <- makeContrasts(
-  # H_TUN = stTUN + H.stTUN - stDMSO + H.stDMSO,
-  H_THA = stTHA + H.stTHA - stDMSO + H.stDMSO,
-  # H_DOX = stDOX + H.stDOX - stDMSO + H.stDMSO,
-  # H_NUTL = stNUTL + H.stNUTL - stDMSO + H.stDMSO,
-  # H_LPS = stLPS + H.stLPS - stH2O + H.stH2O,
-  # H_TNFa = stTNFa + H.stTNFa -stH2O + H.stH2O,
-  # H_BPA = stBPA + H.stBPA - stEtOH + H.stEtOH,
-  # H_PFOA = stPFOA + H.stPFOA - stEtOH + H.stEtOH, #human stim - vehicle DEGs
-  # C_TUN = stTUN - stDMSO,
-  C_THA = stTHA - stDMSO,
-  # C_DOX = stDOX - stDMSO,
-  # C_NUTL = stNUTL - stDMSO,
-  # C_LPS = stLPS - stH2O,
-  # C_TNFa = stTNFa - stH2O,
-  # C_BPA = stBPA - stEtOH,
-  # C_PFOA = stPFOA - stEtOH, #chimp stim - vehicle DEGs
-  # int_TUN = H.stTUN - H.stDMSO,
-  int_THA = H.stTHA - H.stDMSO,
-  # int_DOX = H.stDOX - H.stDMSO,
-  # int_NUTL = H.stNUTL - H.stDMSO,
-  # int_LPS = H.stLPS - H.stH2O,
-  # int_TNFa = H.stTNFa - H.stH2O,
-  # int_BPA = H.stBPA - H.stEtOH,
-  # int_PFOA = H.stPFOA - H.stEtOH #interactions between H and C
+  H_TUN = stTUN + H.stTUN, #co1
+  H_THA = stTHA + H.stTHA, #co2
+  H_DOX = stDOX  + H.stDOX, #co3
+  H_NUTL = stNUTL + H.stNUTL, #H stim effect stim-DMSO #co4
+  C_TUN = stTUN, #co5
+  C_THA = stTHA, #co6
+  C_DOX = stDOX, # co7
+  C_NUTL = stNUTL, #C stim effect stim-DMSO #co8
+  int_TUN = H.stTUN, #co9
+  int_THA = H.stTHA, #co10
+  int_DOX = H.stDOX, #co11
+  int_NUTL = H.stNUTL, #interaction effect H-C for stim-DMSO for both #co12
   levels = design_int
 )
+
 
 #apply these contrasts to compare stimuli to vehicle 
 fit2_int <- contrasts.fit(fit_int, cm_int)
@@ -751,33 +782,1099 @@ summary(results_summary_int)
 #now I can create toptables with these interaction data
 ```
 
+
+# Interaction Analysis
+
+I want to further delve into my analysis by looking at differences between species after exposure to stimuli. I will do this using an interaction analysis to assess Species x Condition interactions. My Condition will be stimulus exposure at a particular timepoint.
+
+```{r interaction analysis modeling copy, include=FALSE}
+#Set up my model matrix for all stimuli, and then analyze THA further
+
+x <- readRDS("data/de/x_dge_counts_allind_subset.RDS") 
+#restrict to only 24hr samples for ease right now
+x_int1 <- x[, !grepl("_2_", colnames(x))]
+
+#use metadata_sub to match + restrict to 24hr as well
+meta_int1 <- metadata_sub %>% 
+  dplyr::filter(Time != "2")
+
+meta_int1$Vehicle <- NA
+meta_int1$Vehicle[meta_int1$Stimulus %in% c("TUN","THA","DOX","NUTL")] <- "DMSO"
+meta_int1$Vehicle[meta_int1$Stimulus %in% c("BPA","PFOA")] <- "EtOH"
+meta_int1$Vehicle[meta_int1$Stimulus %in% c("LPS","TNFa")] <- "H2O"
+
+meta_int1$Vehicle <- factor(meta_int1$Vehicle)
+
+
+#level Species so that Chimp is the baseline (first one is baseline)
+meta_int1$sp <- factor(meta_int1$Species, levels = c("C", "H"))
+#ensure that the stimuli are factors
+meta_int1$st <- factor(
+  meta_int1$Stimulus,
+  levels = c(
+    "EtOH",   #make DMSO reference, hardcode the rest of the vehicles
+    "THA", "TUN", "DOX", "NUTL",
+    "LPS", "TNFa",
+    "H2O",
+    "BPA",
+    "PFOA", "DMSO"
+  )
+)
+
+#ensure that the names are matched up properly
+identical(meta_int1$Final_sample_name, colnames(x_int1))
+
+colnames(x_int1) <- meta_int1$Final_sample_name
+rownames(meta_int1) <- meta_int1$Final_sample_name
+
+meta_int1$Cond <- make.names(meta_int1$Cond)
+meta_int1$Ind <- as.character(meta_int1$Ind)
+
+# saveRDS(meta_int, "data/de/metadata_interaction_24hr.RDS")
+# saveRDS(x_int, "data/de/x_counts_de_interaction_24hr.RDS")
+
+#create my DGElist object
+dge_int1 <- DGEList(counts = x_int1)
+dge_int1$samples$group <- factor(meta_int1$Cond)
+dge_int1 <- calcNormFactors(dge_int1, method = "TMM")
+
+# saveRDS(dge_int, "data/de/dge_matrix_interaction_24hr.RDS")
+
+#check the normalization factors from TMM normalization of the libraries
+dge_int1$samples
+#properly TMM normalized
+
+#here is where I alter my model.matrix to include interaction analysis
+#I already ensured that all metadata was factored properly
+
+design_int1 <- model.matrix(~ sp * st, data = meta_int1)
+rownames(design_int1) <- meta_int1$Final_sample_name            #assign sample names
+#clean up the column names so they're easy to identify
+colnames(design_int1) <- gsub(":", ".", colnames(design_int1))
+colnames(design_int1) <- gsub("spH", "H", colnames(design_int1))
+
+#take care that this alphabetizes everything
+
+#run voom for the first time to remove mean-variance relationship precision weights
+v1_int1 <- voom(dge_int1, design_int1, plot = TRUE)
+
+#estimate correlation between replicate samples
+corfit1_int1 <- duplicateCorrelation(object = v1_int1, design = design_int1,
+                                    block = meta_int1$Ind)
+
+#voom transformation again with duplicate correlation added and plot
+v2_int1 <- voom(dge_int1, design_int1, block = meta_int1$Ind, 
+          correlation = corfit1_int1$consensus.correlation, plot = TRUE)
+
+#run duplicate correlation for individual effect again
+corfit2_int1 <- duplicateCorrelation(object = v2_int1, design = design_int1,
+                               block = meta_int1$Ind)
+
+#fit my linear model for expression values of each gene
+fit_int1 <- lmFit(v2_int1, design_int1, block = meta_int1$Ind,
+             correlation = corfit2_int1$consensus.correlation)
+
+#empirical Bayes moderation using info across all genes for more precise gene-wise variability
+# fit_int <- eBayes(fit = fit_int)
+
+#make my contrast matrix to compare across tx and veh within each species
+#only work with THA for right now, so comment out the rest of the interactions so that I can focus on that stimulus
+#interactions are differences of differences! i don't have an implicit difference because I have three different vehicles, so I must spell them out specifically
+#it is very important that I don't make any comparisons with the 'baseline' because I have multiple vehicles, so it doesn't create a pairwise comparison that is biologically valid
+
+#also, this is now EtOH that is the baseline.
+#if you remove a lot of your contrasts, it will reduce power of detection for limma and therefore you will have fewer DEGs across the board?
+cm_int1 <- makeContrasts(
+  H_TUN = stTUN + H.stTUN - H + H.stDMSO,
+  H_THA = stTHA + H.stTHA - H + H.stDMSO,
+  H_DOX = stDOX + H.stDOX - stDMSO + H.stDMSO,
+  H_NUTL = stNUTL + H.stNUTL - stDMSO + H.stDMSO,
+  H_LPS = stLPS + H.stLPS - stH2O + H.stH2O,
+  H_TNFa = stTNFa + H.stTNFa -stH2O + H.stH2O,
+  H_BPA = stBPA + H.stBPA - H,
+  H_PFOA = stPFOA + H.stPFOA - H, #human stim - vehicle DEGs
+  C_TUN = stTUN - stDMSO,
+  C_THA = stTHA - stDMSO,
+  C_DOX = stDOX - stDMSO,
+  C_NUTL = stNUTL - stDMSO,
+  C_LPS = stLPS - stH2O,
+  C_TNFa = stTNFa - stH2O,
+  C_BPA = stBPA,
+  C_PFOA = stPFOA, #chimp stim - vehicle DEGs
+  int_TUN = H.stTUN - H.stDMSO,
+  int_THA = H.stTHA - H.stDMSO,
+  int_DOX = H.stDOX - H.stDMSO,
+  int_NUTL = H.stNUTL - H.stDMSO,
+  int_LPS = H.stLPS - H.stH2O,
+  int_TNFa = H.stTNFa - H.stH2O,
+  int_BPA = H.stBPA - H,
+  int_PFOA = H.stPFOA - H, #interactions between H and C
+  levels = design_int
+)
+
+
+#apply these contrasts to compare stimuli to vehicle 
+fit2_int1 <- contrasts.fit(fit_int1, cm_int1)
+fit2_int1 <- eBayes(fit2_int1)
+
+#plot the mean-variance trend
+plotSA(fit2_int1, main = "final model: mean-variance trend")
+
+#now look at the summary of results to identify whether there are DEGs in each comparison
+results_summary_int1 <- decideTests(fit2_int1, adjust.method = "BH", p.value = 0.05)
+summary(results_summary_int1)
+
+#now I can create toptables with these interaction data
+```
+
 ## Create Toptables from Interactions
 
 ```{r interaction analysis toptables}
 #now go ahead and put together toptables for each of these comparisons
 
 #first start with toptables with all genes in them, not only significant ones
-H_THA <- topTable(fit2_int, 
+H_TUN <- topTable(fit2_int, 
                   coef = 1,
                   adjust.method = "BH",
                   number = Inf, 
-                  sort.by = "none")
-C_THA <- topTable(fit2_int,
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+H_THA <- topTable(fit2_int, 
                   coef = 2,
                   adjust.method = "BH",
+                  number = Inf, 
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+H_DOX <- topTable(fit2_int, 
+                  coef = 3,
+                  adjust.method = "BH",
+                  number = Inf, 
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+H_NUTL <- topTable(fit2_int, 
+                  coef = 4,
+                  adjust.method = "BH",
+                  number = Inf, 
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+C_TUN <- topTable(fit2_int,
+                  coef = 5,
+                  adjust.method = "BH",
                   number = Inf,
-                  sort.by = "none")
-int_THA <- topTable(fit2_int,
-                    coef = 3,
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+C_THA <- topTable(fit2_int,
+                    coef = 6,
                     adjust.method = "BH",
                     number = Inf,
-                    sort.by = "none")
+                    sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+C_DOX <- topTable(fit2_int,
+                  coef = 7,
+                  adjust.method = "BH",
+                  number = Inf,
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+C_NUTL <- topTable(fit2_int,
+                    coef = 8,
+                    adjust.method = "BH",
+                    number = Inf,
+                    sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+int_TUN <- topTable(fit2_int, 
+                  coef = 9,
+                  adjust.method = "BH",
+                  number = Inf, 
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+int_THA <- topTable(fit2_int,
+                  coef = 10,
+                  adjust.method = "BH",
+                  number = Inf,
+                  sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+int_DOX <- topTable(fit2_int,
+                    coef = 11,
+                    adjust.method = "BH",
+                    number = Inf,
+                    sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
+int_NUTL <- topTable(fit2_int,
+                    coef = 12,
+                    adjust.method = "BH",
+                    number = Inf,
+                    sort.by = "none") %>% 
+  rownames_to_column(var = "Entrez_ID")
 
 #now create toptables that only include the significant DEGs based on adj.P
+sig.H_TUN <- H_TUN[H_TUN$adj.P.Val < 0.05, ]
+sig.C_TUN <- C_TUN[C_TUN$adj.P.Val < 0.05, ]
+sig.int_TUN <- int_TUN[int_TUN$adj.P.Val < 0.05, ]
+
 sig.H_THA <- H_THA[H_THA$adj.P.Val < 0.05, ]
 sig.C_THA <- C_THA[C_THA$adj.P.Val < 0.05, ]
 sig.int_THA <- int_THA[int_THA$adj.P.Val < 0.05, ]
 
+sig.H_DOX <- H_DOX[H_DOX$adj.P.Val < 0.05, ]
+sig.C_DOX <- C_DOX[C_DOX$adj.P.Val < 0.05, ]
+sig.int_DOX <- int_DOX[int_DOX$adj.P.Val < 0.05, ]
+
+sig.H_NUTL <- H_NUTL[H_NUTL$adj.P.Val < 0.05, ]
+sig.C_NUTL <- C_NUTL[C_NUTL$adj.P.Val < 0.05, ]
+sig.int_NUTL <- int_NUTL[int_NUTL$adj.P.Val < 0.05, ]
+```
+
+
+# Response Genes Interaction Terms THA
+
+```{r plot log2cpm of all response genes from THA, warning=FALSE, message=FALSE}
+#Load in my count matrix
+int_THA_degs
+
+hc_cpm_mat_24 <- hc_cpm_mat_24 %>% as.data.frame() %>% 
+  rownames_to_column(var = "Entrez_ID")
+
+tha_expr <- hc_cpm_mat_24 %>%
+  filter(Entrez_ID %in% int_THA_degs) %>%
+  dplyr::select(Entrez_ID, everything())
+
+stopifnot(nrow(tha_expr) > 0)
+
+#-----------------------------
+# 2. Convert to long format + join metadata
+#-----------------------------
+
+tha_long <- tha_expr %>%
+  pivot_longer(
+    cols = where(is.numeric),
+    names_to = "Sample",
+    values_to = "log2cpm"
+  ) %>%
+  left_join(
+    meta_de,
+    by = c("Sample" = "Final_sample_name")
+  )
+
+stopifnot(!any(is.na(tha_long$Stimulus)))
+
+#-----------------------------
+# 3. Restrict to THA response context (24h, DMSO baseline)
+#-----------------------------
+
+tha_long <- tha_long %>%
+  filter(
+    Time == "24",
+    Stimulus %in% c("THA", "DMSO")
+  )
+
+#-----------------------------
+# 4. Factor ordering
+#-----------------------------
+
+tha_long <- tha_long %>%
+  mutate(
+    Species  = factor(Species, levels = c("H", "C")),
+    Stimulus = factor(Stimulus, levels = c("THA", "DMSO")),
+    Cond = factor(Cond, levels = c("THA_24_H", "DMSO_24_H", "THA_24_C", "DMSO_24_C"))
+  )
+
+#-----------------------------
+# 5. Plot ALL THA interaction DEGs (SYMBOL = title)
+#-----------------------------
+
+p <- ggplot(
+  tha_long,
+  aes(x = Stimulus, y = log2cpm, fill = Species)
+) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+  geom_point(
+    aes(color = Species),
+    position = position_identity(),
+    size = 3
+  ) +
+  labs(
+    title = "THA interaction DEGs",
+    x = "",
+    y = "log2CPM"
+  ) +
+  theme_custom()
+
+print(p)
+
+
+```
+
+
+
+# Proportion Barplot of DEGs
+
+```{r DEGs proportion barplots, fig.height=10, fig.width=10, warning=FALSE, message=FALSE}
+#I want to further characterize the DEGs we find through this interaction analysis
+#I will break these DEGs up into five categories from my three toptables:
+##1. H only DEG
+##2. C only DEG
+##3. H > C DEG (+logFC)
+##4. H < C DEG (-logFC)
+##5. nonDEG?
+
+
+
+#make a function to assess stimulus DEG categories
+make_stimulus_category_table <- function(int_tt, stimulus_name,
+                                         gene_col = "Entrez_ID",
+                                         padj_col = "adj.P.Val",
+                                         logfc_col = "logFC",
+                                         padj_cutoff = 0.05) {
+  
+  #keep only significant DEGs
+  int_sig <- int_tt[[gene_col]][!is.na(int_tt[[padj_col]]) 
+                                & int_tt[[padj_col]]
+                                < padj_cutoff]
+  int_logFC <- int_tt[[logfc_col]][!is.na(int_tt[[padj_col]]) 
+                                   & int_tt[[padj_col]]
+                                   < padj_cutoff]
+  
+  #union of all DEGs
+  degs <- unique(c(int_sig))
+  if (length(degs) == 0) stop(paste0("No DEGs for stimulus ", stimulus_name))
+  
+  #build table
+  df <- data.frame(gene = degs, stringsAsFactors = FALSE)
+  df$int_sig <- df$gene %in% int_sig
+  df$int_logFC <- NA_real_
+  df$int_logFC[df$int_sig] <- int_logFC[match(df$gene[df$int_sig], int_sig)]
+  
+  #assign categories
+  df$Category <- NA_character_
+  df$Category[df$int_sig & df$int_logFC > 0] <- "H > C DEGs"
+  df$Category[df$int_sig & df$int_logFC < 0] <- "H < C DEGs"
+  df$Category[is.na(df$Category) & df$H_sig & df$C_sig] <- "Shared DEGs"
+  df$Category[is.na(df$Category) & df$H_sig & !df$C_sig] <- "H only DEGs"
+  df$Category[is.na(df$Category) & !df$H_sig & df$C_sig] <- "C only DEGs"
+  
+  #summarize for plotting
+  summary_table <- df |>
+    dplyr::count(Category, name = "Value") |>
+    dplyr::mutate(
+      Percentage = Value / sum(Value) * 100,
+      Stimulus = stimulus_name
+    )
+  
+  return(summary_table)
+}
+
+#plot a barplot and pie chart from these data
+stimulus_plots_funct <- function(
+  clust_data,
+  subset_name,
+  fill_colors
+) {
+  
+  barplot <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    scale_y_continuous(limits = c(0, 105)) +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.7),
+      direction = "x",
+      size = 8
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("THA DEG category distribution: ", subset_name),
+      x = NULL,
+      y = "Percentage of DEGs  (%)"
+    ) +
+    theme_custom() +
+    theme(plot.title = element_text(hjust = 0.9))
+  
+  piechart <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y") +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.9),
+      direction = "y",
+      size = 8
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("THA DEG category distribution: ", subset_name),
+      x = NULL,
+      y = "Percent of THA DEGs (%)"
+    ) +
+    theme_void()
+  
+  return(list(
+    barplot = barplot,
+    piechart = piechart
+  ))
+}
+
+#random fill colors
+fill_colors <- c(
+  "H only DEGs" = "#FF914F",
+  "C only DEGs" = "#FB81D3",
+  "Shared DEGs" = "#ACF2C9",
+  "H > C DEGs"  = "#FFF891",
+  "H < C DEGs"  = "#56B4E9"
+)
+
+#run for THA - later add on other stimuli
+
+tha_summary <- make_stimulus_category_table(
+  H_tt = H_THA,
+  C_tt = C_THA,
+  int_tt = int_THA,
+  gene_col = "Entrez_ID",
+  stimulus_name = "THA"
+)
+
+tha_plots <- stimulus_plots_funct(
+  clust_data = tha_summary,
+  subset_name = "THA",
+  fill_colors = fill_colors
+)
+
+
+#print these plots and then save them
+print(tha_plots$barplot)
+print(tha_plots$piechart)
+
+# save_plot(
+#   plot = tha_plots$barplot,
+#   filename = "THA_DEGs_int_barplot_EMP",
+#   folder = output_folder,
+#   height = 10,
+#   width = 10
+# )
+# 
+# save_plot(
+#   plot = tha_plots$piechart,
+#   filename = "THA_DEGs_int_piechart_EMP",
+#   folder = output_folder,
+#   height = 10,
+#   width = 10
+# )
+
+```
+
+
+## Barplot of Interaction DEGs only
+
+I want to look at the distribution of the interaction DEGs which are different in their response between species.
+
+```{r barplots interaction only}
+
+#make a function as before with only interaction toptable
+make_stimulus_category_table <- function(int_tt, stimulus_name,
+                                         gene_col = "Entrez_ID",
+                                         padj_col = "adj.P.Val",
+                                         logfc_col = "logFC",
+                                         padj_cutoff = 0.05) {
+
+  #Only significant DEGs
+  int_sig <- int_tt[[gene_col]][!is.na(int_tt[[padj_col]]) 
+                                & int_tt[[padj_col]] < padj_cutoff]
+  int_logFC <- int_tt[[logfc_col]][!is.na(int_tt[[padj_col]])
+                                   & int_tt[[padj_col]] < padj_cutoff]
+
+  if(length(int_sig) == 0) stop(paste0("No interaction DEGs for ", stimulus_name))
+
+  #build table
+  df <- data.frame(gene = int_sig, stringsAsFactors = FALSE)
+  df$int_logFC <- int_logFC
+
+  # Assign categories based on logFC sign
+  df$Category <- NA_character_
+  df$Category[df$int_logFC] <- "int DEGs"
+
+  # Summarize for plotting
+  summary_table <- df %>%
+    dplyr::count(Category, name = "Value") %>%
+    dplyr::mutate(
+      Percentage = Value / sum(Value) * 100,
+      Stimulus = stimulus_name
+    )
+
+  return(summary_table)
+}
+
+#plotting function
+stimulus_plots_funct <- function(clust_data, subset_name, fill_colors) {
+
+  barplot <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 0.6) +
+    scale_y_continuous(limits = c(0, 105)) +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.7),
+      direction = "x",
+      size = 8
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("Interaction DEGs: ", subset_name),
+      x = NULL,
+      y = "Percentage of DEGs (%)"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
+
+  piechart <- ggplot(clust_data, aes(x = "", y = Percentage, fill = Category)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y") +
+    geom_text_repel(
+      aes(label = paste0(Value, " (", round(Percentage, 1), "%)")),
+      position = position_stack(vjust = 0.5),
+      direction = "y",
+      size = 8
+    ) +
+    scale_fill_manual(values = fill_colors) +
+    labs(
+      title = paste0("Interaction DEGs: ", subset_name),
+      x = NULL,
+      y = NULL
+    ) +
+    theme_void()
+
+  return(list(
+    barplot = barplot,
+    piechart = piechart
+  ))
+}
+
+#define my fill colors
+fill_colors <- c(
+  "H > C DEGs"  = "#FFF891",
+  "H < C DEGs"  = "#56B4E9"
+)
+
+#now run my stimuli through (just THA for now)
+
+tha_summary <- make_stimulus_category_table(
+  H_tt = H_THA,
+  C_tt = C_THA,
+  int_tt = int_THA,
+  gene_col = "Entrez_ID",
+  stimulus_name = "THA"
+)
+
+tha_plots <- stimulus_plots_funct(
+  clust_data = tha_summary,
+  subset_name = "THA",
+  fill_colors = fill_colors
+)
+
+print(tha_plots$barplot)
+print(tha_plots$piechart)
+
+# save_plot(plot = tha_plots$barplot, 
+#           filename = "THA_interaction_barplot_EMP", 
+#           folder = output_folder, 
+#           height = 10,
+#           width = 10)
+# 
+# save_plot(plot = tha_plots$piechart, 
+#           filename = "THA_interaction_piechart_EMP", 
+#           folder = output_folder,
+#           height = 10, 
+#           width = 10)
+
+
+```
+
+# Venn Diagrams of DEGs
+
+```{r venn diagrams for each deg category}
+#now I want to go through and create venn diagrams for these gene sets
+#compare them across their categories to see if there are any overlapping genes
+
+#read in significant gene lists
+# H_THA_degs <- sig.H_THA %>% pull(Entrez_ID)
+# C_THA_degs <- sig.C_THA %>% pull(Entrez_ID)
+int_TUN_degs <- sig.int_TUN %>%  pull(Entrez_ID)
+int_THA_degs <- sig.int_THA %>%  pull(Entrez_ID)
+int_DOX_degs <- sig.int_DOX %>%  pull(Entrez_ID)
+int_NUTL_degs <- sig.int_NUTL %>%  pull(Entrez_ID)
+
+# saveRDS(H_THA_degs, "data/de/int/H_THA_DEGs_significant_gene_list.RDS")
+# saveRDS(C_THA_degs, "data/de/int/C_THA_DEGs_significant_gene_list.RDS")
+# saveRDS(int_THA_degs, "data/de/int/interaction_THA_DEGs_significant_gene_list.RDS")
+
+padj_cutoff <- 0.05
+
+#read in gene lists after saving them
+H_THA_degs <- readRDS("data/de/int/H_THA_DEGs_significant_gene_list.RDS")
+C_THA_degs <- readRDS("data/de/int/C_THA_DEGs_significant_gene_list.RDS")
+int_THA_degs <- readRDS("data/de/int/interaction_THA_DEGs_significant_gene_list.RDS")
+int_THA_FC <- sig.int_THA$logFC[sig.int_THA$adj.P.Val < padj_cutoff]
+
+#define my categories as above
+H_THA_only <- setdiff(H_THA_degs, C_THA_degs)
+C_THA_only <- setdiff(C_THA_degs, H_THA_degs)
+Shared_THA <- intersect(H_THA_degs, C_THA_degs)
+H_gr_C_THA <- int_THA_degs[int_THA_FC > 0] #greater than = gr
+H_ls_C_THA <- int_THA_degs[int_THA_FC < 0] #less than = ls
+
+#define nonDEGs from background
+DEGs_all_THA <- unique(c(H_THA_degs, C_THA_degs, Shared_THA, H_gr_C_THA, H_ls_C_THA))
+nonDEGs_THA <- setdiff(all_genes, DEGs_all_THA)
+
+#named list for venn diagrams
+venn_list <- list(
+  "H only DEGs" = H_THA_only,
+  "C only DEGs" = C_THA_only,
+  "Shared DEGs" = Shared_THA,
+  "H > C DEGs" = H_gr_C_THA,
+  "H < C DEGs" = H_ls_C_THA
+  # "non-DEGs" = nonDEGs_THA
+)
+
+#plot my venn diagram
+int_DEGs_venn_THA <- ggVennDiagram(
+  venn_list, label_alpha = 0,
+  category.names = c("H only", 
+                     "C only", 
+                     "Shared", 
+                     "H > C",
+                     "H < C")) + 
+  ggtitle("THA DEGs")+
+  coord_fixed(ratio = 0.7) +
+  labs(x = NULL, y = NULL) +
+  scale_fill_gradient(low = "lightblue", high = "blue") +
+  theme_custom()
+
+print(int_DEGs_venn_THA)
+
+# save_plot(plot = int_DEGs_venn_THA,
+#           filename = "VennDiagram_interaction_THA_DEGs_EMP",
+#           folder = output_folder,
+#           height = 10,
+#           width = 10)
+
+```
+
+
+## GWAS CVD Comparisons
+
+I want to use GWAS associations for cardiovascular disease (CVD) and heart failure (HF) obtained from the GWAS catalog and compare overlap with my motif gene sets. Are these genes typically present in certain gene clusters?
+
+
+Cerezo M et al., doi.org/10.1093/nar/gkae1070 Nucleic Acids Research, Volume 53, Issue D1, 6 January 2025, Pages D998–D1005
+
+
+```{r GWAS CVD + HF genes, warning=FALSE, message=FALSE}
+#I pulled data from the GWAS catalog for HF associations
+# https://www.ebi.ac.uk/gwas/efotraits/EFO_0003144
+#I also pulled data from the GWAS catalog for CVD associations
+# https://www.ebi.ac.uk/gwas/efotraits/EFO_0000319
+
+#HF GWAS data
+# hf_gwas_all <- read_delim("D:/DXR Project/GWAS/gwas-association-downloaded_2025-11-13-EFO_0003144-withChildTraits.tsv",
+#     delim = "\t", escape_double = FALSE,
+#     trim_ws = TRUE)
+# View(hf_gwas_all)
+
+# saveRDS(hf_gwas_all, "data/genesets/GWAS/hf_gwas_associations_EFO_0003144.RDS")
+
+#extract mapped genes and ensure each are unique
+# hf_gwas_mapped <- subset(hf_gwas_all, !is.na(MAPPED_GENE) & MAPPED_GENE != "")
+#830 mapped genes, now make sure that they're unique
+# hf_gwas_genes <- unique(hf_gwas_mapped$MAPPED_GENE)
+#494 genes left after filtering for unique gene symbols
+# now translate this into Entrez_ID for ease of analysis
+
+# convert to Entrez_ID
+# gene_conversion <- AnnotationDbi::select(
+#   org.Hs.eg.db,
+#   keys = hf_gwas_genes,
+#   keytype = "SYMBOL",
+#   columns = c("ENTREZID")
+# )
+
+# Remove duplicates or missing IDs
+# hf_gwas_genes <- gene_conversion %>%
+#   filter(!is.na(ENTREZID)) %>%
+#   distinct(SYMBOL, .keep_all = TRUE)
+
+#change the colname to Entrez_ID
+# colnames(hf_gwas_genes)[colnames(hf_gwas_genes) == "ENTREZID"] <- "Entrez_ID"
+# saveRDS(hf_gwas_genes, "data/genesets/GWAS/hf_gwas_genes_symbolentrez_mapped.RDS")
+
+#read in the final list of genes (both SYMBOL and Entrez_ID)
+hf_gwas_genes <- readRDS("data/genesets/GWAS/hf_gwas_genes_symbolentrez_mapped.RDS")
+#make a version with just the entrez id to combine with other gene sets
+#change the colname to Entrez_ID
+hf_gwas_genes_list <- hf_gwas_genes$Entrez_ID
+
+#CVD GWAS data
+# cvd_gwas_all <- read_delim("data/genesets/GWAS/gwas-association-downloaded_2026-01-26-EFO_0000319-withChildTraits.tsv",
+#     delim = "\t", escape_double = FALSE,
+#     trim_ws = TRUE)
+# View(cvd_gwas_all)
+
+#save the raw data
+# saveRDS(cvd_gwas_all, "data/genesets/GWAS/cvd_gwas_associations_EFO_0000319.RDS")
+
+#extract mapped genes and ensure each are unique
+# cvd_gwas_mapped <- subset(cvd_gwas_all, !is.na(MAPPED_GENE) & MAPPED_GENE != "")
+#19,204 mapped genes, now make sure that they're unique
+# cvd_gwas_genes <- unique(cvd_gwas_mapped$MAPPED_GENE)
+#6,631 genes left after filtering for unique gene symbols
+# now translate this into Entrez_ID for ease of analysis
+
+# convert to Entrez_ID
+# gene_conversion <- AnnotationDbi::select(
+#   org.Hs.eg.db,
+#   keys = cvd_gwas_genes,
+#   keytype = "SYMBOL",
+#   columns = c("ENTREZID")
+# )
+
+# Remove duplicates or missing IDs
+# cvd_gwas_genes <- gene_conversion %>%
+#   filter(!is.na(ENTREZID)) %>%
+#   distinct(SYMBOL, .keep_all = TRUE)
+
+#change the colname to Entrez_ID
+# colnames(cvd_gwas_genes)[colnames(cvd_gwas_genes) == "ENTREZID"] <- "Entrez_ID"
+
+
+# saveRDS(cvd_gwas_genes, "data/genesets/GWAS/cvd_gwas_genes_symbolentrez_mapped.RDS")
+
+#read in the final list of genes (both SYMBOL and Entrez_ID)
+cvd_gwas_genes <- readRDS("data/genesets/GWAS/cvd_gwas_genes_symbolentrez_mapped.RDS")
+#make a version with just the entrez id to combine with other gene sets
+#change the colname to Entrez_ID
+cvd_gwas_genes_list <- cvd_gwas_genes$Entrez_ID
+
+```
+
+
+# Venn Diagram of THA DEGs with CVD GWAS genes
+
+```{r venn diagram tha degs vs CVD GWAS, message=FALSE, warning=FALSE}
+
+#read in my gene sets of interest (not only DEGs)
+
+# cvd_gwas_genes_list
+H_THA_genes <- H_THA %>% pull(Entrez_ID)
+C_THA_genes <- C_THA %>% pull(Entrez_ID)
+
+int_THA_FC_genes <- int_THA$logFC
+int_THA_genes <- int_THA %>% pull(Entrez_ID)
+
+H_gr_C_THA_genes <- int_THA %>% pull(Entrez_ID)
+H_gr_C_THA_genes <- H_gr_C_THA_genes[int_THA_FC_genes > 0]
+
+H_ls_C_THA_genes <- int_THA %>% pull(Entrez_ID)
+H_ls_C_THA_genes <- H_ls_C_THA_genes[int_THA_FC_genes < 0]
+
+#make a venn diagram list for these significant degs vs CVD GWAS
+venn_list_cvd <- list(
+  "H genes" = H_THA_genes,
+  "C genes" = C_THA_genes,
+  "H > C" = H_gr_C_THA_genes,
+  "H < C" = H_ls_C_THA_genes,
+  "CVD" = cvd_gwas_genes_list
+)
+
+#plot my venn diagram
+int_THA_genes_CVD_Venn <- ggVennDiagram(
+  venn_list_cvd, label_alpha = 0,
+  category.names = c("H genes", 
+                     "C genes", 
+                     "H > C",
+                     "H < C",
+                     "CVD GWAS")) + 
+  ggtitle("THA genes")+
+  coord_fixed(ratio = 0.7) +
+  labs(x = NULL, y = NULL) +
+  scale_fill_gradient(low = "lightblue", high = "pink") +
+  theme_custom()
+
+print(int_THA_genes_CVD_Venn)
+
+# save_plot(plot = int_THA_genes_CVD_Venn,
+#           filename = "VennDiagram_interaction_CVD_GWAS_THA_allgenes_EMP",
+#           folder = output_folder,
+#           height = 12,
+#           width = 12)
+
+#now make one with DEGs
+venn_list_cvd_degs <- list(
+  "H DEGs" = H_THA_degs,
+  "C DEGs" = C_THA_degs,
+  "H > C" = H_gr_C_THA,
+  "H < C" = H_ls_C_THA,
+  "CVD" = cvd_gwas_genes_list
+)
+
+
+int_THA_DEGs_CVD_Venn <- ggVennDiagram(
+  venn_list_cvd_degs, label_alpha = 0,
+  category.names = c("H DEGs", 
+                     "C DEGs", 
+                     "H > C",
+                     "H < C",
+                     "CVD GWAS")) + 
+  ggtitle("THA DEGs")+
+  coord_fixed(ratio = 0.7) +
+  labs(x = NULL, y = NULL) +
+  scale_fill_gradient(low = "lightblue", high = "pink") +
+  theme_custom()
+
+print(int_THA_DEGs_CVD_Venn)
+
+# save_plot(plot = int_THA_DEGs_CVD_Venn,
+#           filename = "VennDiagram_interaction_CVD_GWAS_THA_DEGs_EMP",
+#           folder = output_folder,
+#           height = 12,
+#           width = 12)
+
+#2 genes shared with H > C, what are they?
+
+```
+
+## Shared Genes between CVD GWAS and H > C DEGs
+
+```{r interrogate two shared genes CVD GWAS H > C, message=FALSE, warning=FALSE}
+
+```
+
+
+# logFC Distributions
+
+```{r plot the logFC distributions for each set}
+#I want to go ahead and plot the logFC + absFC distribution in boxplots for each gene set to get an idea of response direction
+
+# Make sure your THA toptables have Entrez_ID column and logFC
+# H_THA_deg <- H_THA[H_THA$adj.P.Val < 0.05, ]
+# C_THA_deg <- C_THA[C_THA$adj.P.Val < 0.05, ]
+int_TUN_deg <- int_TUN[int_TUN$adj.P.Val < 0.05, ]
+int_THA_deg <- int_THA[int_THA$adj.P.Val < 0.05, ]
+int_DOX_deg <- int_DOX[int_DOX$adj.P.Val < 0.05, ]
+int_NUTL_deg <- int_NUTL[int_NUTL$adj.P.Val < 0.05, ]
+# H > C and H < C based on interaction logFC
+# H_gr_C_THA <- int_THA_deg$Entrez_ID[int_THA_deg$logFC > 0]
+# H_ls_C_THA <- int_THA_deg$Entrez_ID[int_THA_deg$logFC < 0]
+
+# Combine into one data frame
+plot_df <- bind_rows(
+  # H_THA_deg %>% 
+  #   mutate(GeneSet = "H_THA_deg",
+  #          absFC = abs(logFC)),
+  # C_THA_deg %>% 
+  #   mutate(GeneSet = "C_THA_deg",
+  #          absFC = abs(logFC)),
+  int_TUN_deg %>% 
+    mutate(GeneSet = "int_TUN_deg", 
+           absFC = abs(logFC)),
+  int_THA_deg %>% 
+    mutate(GeneSet = "int_THA_deg", 
+           absFC = abs(logFC)),
+  int_DOX_deg %>% 
+    mutate(GeneSet = "int_DOX_deg", 
+           absFC = abs(logFC)),
+  int_NUTL_deg %>% 
+    mutate(GeneSet = "int_NUTL_deg", 
+           absFC = abs(logFC)),
+  # int_THA_deg %>%
+  #   filter(logFC > 0) %>% 
+  #   mutate(GeneSet = "H > C", 
+  #          absFC = abs(logFC)),
+  # int_THA_deg %>% 
+  #   filter(logFC < 0) %>% 
+  #   mutate(GeneSet = "H < C", 
+  #          absFC = abs(logFC))
+)
+
+#define GeneSet order for plotting
+plot_df$GeneSet <- factor(plot_df$GeneSet,
+                          levels = c("int_TUN_deg", "int_THA_deg", 
+                                     "int_DOX_deg", "int_NUTL_deg"))
+
+#function to compute medians
+compute_medians <- function(df, y_var){
+  df %>%
+    group_by(GeneSet) %>%
+    summarise(Median = median(.data[[y_var]], na.rm = TRUE), .groups = "drop")
+}
+
+#plot logFC
+medians_logFC <- compute_medians(plot_df, "logFC")
+
+p_logFC <- ggplot(plot_df, aes(x = GeneSet, y = logFC, fill = GeneSet)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_text(data = medians_logFC, aes(x = GeneSet, y = Median, label = round(Median, 2)),
+            vjust = -0.5, inherit.aes = FALSE, size = 4) +
+  labs(title = "logFC distribution", y = "logFC", x = "") +
+  theme_custom() +
+  scale_fill_brewer(palette = "Set2")
+
+print(p_logFC)
+
+#plot absolute logFC
+medians_absFC <- compute_medians(plot_df, "absFC")
+
+p_absFC <- ggplot(plot_df, aes(x = GeneSet, y = absFC, fill = GeneSet)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_text(data = medians_absFC, aes(x = GeneSet, y = Median, label = round(Median, 2)),
+            vjust = -0.5, inherit.aes = FALSE, size = 4) +
+  labs(title = "|logFC| distribution", y = "|logFC|", x = "") +
+  theme_custom() +
+  scale_fill_manual(values = stim_col)
+
+print(p_absFC)
+
+#save plots
+# save_plot(p_logFC, 
+#           filename = "THA_logFC_boxplot",
+#           folder = output_folder, 
+#           width = 10, height = 6)
+# save_plot(p_absFC, 
+#           filename = "THA_abslogFC_boxplot",
+#           folder = output_folder,
+#           width = 10, height = 6)
+
+
+
+```
+
+
+
+# GO KEGG Pathway analysis of THA DEGs
+
+```{r go kegg THA DEGS interaction, message=FALSE, warning=FALSE}
+#I want to do some basic pathway analysis on these gene lists of interest after my interaction analysis
+
+#take my same gene lists and run them through GO and KEGG
+
+deg_gene_sets <- list(
+  # "H_THA DEG"  = H_THA_degs,
+  # "C_THA DEG"  = C_THA_degs,
+  "int_THA DEG" = int_THA_degs,
+  "int_DOX DEG" = int_DOX_degs
+  # "H gr C DEG" = int_THA_deg %>% filter(logFC > 0) %>% pull(Entrez_ID),
+  # "H ls C DEG" = int_THA_deg %>% filter(logFC < 0) %>% pull(Entrez_ID),
+  # "H_THA genes" = H_THA_genes,
+  # "C_THA genes" = C_THA_genes,
+  # "int_THA genes" = int_THA_genes,
+  # "H gr C genes" = H_gr_C_THA_genes,
+  # "H ls C genes" = H_ls_C_THA_genes
+)
+
+# all_genes 
+
+run_gost_safe <- function(genes, bg_genes) {
+  if (length(genes) < 2) return(NULL)
+
+  res <- tryCatch(
+    gost(
+      query = as.character(genes),
+      organism = "hsapiens",
+      ordered_query = FALSE,
+      measure_underrepresentation = FALSE,
+      evcodes = FALSE,
+      user_threshold = 0.05,
+      custom_bg = bg_genes,
+      correction_method = "fdr",
+      sources = c("GO:BP", "KEGG")
+    ),
+    error = function(e) NULL
+  )
+
+  if (is.null(res) || is.null(res$result) || nrow(res$result) == 0) return(NULL)
+  res$result
+}
+
+#dotplot function
+plot_gost_dot <- function(df, title, ylab_txt) {
+  if (is.null(df) || nrow(df) == 0) return(NULL)
+
+  df %>%
+    slice_min(order_by = p_value, n = 10) %>%
+    mutate(log_val = -log10(p_value)) %>%
+    ggplot(aes(x = log_val, y = reorder(term_name, log_val))) +
+    geom_point(size = 4) +
+    labs(
+      x = expression("-log"[10]*"(p-value)"),
+      y = ylab_txt,
+      title = title
+    ) +
+    scale_y_discrete(labels = scales::label_wrap(40)) +
+    theme_custom()
+}
+
+
+#loop over my gene sets
+run_pathway_analysis <- function(gene_sets, bg_genes, label_prefix = NULL) {
+
+  results_list <- list()
+  plot_list    <- list()
+
+  for (gs_name in names(gene_sets)) {
+    genes <- gene_sets[[gs_name]]
+    message("Processing gene set: ", gs_name, " (n=", length(genes), ")")
+
+    res_df <- run_gost_safe(genes, bg_genes)
+    if (is.null(res_df)) {
+      message("  → No enriched pathways, skipping")
+      next
+    }
+
+    #separate GO:BP and KEGG
+    go_df   <- res_df %>% filter(source == "GO:BP")
+    kegg_df <- res_df %>% filter(source == "KEGG")
+
+    #save results
+    results_list[[gs_name]] <- list(GO_BP = go_df, KEGG = kegg_df)
+
+    #plot GO:BP
+    if (nrow(go_df) > 0) {
+      p_go <- plot_gost_dot(go_df, 
+                            title = paste0(gs_name, " GO:BP"), 
+                            ylab_txt = "GO:BP term")
+      plot_list[[paste0(gs_name, "_GOBP")]] <- p_go
+      print(p_go)
+
+      save_plot(
+        plot = p_go,
+        filename = paste0(label_prefix, gs_name, "_GOBP_EMP"),
+        folder = output_folder,
+        width = 8,
+        height = 6
+      )
+    }
+
+    #plot KEGG
+    if (nrow(kegg_df) > 0) {
+      p_kegg <- plot_gost_dot(kegg_df, 
+                              title = paste0(gs_name, " KEGG"), 
+                              ylab_txt = "KEGG pathway")
+      plot_list[[paste0(gs_name, "_KEGG")]] <- p_kegg
+      print(p_kegg)
+
+      save_plot(
+        plot = p_kegg,
+        filename = paste0(label_prefix, gs_name, "_KEGG_EMP"),
+        folder = output_folder,
+        width = 8,
+        height = 6
+      )
+    }
+  }
+
+  return(list(results = results_list, plots = plot_list))
+}
+
+#run through my gene sets
+deg_pathway_out <- run_pathway_analysis(
+  gene_sets = deg_gene_sets,
+  bg_genes  = all_genes,
+  label_prefix = "DEGs_"
+)
 
 
 ```

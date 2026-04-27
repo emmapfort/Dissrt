@@ -82,7 +82,7 @@ library(magick)
 
 ```{r Custom Theme, warning=FALSE, message=FALSE}
 # Define the custom theme
-# plot_theme_custom <- function() {
+# plot_theme_custom_largefont <- function() {
 #   theme_minimal() +
 #     theme(
 #       #line for x and y axis
@@ -98,20 +98,15 @@ library(magick)
 # 
 #       #text and font
 #       axis.text = element_text(color = "black",
-#                                family = "Arial",
-#                                size = 8),
+#                                size = 10),
 #       axis.title = element_text(color = "black",
-#                                 family = "Arial",
-#                                 size = 10),
-#       legend.text = element_text(color = "black",
-#                                  family = "Arial",
-#                                  size = 8),
-#       legend.title = element_text(color = "black",
-#                                   family = "Arial",
-#                                   size = 10),
-#       plot.title = element_text(color = "black",
-#                                 family = "Arial",
 #                                 size = 12),
+#       legend.text = element_text(color = "black",
+#                                  size = 10),
+#       legend.title = element_text(color = "black",
+#                                   size = 12),
+#       plot.title = element_text(color = "black",
+#                                 size = 14),
 # 
 #       #blank background and border
 #       panel.background = element_blank(),
@@ -123,9 +118,11 @@ library(magick)
 #     )
 # }
 
-# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+# saveRDS(plot_theme_custom_largefont, "data/plot_theme_custom_largerfont.RDS")
 
-theme_custom <- readRDS("data/plot_theme_custom.RDS")
+# theme_custom <- readRDS("data/plot_theme_custom.RDS")
+theme_custom <- readRDS("data/plot_theme_custom_largerfont.RDS")
+
 
 ```
 
@@ -1496,22 +1493,22 @@ length(clust6_24)
 #now look at these just based on cluster likelihood and go through to refine later
 
 #first check that each list of genes is unique
-cmf24_clustlike <- list(
-  all_24_c1 = clust1_24,
-  all_24_c2 = clust2_24,
-  all_24_c3 = clust3_24,
-  all_24_c4 = clust4_24,
-  all_24_c5 = clust5_24,
-  all_24_c6 = clust6_24
+all24_clustlike <- list(
+  all24_c1 = clust1_24,
+  all24_c2 = clust2_24,
+  all24_c3 = clust3_24,
+  all24_c4 = clust4_24,
+  all24_c5 = clust5_24,
+  all24_c6 = clust6_24
 )
 
 #total of 13023 genes out of my original 13739
 
-length(unique(unlist(cmf24_clustlike))) == sum(lengths(cmf24_clustlike))
+length(unique(unlist(all24_clustlike))) == sum(lengths(all24_clustlike))
 #each of these gene lists is unique
 
-assign_24 <- unique(unlist(cmf24_clustlike))
-all_genes <- rownames(hc_cpm_matrix_24)
+assign_24 <- unique(unlist(all24_clustlike))
+all_genes <- rownames(hc_cpm_mat_24)
 unassign_24 <- setdiff(all_genes, assign_24)
 
 #quick barplot and pie chart
@@ -3859,17 +3856,19 @@ combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RD
 
 #pull in my gene vectors
 motif_gene_sets <- list(
-  upr = upr_clustlike,
-  ddr = ddr_clustlike,
-  imr = imr_clustlike,
-  mmr = mmr_clustlike
+  all24 = all24_clustlike
+  # upr = upr_clustlike,
+  # ddr = ddr_clustlike,
+  # imr = imr_clustlike,
+  # mmr = mmr_clustlike
 )
 
 motif_stimuli <- list(
-  upr = c("TUN", "THA"),
-  ddr = c("DOX", "NUTL"),
-  imr = c("LPS", "TNFa"),
-  mmr = c("BPA", "PFOA")
+  all24 = c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa","BPA", "PFOA")
+  # upr = c("TUN", "THA"),
+  # ddr = c("DOX", "NUTL"),
+  # imr = c("LPS", "TNFa"),
+  # mmr = c("BPA", "PFOA")
 )
 
 
@@ -3879,11 +3878,12 @@ plot_logFC_distribution <- function(df, y_var = c("logFC", "absFC"), title, stim
   
   #define the fixed Condition order per response group
   cond_levels <- list(
-    upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
-    ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
-    imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
-    mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
-  )
+  all24 = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C", "DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C", "LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C", "BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+  # upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
+  # ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
+  # imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
+  # mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+)
   
   #ensure Condition is a factor in the correct order for each response group
   df <- df %>%
@@ -3902,10 +3902,11 @@ plot_logFC_distribution <- function(df, y_var = c("logFC", "absFC"), title, stim
 
 #define the condition order for each response group
 cond_levels <- list(
-  upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
-  ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
-  imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
-  mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+  all24 = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C", "DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C", "LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C", "BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
+  # upr = c("TUN_24_H", "THA_24_H", "TUN_24_C", "THA_24_C"),
+  # ddr = c("DOX_24_H", "NUTL_24_H", "DOX_24_C", "NUTL_24_C"),
+  # imr = c("LPS_24_H", "TNFa_24_H", "LPS_24_C", "TNFa_24_C"),
+  # mmr = c("BPA_24_H", "PFOA_24_H", "BPA_24_C", "PFOA_24_C")
 )
 
 #loop through all response groups
@@ -3971,8 +3972,8 @@ for (resp in names(motif_gene_sets)) {
       filename = paste0("Motif_", motif_name, "_abslogFC"),
       plot = p_absFC,
       folder = output_folder,
-      width = 6,
-      height = 6
+      width = 20,
+      height = 10
     )
   }
 }

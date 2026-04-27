@@ -1,0 +1,481 @@
+---
+title: "QC_All"
+author: "Emma M Pfortmiller"
+date: "2026-04-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+  
+}
+```
+
+
+# Load in necessary libraries
+
+```{r libraries needed for analysis, warning=FALSE, message=FALSE}
+#here is where I will load in the libraries that I am using for analysis of these data
+library(tidyverse)
+library(Biobase)
+library(limma)
+library(edgeR)
+library(edgebundleR)
+library(scales)
+library(biomaRt)
+library(ggrepel)
+library(ggfortify)
+library(corrplot)
+library(readr)
+library(readxl)
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(reshape2)
+library(ggVennDiagram)
+library(ggpubr)
+```
+
+
+## Define my custom plot theme
+
+```{r custom theme for plots, warning=FALSE, message=FALSE}
+# Define the custom theme
+plot_theme_custom <- function() {
+  theme_minimal() +
+    theme(
+      #line for x and y axis
+      axis.line = element_line(linewidth = 1,
+                               color = "black"),
+
+      #axis ticks only on x and y, length standard
+      axis.ticks.x = element_line(color = "black",
+                                linewidth = 1),
+      axis.ticks.y = element_line(color = "black",
+                                linewidth = 1),
+      axis.ticks.length = unit(0.05, "in"),
+
+      #text and font
+      axis.text = element_text(color = "black",
+                               family = "Arial",
+                               size = 7),
+      axis.title = element_text(color = "black",
+                                family = "Arial",
+                                size = 9),
+      legend.text = element_text(color = "black",
+                                 family = "Arial",
+                                 size = 7),
+      legend.title = element_text(color = "black",
+                                  family = "Arial",
+                                  size = 9),
+      plot.title = element_text(color = "black",
+                                family = "Arial",
+                                size = 10),
+
+      #blank background and border
+      panel.background = element_blank(),
+      panel.border = element_blank(),
+
+      #gridlines for alignment
+      panel.grid.major = element_line(color = "grey80", linewidth = 0.5),  
+      #grey major grid for align in illus
+      panel.grid.minor = element_line(color = "grey80", linewidth = 0.5) 
+      #grey minor grid for align in illus
+    )
+}
+
+# saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
+
+theme_custom <- readRDS("data/plot_theme_custom.RDS")
+
+```
+
+## Define my custom plot saving functions
+
+I use these to save my plots to my preferred output folder on my desktop. I have one general function that works primarily with ggplot plots and another specifically for saving complex heatmaps. 
+
+```{r plot saving function, warning=FALSE, message=FALSE}
+
+save_plot <- function(plot, filename, 
+                      folder = ".", 
+                      width = 8, 
+                      height = 6, 
+                      units = "in", 
+                      dpi = 300, 
+                      add_date = TRUE) {
+  if (missing(filename)) stop("Please provide a filename (without extension) for the plot.")
+
+  date_str <- if (add_date) paste0("_", format(Sys.Date(), "%y%m%d")) else ""
+  pdf_file <- file.path(folder, paste0(filename, date_str, ".pdf"))
+  png_file <- file.path(folder, paste0(filename, date_str, ".png"))
+  ggsave(filename = pdf_file, plot = plot, device = cairo_pdf, width = width, height = height, units = units, bg = "transparent")
+  ggsave(filename = png_file, plot = plot, device = "png", width = width, height = height, units = units, dpi = dpi, bg = "transparent")
+  message("Saved plot as Cairo PDF: ", pdf_file)
+  message("Saved plot as PNG: ", png_file)
+}
+
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Dissrt Manuscript Materials/all_plots/"
+
+#save plot function created
+#to use: just define the plot name, filename_base, width, height
+
+#Here is the function for the ComplexHeatmap outputs
+
+save_complex_heatmap <- function(plot, filename, folder, width = 6, height = 8) {
+  if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
+  
+  #save to pdf first
+  pdf_path <- file.path(folder, paste0(filename, ".pdf"))
+  pdf(pdf_path, width = width, height = height)
+  draw(plot, heatmap_legend_side = "right")
+  dev.off()
+  #then save to png at 300 dpi (highest quality)
+  png_path <- file.path(folder, paste0(filename, ".png"))
+  png(png_path, width = width, height = height, units = "in", res = 300)
+  draw(plot, heatmap_legend_side = "right")
+  dev.off()
+  
+  message("Saved heatmap PDF to: ", pdf_path)
+  message("Saved heatmap PNG to: ", png_path)
+}
+
+#same general utilization as above:
+#just define the plot name, filename, width, height
+#i have used this before in my other project, but added a png saving step
+```
+
+## Define my factors and their associated color scheme
+
+```{r Theme Colors and Factors, message=FALSE, warning=FALSE}
+#each of these to be used after pairwise comparison save individual
+
+####STIMULI####
+stim_list <- list(
+  "Tunicamycin" = "TUN",
+  "Thapsigargin" = "THA",
+  "Doxorubicin" = "DOX",
+  "Nutlin-3" = "NUTL",
+  "Lipopolysaccharides" = "LPS",
+  "Tumor Necrosis Factor alpha" = "TNFa",
+  "Bisphenol A" = "BPA",
+  "Perfluorooctanoic Acid" = "PFOA"
+)
+stimuli_vec <- unlist(lapply(names(stim_list), function(cat) {
+  setNames(rep(cat, length(stim_list[[cat]])), stim_list[[cat]])
+}))
+# saveRDS(stimuli_vec, "data/theme/stimuli_fullname_vector.RDS")
+# stim_vec <- readRDS("data/theme/stimuli_fullname_vector.RDS")
+
+####RESPONSE CATEGORY####
+resp_list <- list(
+  UPR = c("TUN", "THA"),
+  DDR = c("DOX", "NUTL"),
+  IMR = c("LPS", "TNFa"),
+  MMR = c("BPA", "PFOA")
+)
+response_vec <- unlist(lapply(names(resp_list), function(cat) {
+  setNames(rep(cat, length(resp_list[[cat]])), resp_list[[cat]])
+}))
+# saveRDS(response_vec, "data/theme/response_categories_vector.RDS")
+# response_vec <- readRDS("data/theme/response_categories_vector.RDS")
+
+####SPECIES####
+spec_list <- list(
+  Human = "H",
+  Chimp = "C"
+)
+species_vec <- unlist(lapply(names(spec_list), function(cat) {
+  setNames(rep(cat, length(spec_list[[cat]])), spec_list[[cat]])
+}))
+# saveRDS(species_vec, "data/theme/species_vector.RDS")
+# species_vec <- readRDS("data/theme/species_vector.RDS")
+
+####TIME####
+time_list <- list(
+  "2hr" = "2",
+  "24hr" = "24"
+)
+time_vec <- unlist(lapply(names(time_list), function(cat) {
+  setNames(rep(cat, length(time_list[[cat]])), time_list[[cat]])
+}))
+# saveRDS(time_vec, "data/theme/time_vector.RDS")
+# time_vec <- readRDS("data/theme/time_vector.RDS")
+
+####INDIVIDUAL####
+ind_list <- list(
+  H24280 = "H1",
+  H28126 = "H2",
+  "84-1" = "H3",
+  H21792 = "H4",
+  H20682 = "H5",
+  H22422 = "H6",
+  "78-1" = "H7",
+  C3647 = "C1",
+  C8861 = "C2",
+  C4020 = "C3",
+  C3649 = "C4",
+  C3651 = "C5",
+  C40280 = "C6",
+  C4955 = "C7"
+)
+ind_vec <- unlist(lapply(names(ind_list), function (cat) {
+  setNames(rep(cat, length(ind_list[[cat]])), ind_list[[cat]])
+}))
+# saveRDS(ind_vec, "data/theme/individual_vector.RDS")
+# ind_vec <- readRDS("data/theme/individual_vector.RDS")
+
+#color schemes
+
+# ind_col <- list(
+#   H1 = "#264653",
+#   H2 = "#2A9D8F",
+#   H3 = "#06D6A0",
+#   H4 = "#68DD94",
+#   H5 = "#22C75E",
+#   H6 = "#1DC10B",
+#   H7 = "#2D6910",
+#   C1 = "#FFB347",
+#   C2 = "#F97316",
+#   C3 = "#F44E53",
+#   C4 = "#C6134F",
+#   C5 = "#F03A6E",
+#   C6 = "#5D0E70",
+#   C7 = "#A069E0"
+# )
+
+#read in my pre-made color scheme data for each set to match my factors
+
+stim_col <- readRDS("data/theme/stimulus_color_palette_all.RDS")
+ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+time_col <- readRDS("data/theme/time_category_color_palette.RDS")
+spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
+
+```
+
+
+# Define command line code for fastqc/multiqc, subread alignment, and featureCounts
+
+```{r command line code all steps}
+#this is just to keep the code on hand and serve as an example of how I performed these steps
+#these were all performed following concatenation of all samples from 8 rounds of sequencing
+
+## -------------------------------------------------------------------
+## fastQC pylauncher statement, pasted into dir with fastq.gz files
+## -------------------------------------------------------------------
+
+# #To Generate pylauncher for fast qc
+# #sample=$1 means the sample name is in RNA_Metadata column 1, which I had in the same directory as my fastqs
+# #I ran this in the directory with the fastq files, no need to do idev just copy paste and it will run on the terminal
+# 
+# awk 'NR>1 {
+#     sample=$1
+#     print "echo \"==== Processing sample: "sample" ====\" >> "sample".fastqc_output.txt; \
+# unset LD_PRELOAD; \
+# apptainer exec /scratch/10089/empfortm/tools/fastqc.sif env LANG=C.UTF-8 LC_ALL=C.UTF-8 fastqc /scratch/10089/empfortm/rna_concat/"sample"_R1.fastq.gz /scratch/10089/empfortm/rna_concat/"sample"_R2.fastq.gz -o /scratch/10089/empfortm/rna_concat/multiqc 2>> "sample".fastqc_output.txt; \
+# echo \"DONE\" >> "sample".fastqc_output.txt"
+# }' Metadata_RNA.txt > fastqc.launcher
+
+## -------------------------------------------------------------------
+## fastQC sbatch file, run in queue
+## -------------------------------------------------------------------
+
+# #!/bin/bash
+# #SBATCH -J fastqc_RNA_concat_addendum                   # Job name
+# #SBATCH -o fastqc_RNA_concat_addendum.%j.out    # Name of stdout output file (%j expantds to jobID)
+# #SBATCH -e fastqc_RNA_concat_addendum.%J.err            # Name of stdout error file (%j expantds to jobID)
+# #SBATCH -p vm-small                             # Queue name
+# #SBATCH -N 1                                    # Total number of nodes requested
+# #SBATCH -t 08:00:00                             # Run time (hh:mm:ss)
+# #SBATCH --mail-user=jdhurley@utmb.edu           # Instructs TACC to email the user
+# #SBATCH --mail-type=BEGIN,END,FAIL              # Instucts TACC when to send the email
+# 
+# echo "Job started at: $(date)"
+# 
+# echo "Setting Enviroment"
+# 
+# module load tacc-apptainer
+# module load python3
+# module load pylauncher
+# 
+# module list
+# 
+# echo "running fastqc via pylauncher"
+# 
+# python3 -c"
+# import sys
+# sys.path.insert(0,'$TACC_PYLAUNCHER_DIR/src')
+# import pylauncher
+# pylauncher.ClassicLauncher('fastqc.launcher.addendum', cores=16)
+# "
+# echo "Fastqc Done! $(date)"
+# echo "Job ended at: $(date)"
+
+
+## -------------------------------------------------------------------
+## generate multiQC results from fastqc results
+## -------------------------------------------------------------------
+
+#after pylauncher bash code go to directory with fastqc files and run
+
+# module load tacc-apptainer
+# 
+# unset LD_PRELOAD
+# 
+# apptainer exec "/scratch/10089/empfortm/tools/multiqc.sif" multiqc "/scratch/10089/empfortm/rna_concat/fastqc" -o "/scratch/10089/empfortm/rna_concat/multiqc/report"
+
+#this compiled all of the reports I got into a multiqc report
+
+## -------------------------------------------------------------------
+## index genome(s) in blocks to prevent OOM failures
+## -------------------------------------------------------------------
+
+#chimpanzee genome ---------------------------------------------------
+# echo "$(date): featureCounts job started Chimpanzee genome."
+# 
+# START_TIME=$(date +%s)
+# 
+# #--------------------- Setup Variables -------------------
+# 
+# MYSCRATCH="/scratch/10089/empfortm"
+# TOOLS_DIR="$MYSCRATCH/tools"
+# SUBREAD_IMAGE="$TOOLS_DIR/containers/subread_2.0.6.sif"
+# GENOME_FA="$TOOLS_DIR/panTro5.fa"
+# INDEX_PREFIX="$TOOLS_DIR/panTro5_blocks"
+# THREADS=16
+# 
+# # ------------------- Load Modules -------------------
+# 
+# module load tacc-apptainer
+# 
+# # ------------------- Prepare Reference Genome -------------------
+# 
+# cd "$TOOLS_DIR"
+# 
+# if [[ ! -f "$GENOME_FA" ]]; then
+#     echo "Downloading panTro5 genome..."
+#     wget http://hgdownload.soe.ucsc.edu/goldenPath/panTro5/bigZips/panTro5.fa.gz
+#     gunzip panTro5.fa.gz
+# else
+#     echo "Genome FASTA already exists, skipping download."
+# fi
+# 
+# # ------------------- Build Subread Index -------------------
+# 
+# echo "Building Subread index with prefix: $INDEX_PREFIX"
+# 
+# apptainer exec "$SUBREAD_IMAGE" subread-buildindex -o "$INDEX_PREFIX" -M 16000 "$GENOME_FA"
+# 
+# END_TIME=$(date +%s)
+# RUNTIME=$((END_TIME - START_TIME))
+# 
+# echo "$(date): Subread index build completed in $RUNTIME seconds."
+
+
+#human genome -------------------------------------------------------
+# echo "$(date): featureCounts job started Human genome."
+# 
+# START_TIME=$(date +%s)
+# 
+# #--------------------- Setup Variables -------------------
+# 
+# MYSCRATCH="/scratch/10089/empfortm"
+# TOOLS_DIR="$MYSCRATCH/tools"
+# SUBREAD_IMAGE="$TOOLS_DIR/containers/subread_2.0.6.sif"
+# GENOME_FA="$TOOLS_DIR/hg38.fa"
+# INDEX_PREFIX="$TOOLS_DIR/hg38_blocks"
+# THREADS=16
+# 
+# # ------------------- Load Modules -------------------
+# 
+# module load tacc-apptainer
+# 
+# # ------------------- Prepare Reference Genome ---------------------
+# 
+# cd "$TOOLS_DIR"
+# 
+# if [[ ! -f "$GENOME_FA" ]]; then
+#     echo "Downloading hg38 genome..."
+#     wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz
+#     gunzip hg38.fa.gz
+# else
+#     echo "Genome FASTA already exists, skipping download."
+# fi
+# 
+# # ------------------- Build Subread Index -------------------
+# 
+# echo "Building Subread index with prefix: $INDEX_PREFIX"
+# 
+# apptainer exec "$SUBREAD_IMAGE" subread-buildindex -o "$INDEX_PREFIX" -M 16000 "$GENOME_FA"
+# 
+# END_TIME=$(date +%s)
+# RUNTIME=$((END_TIME - START_TIME))
+# 
+# echo "$(date): Subread index build completed in $RUNTIME seconds."
+
+## -------------------------------------------------------------------
+## subread pylauncher statement, pasted into dir with fastq.gz files
+## ENSURE THAT VARIABLES ARE CORRECT FROM METADATA TABLE
+## ensure that correct genome blocks are being used for H + C samples
+## -------------------------------------------------------------------
+
+
+## -------------------------------------------------------------------
+## subread sbatch file, run in queue
+## -------------------------------------------------------------------
+
+
+## -------------------------------------------------------------------
+## featureCounts pylauncher statement, pasted in dir with bam files
+## -------------------------------------------------------------------
+
+# I used a dependency here so this would automatically run after align
+
+
+
+
+## -------------------------------------------------------------------
+## featureCounts sbatch file, run in queue
+## -------------------------------------------------------------------
+
+
+```
+
+
+# Create my gene lists from featureCounts files
+
+```{r counts files read in, warning=FALSE, message=FALSE, echo=FALSE}
+#now, read in my new counts file from featureCounts done in TACC
+
+# raw_counts_all <- read_csv("E:/RNAseq Final Set/featureCounts/all_counts.csv")
+
+# saveRDS(raw_counts_all, "data/counts/raw_counts_all.RDS")
+
+raw_counts_all <- readRDS("data/counts/raw_counts_all.RDS")
+
+```
+
+
+# Import metadata file
+
+```{r metadata, warning=FALSE, message=FALSE}
+
+# metadata <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv",
+#     col_types = cols(Conc = col_number()))
+
+#save metadata sheet
+
+# saveRDS(metadata, "data/counts/dissrt_metadata.RDS")
+
+metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+```
+

@@ -1,32 +1,34 @@
 #flow cytometry results boxplots Stressor Proj
 
 ####cell lines####
-# ##H21792
+# ##H21792 - H4
 # H21792_flow <- c(80.9)
-# ##C3649
+# ##C3649 - C4
 # C3649_flow <- c(99.0)
-# ##H20682
+# ##H20682 - H5
 # H20682_flow <- c(93.9)
-# ##H28126
+# ##H28126 - H2
 # H28126_flow <- c(98.7)
-# ##C3651
+# ##C3651 - C5
 # C3651_flow <- c(84.7)
-# ##C4955
+# ##C4955 - C7
 # C4955_flow <- c(99.1)
-# ##C8861
+# ##C8861 - C2
 # C8861_flow <- c(98.9)
-# ##C40210
+# ##C40210 - C3
 # C40210_flow <- c(99.0)
-# ##H22422
+# ##H22422 - H6
 # H22422_flow <- c(98.7)
-# ##H24280
+# ##H24280 - H1
 # H24280_flow <- c(98.9)
-# ##84-1
+# ##84-1 - H3
 # H84_1_flow <- c(98.3)
-# ##C3647
+# ##C3647 - C1
 # C3647_flow <- c(94.1)
-# ##C40280
+# ##C40280 - C6
 # C40280_flow <- c(99.4)
+# ##H78-1 - H7
+# H78-1_flow <- c()
 
 #library(readr)
 flow_stress <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Flow Cytometry/StressorProj_FlowPurities_EMP_250226.csv")
@@ -37,6 +39,23 @@ View(flow_stress)
 flow <- readRDS("data/flow_purity_data.RDS")
 
 # flow <- flow_stress
+
+ind_col <- list(
+  H1 = "#264653",
+  H2 = "#2A9D8F",
+  H3 = "#06D9A0",
+  H4 = "#68DA94",
+  H5 = "#22C95E",
+  H6 = "#1DA10B",
+  H7 = "#2D6910",
+  C1 = "#FFB347",
+  C2 = "#F97316",
+  C3 = "#F44E53",
+  C4 = "#C6134F",
+  C5 = "#F03A6E",
+  C6 = "#5D0E70",
+  C7 = "#A069E0"
+)
 
 ####now that I've loaded in the lenient gating number for each, let's make a boxplot
 
@@ -100,7 +119,7 @@ flow_col_c <- c(C3647 = "#00B0BA", C3649 = "#FFADD9", C8861 = "#FC6238", C3651 =
 #also make a barplot for this
 #change the individual colors
 
-ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
+# ind_col <- readRDS("data/theme/individual_category_color_palette.RDS")
 
 # ind_fullnames <- list(
 #   Ind1 = "C3647",
@@ -146,13 +165,14 @@ library(tidyr)
 # ---- 1. Ensure species is a factor with correct order ----
 flow <- flow %>%
   mutate(
-    species = as.character(Species),
-    species = factor(species, levels = c("Human", "Chimp")),
-    Ind = factor(Ind, levels = paste0("Ind", 1:14))  # make sure Ind is ordered
+    Species = as.character(Species),
+    Species = factor(Species, levels = c("Human", "Chimp")),
+    Ind = factor(Ind, levels = c("H1", "H2", "H3", "H4", "H5", "H6", "H7",
+                                 "C1", "C2", "C3", "C4", "C5", "C6", "C7"))  # make sure Ind is ordered
   )
 
 flow <- flow %>%
-  arrange(species, Ind)
+  arrange(Species, Ind)
 
 
 flow_barplot <- ggplot(flow, aes(x = Ind, y = Purity, fill = Ind)) +
@@ -164,13 +184,13 @@ flow_barplot <- ggplot(flow, aes(x = Ind, y = Purity, fill = Ind)) +
   theme_custom() +
   theme(legend.position = "none")
 
-flow <- flow %>%
-  mutate(
-    species = as.character(Species),
-    species = factor(species, levels = c("Human", "Chimp")),
-    Ind = factor(Ind, levels = paste0("Ind", 1:14))  # ensure proper order
-  ) %>%
-  arrange(species, Ind)
+# flow <- flow %>%
+#   mutate(
+#     species = as.character(Species),
+#     species = factor(species, levels = c("Human", "Chimp")),
+#     Ind = factor(Ind, levels = paste0("Ind", 1:14))  # ensure proper order
+#   ) %>%
+#   arrange(species, Ind)
 
 flow_barplot <- ggplot(flow, aes(x = Ind, y = Purity, fill = Ind)) +
   geom_col(aes(group = species), position = position_dodge(width = 0.4), width = 0.9) +
@@ -191,8 +211,8 @@ save_plot(
 )
 
 
-human_inds <- paste0("Human_Ind", c(2,4,6,8,10,11,13))
-chimp_inds <- paste0("Chimp_Ind", c(1,3,5,7,9,12,14))
+human_inds <- paste0("Human_Ind", c(1, 2, 3, 4, 5, 6, 7))
+chimp_inds <- paste0("Chimp_Ind", c(1, 2, 3, 4, 5, 6, 7))
 
 # Combine into a single factor with desired order
 x_levels <- c(human_inds, chimp_inds)
@@ -257,7 +277,7 @@ flow <- flow %>%
     # Factor Ind according to desired order
     flow <- flow %>%
       mutate(
-        Ind = factor(Ind, levels = x_levels),
+        Ind = factor(Ind, levels = c("H1", "H2", "H3", "H4", "H5", "H6", "H7", "C1", "C2", "C3", "C4", "C5", "C6", "C7")),
         Species = factor(Species, levels = c("Human", "Chimp")),
         species_short = ifelse(Species == "Human", "H",
                                ifelse(Species == "Chimp", "C", NA))
@@ -271,7 +291,7 @@ flow <- flow %>%
                  position = position_identity(),
                  size = 3, alpha = 0.8, stroke = 0) +
       # Manual fills
-      scale_fill_manual(values = species_col) +
+      scale_fill_manual(values = spec_col) +
       scale_color_manual(values = ind_col) +
       # Wilcoxon test line above boxes
       stat_compare_means(
@@ -281,7 +301,7 @@ flow <- flow %>%
         tip.length = 0.03    # optional small line tips
       ) +
       # y-axis limits 0-100
-      scale_y_continuous(limits = c(0, 100), expand = c(0,0)) +
+      scale_y_continuous(limits = c(0, 105), expand = c(0,0)) +
       labs(x = "", y = "TNNT2 Expression (%)") +
       theme_custom() +
       guides(
@@ -330,7 +350,7 @@ flow <- flow %>%
     p_species_legend <- ggplot(flow, aes(x = Species, y = Purity, fill = species_short)) +
       geom_boxplot() +
       scale_fill_manual(
-        values = species_col,
+        values = spec_col,
         breaks = c("H", "C"),
         labels = c("Human", "Chimp")
       ) +
@@ -354,7 +374,7 @@ flow <- flow %>%
       geom_point() +
       scale_color_manual(
         values = ind_col,
-        breaks = paste0("Ind", 1:14)
+        breaks = c("H1", "H2", "H3", "H4", "H5", "H6", "H7", "C1", "C2", "C3", "C4", "C5", "C6", "C7")
       ) +
       guides(
         color = guide_legend(

@@ -117,7 +117,8 @@ library(magick)
 
 # saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
 
-theme_custom <- readRDS("data/plot_theme_custom.RDS")
+theme_custom_small <- readRDS("data/plot_theme_custom.RDS")
+theme_custom <- readRDS("data/plot_theme_custom_largerfont.RDS")
 
 ```
 
@@ -2362,18 +2363,18 @@ save_complex_heatmap(
 #TRUE
 
 # x = hc_counts_df[row.names(hc_cpm_df), ] %>%
-#   as.matrix()
+  # as.matrix()
 #now i've filtered my raw counts for DE by the number of genes that I got after rowMeans filtering
 
 #modify my metadata to match with the rownames being my sample names in columns here
 # metadata_2 <- metadata %>%
 #   as.data.frame()
 
-colnames(x) <- metadata_2$Final_sample_name
-rownames(metadata_2) <- metadata_2$Final_sample_name
-
-metadata_2$Cond <- make.names(metadata_2$Cond)
-metadata_2$Ind <- as.character(metadata_2$Ind)
+# colnames(x) <- metadata_2$Final_sample_name
+# rownames(metadata_2) <- metadata_2$Final_sample_name
+# 
+# metadata_2$Cond <- make.names(metadata_2$Cond)
+# metadata_2$Ind <- as.character(metadata_2$Ind)
 
 # saveRDS(metadata_2, "data/de/metadata_2_de.RDS")
 # saveRDS(x, "data/de/x_counts_de.RDS")
@@ -2413,24 +2414,24 @@ corfit <- duplicateCorrelation(object = dge$counts,
 
 #run voom transformation and plot it
 v <- voom(dge, design, 
-          block = metadata_2$Ind_Num, 
+          block = metadata_2$Ind, 
           correlation = corfit$consensus.correlation)
 
 #fit my linear model
 fit <- lmFit(v, design,
-             block = metadata_2$Ind_Num,
+             block = metadata_2$Ind,
              correlation = corfit$consensus.correlation)
 
 #put together my contrast matrix
 contrast_matrix <- makeContrasts(
-  V.TUN2_C = TUN_2_C - DMSO_2_C,
-  V.THA2_C = THA_2_C - DMSO_2_C,
-  V.DOX2_C = DOX_2_C - DMSO_2_C,
-  V.NUTL2_C = NUTL_2_C - DMSO_2_C,
-  V.LPS2_C = LPS_2_C - H2O_2_C,
-  V.TNFa2_C = TNFa_2_C - H2O_2_C,
-  V.BPA2_C = BPA_2_C - EtOH_2_C,
-  V.PFOA2_C = PFOA_2_C - EtOH_2_C,
+  # V.TUN2_C = TUN_2_C - DMSO_2_C,
+  # V.THA2_C = THA_2_C - DMSO_2_C,
+  # V.DOX2_C = DOX_2_C - DMSO_2_C,
+  # V.NUTL2_C = NUTL_2_C - DMSO_2_C,
+  # V.LPS2_C = LPS_2_C - H2O_2_C,
+  # V.TNFa2_C = TNFa_2_C - H2O_2_C,
+  # V.BPA2_C = BPA_2_C - EtOH_2_C,
+  # V.PFOA2_C = PFOA_2_C - EtOH_2_C,
   V.TUN24_C = TUN_24_C - DMSO_24_C,
   V.THA24_C = THA_24_C - DMSO_24_C,
   V.DOX24_C = DOX_24_C - DMSO_24_C,
@@ -2439,14 +2440,14 @@ contrast_matrix <- makeContrasts(
   V.TNFa24_C = TNFa_24_C - H2O_24_C,
   V.BPA24_C = BPA_24_C - EtOH_24_C,
   V.PFOA24_C = PFOA_24_C - EtOH_24_C,
-  V.TUN2_H = TUN_2_H - DMSO_2_H,
-  V.THA2_H = THA_2_H - DMSO_2_H,
-  V.DOX2_H = DOX_2_H - DMSO_2_H,
-  V.NUTL2_H = NUTL_2_H - DMSO_2_H,
-  V.LPS2_H = LPS_2_H - H2O_2_H,
-  V.TNFa2_H = TNFa_2_H - H2O_2_H,
-  V.BPA2_H = BPA_2_H - EtOH_2_H,
-  V.PFOA2_H = PFOA_2_H - EtOH_2_H,
+  # V.TUN2_H = TUN_2_H - DMSO_2_H,
+  # V.THA2_H = THA_2_H - DMSO_2_H,
+  # V.DOX2_H = DOX_2_H - DMSO_2_H,
+  # V.NUTL2_H = NUTL_2_H - DMSO_2_H,
+  # V.LPS2_H = LPS_2_H - H2O_2_H,
+  # V.TNFa2_H = TNFa_2_H - H2O_2_H,
+  # V.BPA2_H = BPA_2_H - EtOH_2_H,
+  # V.PFOA2_H = PFOA_2_H - EtOH_2_H,
   V.TUN24_H = TUN_24_H - DMSO_24_H,
   V.THA24_H = THA_24_H - DMSO_24_H,
   V.DOX24_H = DOX_24_H - DMSO_24_H,

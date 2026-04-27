@@ -1009,15 +1009,23 @@ Only plot 24hr samples on these PCA plots.
 #now filter out all of the 2hr points and plot your filtered PCA plots
 
 metadata_24 <- metadata_sub %>% 
-  dplyr::filter(Time == "24")
+  dplyr::filter(Time == "24") %>% 
+  dplyr::filter(Final_sample_name != "PFOA_24_H3") #remove outlier
 
 #now make my matrices into only 24hr samples
 hc_cpm_unfilt_24 <- hc_cpm_unfilt_sub[, metadata_24$Final_sample_name, drop = FALSE]
+hc_cpm_unfilt_24 <- hc_cpm_unfilt_24 %>% as.data.frame() %>% 
+  dplyr::select(- PFOA_24_H3)
+hc_cpm_unfilt_24 <- hc_cpm_unfilt_24 %>% as.matrix()
 
 # hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
 # saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
 
 hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
+hc_cpm_mat_24 <- hc_cpm_mat_24 %>% 
+  as.data.frame() %>% 
+  dplyr::select(- PFOA_24_H3) 
+hc_cpm_mat_24 <- hc_cpm_mat_24 %>% as.matrix()
 
 #prcomp transformation
 prcomp_hc_unfilt_24 <- prcomp(t(hc_cpm_unfilt_24),
@@ -1154,11 +1162,11 @@ print(pca_24_list)
 #   )
 # }
 # 
-# save_plot(
-#   plot = filt24_PC1_PC2,
-#   filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
-#   folder = output_folder
-# )
+save_plot(
+  plot = filt24_PC1_PC2,
+  filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
+  folder = output_folder
+)
 
 
 ```
