@@ -74,8 +74,8 @@ library(broom)
 library(magick)
 ```
 
-# Define plot theme
 
+# Define plot theme
 
 ```{r Custom Theme, message=FALSE, warning=FALSE}
 # Define the custom theme
@@ -128,7 +128,6 @@ theme_custom <- readRDS("data/plot_theme_custom.RDS")
 
 # Define saving plots as pdfs
 
-
 ```{r pdf saving function, message=FALSE, warning=FALSE}
 
 save_plot <- function(plot, filename, 
@@ -175,8 +174,10 @@ save_plot <- function(plot, filename,
   
 }
 
-output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+#old output folder, save all in new one once final fC is done
+# output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
 
+output_folder <- "C:/Users/emmap/OneDrive/Desktop/Dissrt Manuscript Materials/all_plots"
 
 #save plot function created
 #to use: just define the plot name, filename_base, width, height
@@ -213,7 +214,6 @@ save_complex_heatmap <- function(ht, filename, folder = ".", width = 6, height =
 
 
 # Define colors and factors
-
 
 ```{r Theme Colors and Factors, message=FALSE, warning=FALSE}
 #each of these to be used after pairwise comparison save individual
@@ -323,73 +323,140 @@ spec_col <- readRDS("data/theme/species_category_color_palette.RDS")
 # Import Counts Files for Both Species
 
 ```{r Import Counts Tables, message=FALSE, warning=FALSE}
-#I have one counts table for chimpanzee and another for human
 
-#read in chimpanzee counts
-# c_raw_counts <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/c_samples_counts_fin.csv")
+#read in my final full set featureCounts table
 
-# saveRDS(c_raw_counts, "data/counts/c_raw_counts.RDS")
+# hc_counts <- read_csv("data/counts/all_counts.csv")
 
-c_raw_counts <- readRDS("data/counts/c_raw_counts.RDS")
+# saveRDS(hc_counts, "data/counts/all_raw_counts_concat.RDS")
 
-#read in human counts table in the same manner
+#read in the final set with my full counts file
 
-# h_raw_counts <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/h_samples_counts_fin.csv")
-
-# saveRDS(h_raw_counts, "data/counts/h_raw_counts.RDS")
-
-h_raw_counts <- readRDS("data/counts/h_raw_counts.RDS")
+hc_counts <- readRDS("data/counts/all_raw_counts_concat.RDS")
 
 ```
 
-
 # Import Metadata Table
 
-```{r Read in Metadata Sheet, message=FALSE, warning=FALSE}
+```{r Read in Metadata Sheet and consolidate factors, message=FALSE, warning=FALSE}
 #I have a metadata sheet so I can associate the column names with their sample ID
 
 # metadata <- read_csv("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/dissrt_metadata.csv",
 #     col_types = cols(Conc = col_number()))
 
-#save metadata sheet
+#change the names of the Ind and the final names to be correctly ordered
+#I want them to be Drug_Time_Ind (because species is in Ind once updated)
 
-# saveRDS(metadata, "data/counts/dissrt_metadata.RDS")
+## C1 = C3647
+## C2 = C8861
+## C3 = C40210
+## C4 = C3649
+## C5 = C3651
+## C6 = C40280
+## C7 = C4955
+## H1 = H24280
+## H2 = H28126
+## H3 = 84-1
+## H4 = H21792
+## H5 = H20682
+## H6 = H22422
+## H7 = 78-1
 
-metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+#translate the Ind names here
+# ind_map <- c(
+#   "C3647"  = "C1", 
+#   "C8861"  = "C2", 
+#   "C40210" = "C3", 
+#   "C3649"  = "C4", 
+#   "C3651"  = "C5", 
+#   "C40280" = "C6",
+#   "C4955"  = "C7",
+#   "H24280" = "H1", 
+#   "H28126" = "H2", 
+#   "84-1"   = "H3", 
+#   "H21792" = "H4", 
+#   "H20682" = "H5", 
+#   "H22422" = "H6", 
+#   "78-1"   = "H7"
+# )
 
-#subset my metadata 
-human_metadata <- metadata[metadata$Species == "H", ]
-chimp_metadata <- metadata[metadata$Species == "C", ]
+# metadata <- metadata %>%
+#   mutate(Ind = ind_map[Line],
+#          Conc_num = as.numeric(str_extract(Concentration, "[0-9.]+")),
+#          Conc = trimws(as.character(Conc_num)),
+#          Sample_Tx = paste(Drug,
+#                            Conc,
+#                            Time,
+#                            Ind,
+#                            sep = "_"),
+#          Final_sample_name = paste(Drug, Time, Ind, sep = "_"),
+#          Stimulus = Drug,
+#          Old_Ind = Ind_Num
+#   ) %>%
+#   dplyr::select(Sample_name, Sample_ID, Number, Line, Species, Sex, Ind, Old_Ind,
+#                 Sample, Condition, Cond, Stimulus, Time, Concentration, Conc, Response,
+#                 Sample_Tx, Final_sample_name
+#                 )
+
+# saveRDS(metadata, "data/counts/metadata_updated.RDS")
+
+#read in the finalized metadata sheet
+metadata <- readRDS("data/counts/metadata_updated.RDS")
 
 ```
 
 
-# Combine my datasets 
+# Handle Column Names
 
-```{r Join my Human and Chimp datasets together, message=FALSE, warning=FALSE}
-#make sure to sort them so that all of the genes match up
+```{r Change Column Names, warning=FALSE, message=FALSE}
+#I want to modify the column names for each dataset to match their sample id and treatment instead of library id
+
+#first make sure that Geneid changes to ENSEMBL ID
+# rename_with_metadata <- function(counts, metadata) {
+#   
+#   #rename first column to ENSEMBL if not already
+#   colnames(counts)[1] <- "ENSEMBL"
 # 
-# h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
-# c_counts <- c_counts[order(c_counts$Ensembl_ID), ]
+#   #columns to rename (all except first)
+#   cols_to_rename <- colnames(counts)[-1]
 # 
-# hc_counts <- left_join(c_counts, h_counts, by = "Ensembl_ID")
+#   #remove ".sorted.bam" from column names
+#   library_names <- gsub("\\.sorted\\.bam$", "", cols_to_rename)
+# 
+#   #match library names to Sample_name in metadata
+#   new_names <- metadata$Final_sample_name[match(library_names, metadata$Sample_ID)]
+# 
+#   #warn if any columns didn’t match
+#   unmatched <- cols_to_rename[is.na(new_names)]
+#   if (length(unmatched) > 0) {
+#     warning("The following library names did not match metadata: ", 
+#             paste(unmatched, collapse = ", "))
+#   }
+# 
+#   #replace column names (keep first column as Ensembl_ID)
+#   colnames(counts) <- c("Ensembl_ID", ifelse(is.na(new_names), cols_to_rename, new_names))
+# 
+#   return(counts)
+# }
 
-#now save my combined counts table with both species
-# saveRDS(hc_counts, "data/counts/combined_counts_table_h_c.RDS")
+#apply to counts tables
+# hc_counts <- rename_with_metadata(hc_counts, metadata)
 
-# hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
+#save new counts files that have correctly named columns
+# saveRDS(hc_counts, "data/counts/raw_counts_ids.RDS")
 
-#now I have a combined dataframe with the treatment names included
+#kept all of this for posterity but don't need to run again
 
-####Replace hc_counts with one made below that has Entrez_ID instead of Ensembl_ID
-
-hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
+#read in final files
+hc_counts <- readRDS("data/counts/raw_counts_ids.RDS")
+dim(hc_counts)
+#44,125 in 308 columns (307 samples + gene id)
 
 ```
+
 
 #Subset Dataset to Remove Extraneous Samples
-
-```{r Remove extra samples, message=FALSE, warning=FALSE}
+```{r Remove extra samples, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
 
 #I want to go through my metadata and my counts dataframe to put together a subset of samples
 
@@ -425,7 +492,7 @@ hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 
 # Final sample names reflect these changes
 
-metadata_sub <- read_csv("data/counts/metadata_subset.csv")
+# metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 
 # saveRDS(metadata_sub, "data/counts/metadata_subset.RDS")
 
@@ -457,51 +524,35 @@ metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 
 # write_csv(hc_counts_sub, "data/counts/hc_counts_subset.csv")
 
-hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
+# hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
 
 #I want to also remove an outlier sample based on my initial PCA analysis - PFOA_24_H3 is not clustering with other samples.
-
-
 
 ```
 
 
-# QC Plots
+# Quality Control Metrics
 
-Generate plots for the subset of samples kept for this experiment.
+## Mapping Stats
+
+Generate plots for all of the 307 samples in this experiment.
 
 
 ```{r Mapping and Counts Stats, message=FALSE, warning=FALSE, fig.height=10, fig.width=14}
-#read in my excel file with all of this information
-
-
-# map_align_stats <- read_excel("C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/featurecounts/Mapping_Alignment_Stats_Dissrt_EMP_250930.xlsx",
-#     sheet = "Map_Align_all", col_types = c("text",
-#         "text", "skip", "text", "text", "text",
-#         "text", "numeric", "text", "text",
-#         "numeric", "text", "skip", "text",
-#         "skip", "text", "skip", "text", "text",
-#         "text", "numeric", "numeric", "numeric",
-#         "numeric", "numeric", "numeric",
-#         "numeric", "numeric", "numeric",
-#         "numeric", "numeric", "numeric",
-#         "numeric", "numeric", "numeric",
-#         "numeric", "numeric", "numeric"))
-# View(map_align_stats)
-
-#save as a csv for later
-# saveRDS(map_align_stats, "data/counts/mapping_alignment_stats_sheet.RDS")
-# write.csv(map_align_stats, "data/counts/mapping_alignment_stats_sheet.csv")
-
-map_align_stats <- readRDS("data/counts/mapping_alignment_stats_sheet.RDS")
+#read in my csv file with all of this information
+# align_stats <- read_csv("data/counts/RNA_flagstat.csv")
 
 #now I want to do some QC plots to highlight this information
 
-Individual <- as.character(map_align_stats$Ind)
-Species <- as.character(map_align_stats$Species)
-Time <- as.character(map_align_stats$Time_Num)
-Stimulus <- as.character(map_align_stats$Stimulus)
+# map_align_stats$Ind <- as.character(metadata$Ind)
+# map_align_stats$Species <- as.character(metadata$Species)
+# map_align_stats$Time <- as.character(metadata$Time)
+# map_align_stats$Stimulus <- as.character(metadata$Stimulus)
+# map_align_stats$Cond <- as.character(metadata$Cond)
+# map_align_stats$Sample_Tx <- as.character(metadata$Final_sample_name)
 
+# saveRDS(map_align_stats, "data/counts/mapping_alignment_stats_sheet_concat_meta.RDS")
+map_align_stats <- readRDS("data/counts/mapping_alignment_stats_sheet_concat_meta.RDS")
 
 ####Fragments by Sample####
 map_align_stats$Stimulus <- factor(
@@ -517,9 +568,30 @@ map_align_stats$Ind <- factor(
              "C4", "C5", "C6", "C7")
 )
 
+stim_order <- c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+                "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+time_order <- c("2", "24")
+ind_order <- c("H1", "H2", "H3", "H4", "H5", "H6", "H7",
+               "C1", "C2", "C3", "C4", "C5", "C6", "C7")
+
+#make a grid to map all of the Sample_Tx names
+levels_grid <- expand.grid(
+  Ind = ind_order,
+  Time = time_order,
+  Stimulus = stim_order
+)
+
+target_levels <- paste(levels_grid$Stimulus, levels_grid$Time, 
+                       levels_grid$Ind, sep = "_")
+
+map_align_stats$Sample_Tx <- factor(
+  map_align_stats$Sample_Tx,
+  levels = target_levels
+)
+
 #Total Reads per Sample
 total_reads_sample_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y = Total_Reads_Paired, 
+  ggplot(., aes (x = Sample_Tx, y = TotalReads, 
                  fill = Stimulus, 
                  group_by = Sample_Tx))+
   geom_col()+
@@ -534,7 +606,7 @@ total_reads_sample_plot <- map_align_stats %>%
 
 #Total Mapped Reads per Sample
 map_reads_sample_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y = Mapped_Paired, 
+  ggplot(., aes (x = Sample_Tx, y = MappedReads, 
                  fill = Stimulus, 
                  group_by = Sample_Tx))+
   geom_col() +
@@ -548,9 +620,25 @@ map_reads_sample_plot <- map_align_stats %>%
         axis.text.x = element_text(size =10, color = "black", 
                                    angle = 90, hjust = 1, vjust = 0.2))
 
+#Properly Paired Mapped Reads per Sample
+pp_reads_sample_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = ProperlyPairedReads, 
+                 fill = Stimulus, 
+                 group_by = Sample_Tx))+
+  geom_col() +
+ geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = stim_col)+
+  ggtitle(expression("Properly-paired fragments by sample")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
 ####Total Reads by Sample Boxplot####
 total_reads_sample_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y= Total_Reads_Paired, fill = Stimulus))+
+  ggplot(., aes (x = Sample_Tx, y= TotalReads, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values = stim_col)+
   ggtitle(expression("Total fragments by sample"))+
@@ -563,7 +651,7 @@ total_reads_sample_boxplot <- map_align_stats %>%
 
 ####Total Mapped Reads by Sample Boxplot####
 map_reads_sample_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_Tx, y= Mapped_Paired, fill = Stimulus))+
+  ggplot(., aes (x = Sample_Tx, y= MappedReads, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values= stim_col)+
   ggtitle(expression("Mapped fragments by sample"))+
@@ -574,9 +662,22 @@ map_reads_sample_boxplot <- map_align_stats %>%
         axis.text.x = element_text(size =10, color = "black", 
                                    angle = 90, hjust = 1, vjust = 0.2))
 
+####Properly Paired Mapped Reads by Sample Boxplot####
+pp_reads_sample_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y= ProperlyPairedReads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values= stim_col)+
+  ggtitle(expression("Properly-paired fragments by sample"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
 ####Total Reads by Stimulus####
 total_reads_stimulus_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Stimulus, y= Total_Reads_Paired, fill = Stimulus))+
+  ggplot(., aes (x = Stimulus, y= TotalReads, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=stim_col)+
   ggtitle(expression("Total fragments by stimulus"))+
@@ -589,7 +690,7 @@ total_reads_stimulus_plot <- map_align_stats %>%
 
 ####Mapped Reads by Stimulus####
 map_reads_stimulus_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Stimulus, y= Mapped_Paired, fill = Stimulus))+
+  ggplot(., aes (x = Stimulus, y= MappedReads, fill = Stimulus))+
   geom_boxplot()+
  scale_fill_manual(values=stim_col)+
   ggtitle(expression("Mapped fragments by stimulus"))+
@@ -600,9 +701,22 @@ map_reads_stimulus_plot <- map_align_stats %>%
         axis.text.x = element_text(size =10, color = "black", 
                                    angle = 90, hjust = 1, vjust = 0.2))
 
+####Properly Paired Reads by Stimulus####
+pp_reads_stimulus_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Stimulus, y= ProperlyPairedReads, fill = Stimulus))+
+  geom_boxplot()+
+ scale_fill_manual(values=stim_col)+
+  ggtitle(expression("Properly-paired fragments by stimulus"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
 ####Total Reads Per Individual####
 total_reads_ind_plot <- map_align_stats %>% 
-  ggplot(., aes (x =as.factor(Ind), y = Total_Reads_Paired))+
+  ggplot(., aes (x =as.factor(Ind), y = TotalReads))+
   geom_boxplot(aes(fill= Ind))+
  scale_fill_manual(values = ind_col)+
   ggtitle(expression("Total fragments by individual"))+
@@ -615,7 +729,7 @@ total_reads_ind_plot <- map_align_stats %>%
 
 ####Total Mapped Reads Per Individual####
 map_reads_ind_plot <- map_align_stats %>% 
-  ggplot(., aes (x =as.factor(Ind), y = Mapped_Paired))+
+  ggplot(., aes (x =as.factor(Ind), y = MappedReads))+
   geom_boxplot(aes(fill=Ind))+
  scale_fill_manual(values = c(ind_col))+
   ggtitle(expression("Mapped fragments by individual"))+
@@ -627,14 +741,28 @@ map_reads_ind_plot <- map_align_stats %>%
                                    angle = 90, hjust = 1, vjust = 0.2))
 
 
+####Properly Paired Mapped Reads Per Individual####
+pp_reads_ind_plot <- map_align_stats %>% 
+  ggplot(., aes (x =as.factor(Ind), y = ProperlyPairedReads))+
+  geom_boxplot(aes(fill=Ind))+
+ scale_fill_manual(values = c(ind_col))+
+  ggtitle(expression("Properly-paired fragments by individual"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
 ####Total Reads Per Timepoint####
-map_align_stats$Time_Num <- factor(map_align_stats$Time_Num, 
+map_align_stats$Time <- factor(map_align_stats$Time, 
                             levels = c("2", "24"))
 
 reads_by_time <- c("2" = "#392344", "24" = "#457291")
 
 total_reads_time_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_ID, y = Total_Reads_Paired, fill = Time_Num, group_by = Ind))+
+  ggplot(., aes (x = Sample_Tx, y = TotalReads, fill = Time, group_by = Ind))+
   geom_col()+
  # geom_hline(aes(yintercept=20000000))+
  scale_fill_manual(values = reads_by_time)+
@@ -648,7 +776,7 @@ total_reads_time_plot <- map_align_stats %>%
 
 ####Mapped Reads Per Timepoint####
 map_reads_time_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Sample_ID, y = Mapped_Paired, fill = Time_Num, group_by = Ind))+
+  ggplot(., aes (x = Sample_Tx, y = MappedReads, fill = Time, group_by = Ind))+
   geom_col()+
  # geom_hline(aes(yintercept=20000000))+
  scale_fill_manual(values = reads_by_time)+
@@ -661,10 +789,25 @@ map_reads_time_plot <- map_align_stats %>%
                                    angle = 90, hjust = 1, vjust = 0.2))
 
 
+####Properly Paired Reads Per Timepoint####
+pp_reads_time_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Sample_Tx, y = ProperlyPairedReads, fill = Time, group_by = Ind))+
+  geom_col()+
+ # geom_hline(aes(yintercept=20000000))+
+ scale_fill_manual(values = reads_by_time)+
+  ggtitle(expression("Properly-paired fragments by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
 
 ####Total Reads Per Timepoint Boxplot####
 total_reads_time_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Time_Num, y= Total_Reads_Paired, fill = Time_Num))+
+  ggplot(., aes (x = Time, y= TotalReads, fill = Time))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_time)+
   ggtitle(expression("Total fragments by timepoint"))+
@@ -678,7 +821,7 @@ total_reads_time_boxplot <- map_align_stats %>%
 
 ####Total Mapped Reads Per Timepoint####
 map_reads_time_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Time_Num, y= Mapped_Paired, fill = Time_Num))+
+  ggplot(., aes (x = Time, y= MappedReads, fill = Time))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_time)+
   ggtitle(expression("Mapped fragments by timepoint"))+
@@ -690,10 +833,24 @@ map_reads_time_boxplot <- map_align_stats %>%
                                    angle = 90, hjust = 1, vjust = 0.2))
 
 
+####Properly Paired Mapped Reads Per Timepoint####
+pp_reads_time_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Time, y= ProperlyPairedReads, fill = Time))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_time)+
+  ggtitle(expression("Properly-paired fragments by timepoint"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+
 ####Total Reads Per Species####
 reads_by_species <- c("H" = "#E56473", "C" = "#EE4902")
 total_reads_species_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Ind, y = Total_Reads_Paired, fill = Species, group_by = Ind))+
+  ggplot(., aes (x = Ind, y = TotalReads, fill = Species, group_by = Ind))+
   geom_col()+
  scale_fill_manual(values=reads_by_species)+
   ggtitle(expression("Total fragments by species"))+
@@ -705,9 +862,9 @@ total_reads_species_plot <- map_align_stats %>%
                                    angle = 90, hjust = 1, vjust = 0.2))
 
 
-####Total Mapped Reads by Species####
+####Total Reads by Species####
 total_reads_species_boxplot <- map_align_stats %>% 
-  ggplot(., aes (x = Ind, y= Total_Reads_Paired, fill = Species))+
+  ggplot(., aes (x = Ind, y= TotalReads, fill = Species))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_species)+
   ggtitle(expression("Total fragments by species"))+
@@ -718,13 +875,51 @@ total_reads_species_boxplot <- map_align_stats %>%
         axis.text.x = element_text(size =10, color = "black", 
                                    angle = 90, hjust = 1, vjust = 0.2))
 
-
-####Total Mapped Reads by Species####
+####Mapped Reads by Species####
 map_reads_species_plot <- map_align_stats %>% 
-  ggplot(., aes (x = Ind, y= Mapped_Paired, fill = Species))+
+  ggplot(., aes (x = Ind, y= MappedReads, fill = Species))+
   geom_boxplot()+
  scale_fill_manual(values=reads_by_species)+
   ggtitle(expression("Mapped fragments by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Mapped Reads by Species####
+map_reads_species_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Ind, y= MappedReads, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Mapped fragments by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Properly-paired Reads by Species####
+pp_reads_species_plot <- map_align_stats %>% 
+  ggplot(., aes (x = Ind, y= ProperlyPairedReads, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Properly-paired fragments by species"))+
+  xlab("")+
+  ylab(expression("RNA-sequencing fragments"))+
+  theme_custom()+
+  theme(
+        axis.text.x = element_text(size =10, color = "black", 
+                                   angle = 90, hjust = 1, vjust = 0.2))
+
+####Properly Paired Reads by Species####
+pp_reads_species_boxplot <- map_align_stats %>% 
+  ggplot(., aes (x = Ind, y= ProperlyPairedReads, fill = Species))+
+  geom_boxplot()+
+ scale_fill_manual(values=reads_by_species)+
+  ggtitle(expression("Properly-paired fragments by species"))+
   xlab("")+
   ylab(expression("RNA-sequencing fragments"))+
   theme_custom()+
@@ -737,37 +932,55 @@ map_reads_species_plot <- map_align_stats %>%
 qc_map_plots_list <- list(
   total_reads_sample_plot,
   map_reads_sample_plot,
+  pp_reads_sample_plot,
   total_reads_sample_boxplot,
   map_reads_sample_boxplot,
+  pp_reads_sample_boxplot,
   total_reads_ind_plot,
   map_reads_ind_plot,
+  pp_reads_ind_plot,
   total_reads_species_plot,
   total_reads_species_boxplot,
   map_reads_species_plot,
+  map_reads_species_boxplot,
+  pp_reads_species_plot,
+  pp_reads_species_boxplot,
   total_reads_stimulus_plot,
   map_reads_stimulus_plot,
+  pp_reads_stimulus_plot,
   total_reads_time_plot,
   total_reads_time_boxplot,
   map_reads_time_plot,
-  map_reads_time_boxplot
+  map_reads_time_boxplot,
+  pp_reads_time_plot,
+  pp_reads_time_boxplot
 )
 
 qc_map_plots_names <- list(
   "total_reads_sample",
   "map_reads_sample",
+  "pp_reads_sample",
   "total_reads_sample_boxplot",
   "map_reads_sample_boxplot",
+  "pp_reads_sample_boxplot",
   "total_reads_ind",
   "map_reads_ind",
+  "pp_reads_ind",
   "total_reads_species",
   "total_reads_species_boxplot",
   "map_reads_species",
+  "map_reads_species_boxplot",
+  "pp_reads_species_plot",
+  "pp_reads_species_boxplot",
   "total_reads_stimulus",
   "map_reads_stimulus",
+  "pp_reads_stimulus",
   "total_reads_time_plot",
   "total_reads_time_boxplot",
   "map_reads_time_plot",
-  "map_reads_time_boxplot"
+  "map_reads_time_boxplot",
+  "pp_reads_time_plot",
+  "pp_reads_time_boxplot"
 )
 
 qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
@@ -786,7 +999,7 @@ print(qc_map_plots_list)
 #     filename = qc_map_plots_names[i],
 #     folder = output_folder
 #   )
-# }
+}
 
 ```
 
@@ -798,33 +1011,33 @@ Convert my dataframe to log2cpm and filter out lowly-expressed genes via rowMean
 
 #first, convert to log2cpm
 
-#ensure that Entrez_ID are the rownames
+#ensure that Ensembl_ID is the rownames
+# hc_counts <- hc_counts %>% 
+#   column_to_rownames(var = "Ensembl_ID")
 
-hc_cpm_unfilt_sub <- cpm(hc_counts_sub, log = TRUE)
-dim(hc_cpm_unfilt_sub)
+hc_cpm_unfilt <- cpm(hc_counts, log = TRUE)
+dim(hc_cpm_unfilt)
+#44,125 genes of 307 columns as expected
 
-hc_cpm_unfilt <- hc_cpm_unfilt_sub
-#28802 genes of 195 columns as expected
-
-hist(hc_cpm_unfilt_sub,
+hist(hc_cpm_unfilt,
      main = "Unfiltered cpm",
      xlab = expression("log"[2]*"cpm"),
      col = 4)
 
 #now filter by rowMeans > 0 to exclude lowly expressed genes
-hc_cpm_matrix_sub <- subset(hc_cpm_unfilt_sub, (rowMeans(hc_cpm_unfilt_sub) > 0))
+hc_cpm_matrix <- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) > 0))
 
-dim(hc_cpm_matrix_sub)
-#13739 genes after filtering
+dim(hc_cpm_matrix)
+#15,321 genes after filtering by rowMeans > 0
+
 
 #save this as an RDS and csv
-# saveRDS(hc_cpm_matrix_sub, "data/counts/hc_cpm_filtered_matrix_subset.RDS")
-# write.csv(hc_cpm_matrix_sub, "data/counts/hc_cpm_filtered_matrix_subset.csv")
+# saveRDS(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix_all.RDS")
+# write.csv(hc_cpm_matrix, "data/counts/hc_cpm_filtered_matrix_all.csv")
 
-#now keep the name that is used in the rest of the data to make it easier, assume from now onward that this will be on the 195-sample subset of libraries
+#now keep the name that is used in the rest of the data to make it easier, assume from now onward that this will be on the 307-sample set of libraries
 
-hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
-
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS")
 
 
 #plot this out to show the filtering
@@ -833,10 +1046,101 @@ hist(hc_cpm_matrix,
      xlab = expression("log"[2]*"cpm"),
      col = 2)
 
+#now try filtering by tmm & log2cpm cutoff like Blake et al.
+
+#define your cutoffs for filtering
+# expr_cutoff <- 1.5
+# sample_number <- 153 #half of the samples
+# 
+# labels <- paste(metadata$Species, metadata$Drug, metadata$Time, metadata$Ind, sep=" ")
+# 
+# dge_original <- DGEList(counts=as.matrix(hc_counts), genes=rownames(hc_counts), group = as.character(t(labels)))
+# dge_original <- calcNormFactors(dge_original)
+# 
+# tmm_cpm <- cpm(dge_original, normalized.lib.sizes=TRUE, log=TRUE, prior.count = 0.25)
+# head(tmm_cpm)
+
+#plot the unfiltered data
+plot.new()
+hist(hc_cpm_unfilt, main = "log2cpm values in unfiltered data (n = 307)", breaks = 100, ylim = c(0, 2000000), xlab = expression("log"[2]*"cpm"))
+# 
+# #now filter
+# cpm_filtered <- tmm_cpm[rowSums(tmm_cpm > expr_cutoff) >= sample_number, ]
+# dim(cpm_filtered)
+# #total of 11997 genes with stringent filter
+
+hist(hc_cpm_matrix, xlab = expression("log"[2]*"cpm"), main = "log2cpm values post-rowMeans > 0 filter", breaks = 100)
+
+# #now go back and pull out these filtered genes in my original dataset
+# filt_1.5_list <- rownames(cpm_filtered)
+# length(filt_1.5_list)
+# #11,997 genes - stringent
+# filt_rM1_list <- rownames(hc_cpm_matrix1)
+# length(filt_rM1_list)
+#13,058 genes, stringent but less so
+filt_gene_list <- rownames(hc_cpm_matrix)
+length(filt_gene_list)
+#14,075 genes, least stringent
 ```
 
+# Add Entrez_ID and HGNC to Ensembl_ID for easy translation
 
-# QC Boxplots
+```{r converting ensembl id into entrez id and hgnc}
+ensembl_ids <- rownames(hc_cpm_matrix)
+ensembl_ids_unfilt <- rownames(hc_counts)
+
+all_ids_unfilt <- AnnotationDbi::select(
+  org.Hs.eg.db,
+  keys = ensembl_ids_unfilt,
+  column = c("ENTREZID", "SYMBOL"),
+  keytype = "ENSEMBL",
+  multiVals = "first"
+)
+
+#since there was many mapping, check which ones are duplicated
+sum(duplicated(all_ids_unfilt))
+#0 are duplicated with ensembl id
+
+#convert to df
+hc_cpm_df <- as.data.frame(hc_cpm_matrix)
+hc_counts_df <- as.data.frame(hc_counts)
+
+#add the ENTREZID and SYMBOL column to my counts dataframe
+hc_counts_df <- hc_counts_df %>% 
+  rownames_to_column(var = "ENSEMBL") %>% 
+  left_join(all_ids_unfilt, by = "ENSEMBL")
+
+#move it to the front so I can see it easily against Ensembl_ID
+hc_counts_df <- hc_counts_df %>%
+  dplyr::select(ENSEMBL, ENTREZID, SYMBOL, everything())
+
+#this gives me a total of 13619 genes, which is within the range I desired
+#when done for counts it gives me 28802 genes
+
+# saveRDS(hc_counts_df, "data/counts/hc_counts_allids_df.RDS")
+hc_counts_df <- readRDS("data/counts/hc_counts_allids_df.RDS")
+dim(hc_counts_df)
+#44,295 genes
+
+#also save a version for this that is filtered with the cpm values
+#for this one, don't change from rowMeans >0 yet
+hc_cpm_df <- hc_cpm_df %>% 
+  rownames_to_column(var = "ENSEMBL") %>% 
+  left_join(all_ids_unfilt, by = "ENSEMBL")
+
+hc_cpm_df <- hc_cpm_df %>%
+  dplyr::select(ENSEMBL, ENTREZID, SYMBOL, everything())
+
+# saveRDS(hc_cpm_df, "data/counts/hc_cpm_allids_df.RDS")
+hc_cpm_df <- readRDS("data/counts/hc_cpm_allids_df.RDS")
+dim(hc_cpm_df)
+#14,143 genes now after duplicate ENSEMBL for ENTREZ are there
+
+#make filtered versions based on the above dataframe
+
+```
+
+## QC Boxplots
 
 ```{r QC Boxplots both species, message=FALSE, warning=FALSE, fig.height=6, fig.width=8}
 #make boxplots of all counts vs log2cpm filtered counts
@@ -863,22 +1167,47 @@ print(hc_cpm_filt_boxplot)
 
 # Principal Component Analysis
 
-Perform PCA analysis on subset of data. At this stage, I removed an outlier sample PFOA 24hr H3 which was not clustering with the rest of these data.
+Perform PCA analysis on subsets of data. At this stage, I removed an outlier sample PFOA 24hr H3 which was not clustering with the rest of these data.
 
-```{r PCA Plots, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+## Remove outlier sample
 
-prcomp_hc_unfilt <- prcomp(t(hc_cpm_unfilt_sub), center =  TRUE)
+```{r remove outlier from set}
+
+#now I want to remove an outlier sample that is not clustering with the rest of the samples
+#PFOA 24 H3 is not clustering properly
+
+metadata <- metadata %>% 
+  dplyr::filter(Final_sample_name != "PFOA_24_H3")
+
+hc_cpm_matrix <- hc_cpm_matrix %>% 
+  as.data.frame() %>%
+  dplyr::select(-PFOA_24_H3) %>%
+  as.matrix()
+
+hc_cpm_unfilt <- hc_cpm_unfilt %>% 
+  as.data.frame() %>% 
+  dplyr::select(-PFOA_24_H3) %>% 
+  as.matrix()
+
+```
+
+## PCA All Samples
+
+```{r PCA Plots all, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
+
+prcomp_hc_unfilt <- prcomp(t(hc_cpm_unfilt), center =  TRUE)
 
 prcomp_hc_filt <- prcomp(t(hc_cpm_matrix), center =  TRUE)
 
 
+
 #add in labels for individual numbers
-ind_num <- metadata_sub$Ind
+ind_num <- metadata$Ind
 
-metadata_sub$Time <- factor(metadata_sub$Time)
+metadata$Time <- factor(metadata$Time)
 
-metadata_sub$Stimulus <- factor(
-  metadata_sub$Stimulus,
+metadata$Stimulus <- factor(
+  metadata$Stimulus,
   levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
              "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
 )
@@ -887,12 +1216,12 @@ metadata_sub$Stimulus <- factor(
 
 ####PC1/PC2####
 unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt, 
-                                    data = metadata_sub, 
+                                    data = metadata, 
                                     colour = "Stimulus", 
                                     shape = "Time", 
                                     size =4, x=1, y=2) +
   ggrepel::geom_text_repel(label=ind_num,
-                           vjust = -.5,
+                           vjust = -.1,
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -903,12 +1232,12 @@ unfilt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_unfilt,
 
 ####PC2/PC3####
 unfilt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt, 
-                                    data = metadata_sub,
+                                    data = metadata,
                                     colour = "Stimulus", 
                                     shape = "Time",
                                     size =4, x=2, y=3) +
   ggrepel::geom_text_repel(label = ind_num,
-                           vjust = -.5,
+                           vjust = -.1,
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -918,12 +1247,12 @@ unfilt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_unfilt,
 
 ####PC3/PC4####
 unfilt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_unfilt,
-                                    data = metadata_sub,
+                                    data = metadata,
                                     colour = "Stimulus",
                                     shape = "Time", 
                                     size =4, x=3, y=4) +
   ggrepel::geom_text_repel(label = ind_num, 
-                           vjust = -.5, 
+                           vjust = -.1, 
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -936,12 +1265,12 @@ unfilt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_unfilt,
 
 ####PC1/PC2####
 filt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt, 
-                                  data = metadata_sub, 
+                                  data = metadata, 
                                   colour = "Stimulus", 
                                   shape = "Time", 
                                   size =4, x=1, y=2) +
   ggrepel::geom_text_repel(label = ind_num, 
-                           vjust = -.5, 
+                           vjust = -.1, 
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -951,12 +1280,12 @@ filt_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt,
 
 ####PC2/PC3####
 filt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt, 
-                                  data = metadata_sub, 
+                                  data = metadata, 
                                   colour = "Stimulus", 
                                   shape = "Time", 
                                   size =4, x=2, y=3) +
   ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.5, 
+                           vjust = -.1, 
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -966,12 +1295,12 @@ filt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt,
 
 ####PC3/PC4####
 filt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt, 
-                                  data = metadata_sub, 
+                                  data = metadata, 
                                   colour = "Stimulus", 
                                   shape = "Time", 
                                   size =4, x=3, y=4) +
   ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.5, 
+                           vjust = -.1, 
                            max.overlaps = 100,
                            segment.color = "grey",
                            segment.size = 0.1) +
@@ -991,13 +1320,13 @@ hc_pca_plots <- list(
 
 print(hc_pca_plots)
 
-# for (plot_name in names(hc_pca_plots)) {
-#   save_plot(
-#     plot = hc_pca_plots[[plot_name]],
-#     filename = paste0("PCA_HC_", plot_name, "_EMP"),
-#     folder = output_folder
-#   )
-# }
+for (plot_name in names(hc_pca_plots)) {
+  save_plot(
+    plot = hc_pca_plots[[plot_name]],
+    filename = paste0("PCA_HC_", plot_name, "_EMP"),
+    folder = output_folder
+  )
+}
 
 ```
 
@@ -1008,23 +1337,19 @@ Only plot 24hr samples on these PCA plots.
 ```{r PCA Plots 24hr Only, warning=FALSE, message=FALSE, fig.height=6, fig.width=8}
 #now filter out all of the 2hr points and plot your filtered PCA plots
 
-metadata_24 <- metadata_sub %>% 
+metadata_24 <- metadata %>% 
   dplyr::filter(Time == "24") %>% 
   dplyr::filter(Final_sample_name != "PFOA_24_H3") #remove outlier
 
 #now make my matrices into only 24hr samples
-hc_cpm_unfilt_24 <- hc_cpm_unfilt_sub[, metadata_24$Final_sample_name, drop = FALSE]
-hc_cpm_unfilt_24 <- hc_cpm_unfilt_24 %>% as.data.frame() %>% 
-  dplyr::select(- PFOA_24_H3)
+hc_cpm_unfilt_24 <- hc_cpm_unfilt[, metadata_24$Final_sample_name, drop = FALSE]
+hc_cpm_unfilt_24 <- hc_cpm_unfilt_24 %>% as.data.frame() 
 hc_cpm_unfilt_24 <- hc_cpm_unfilt_24 %>% as.matrix()
 
-# hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
-# saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
+hc_cpm_mat_24 <- hc_cpm_matrix[, metadata_24$Final_sample_name, drop = FALSE]
+saveRDS(hc_cpm_mat_24, "data/counts/hc_filtered_cpm_matrix_24hr_all.RDS")
 
-hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr_subset.RDS")
-hc_cpm_mat_24 <- hc_cpm_mat_24 %>% 
-  as.data.frame() %>% 
-  dplyr::select(- PFOA_24_H3) 
+hc_cpm_mat_24 <- readRDS("data/counts/hc_filtered_cpm_matrix_24hr_all.RDS")
 hc_cpm_mat_24 <- hc_cpm_mat_24 %>% as.matrix()
 
 #prcomp transformation
@@ -1154,14 +1479,14 @@ pca_24_list <- list(
 
 print(pca_24_list)
 
-# for (plot_name in names(pca_24_list)) {
-#   save_plot(
-#     plot = pca_24_list[[plot_name]],
-#     filename = paste0("PCA_24hr_HC_", plot_name, "_EMP"),
-#     folder = output_folder
-#   )
-# }
-# 
+for (plot_name in names(pca_24_list)) {
+  save_plot(
+    plot = pca_24_list[[plot_name]],
+    filename = paste0("PCA_24hr_HC_", plot_name, "_EMP"),
+    folder = output_folder
+  )
+}
+
 save_plot(
   plot = filt24_PC1_PC2,
   filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
@@ -1170,16 +1495,15 @@ save_plot(
 
 
 ```
-
 ## PCA from 2hr Samples
 
 ```{r PCA 2hr Subset, warning=FALSE, message=FALSE, fig.height=6, fig.width=8}
 
-metadata_2 <- metadata_sub %>% 
+metadata_2 <- metadata %>% 
   filter(Time == "2")
 
-#now make my matrices into only 24hr samples
-hc_cpm_unfilt_2 <- hc_cpm_unfilt_sub[, metadata_2$Final_sample_name, drop = FALSE]
+#now make my matrices into only 2hr samples
+hc_cpm_unfilt_2 <- hc_cpm_unfilt[, metadata_2$Final_sample_name, drop = FALSE]
 
 hc_cpm_mat_2 <- hc_cpm_matrix[, metadata_2$Final_sample_name, drop = FALSE]
 
@@ -1309,19 +1633,19 @@ pca_2_list <- list(
 
 print(pca_2_list)
 
-# for (plot_name in names(pca_2_list)) {
-#   save_plot(
-#     plot = pca_2_list[[plot_name]],
-#     filename = paste0("PCA_2hr_HC_", plot_name, "_EMP"),
-#     folder = output_folder
-#   )
-# }
+for (plot_name in names(pca_2_list)) {
+  save_plot(
+    plot = pca_2_list[[plot_name]],
+    filename = paste0("PCA_2hr_HC_", plot_name, "_EMP"),
+    folder = output_folder
+  )
+}
 
-# save_plot(
-#   plot = filt2_PC1_PC2,
-#   filename = "PCA_2hr_HC_filt2_PC1_PC2_EMP",
-#   folder = output_folder
-# )
+save_plot(
+  plot = filt2_PC1_PC2,
+  filename = "PCA_2hr_HC_filt2_PC1_PC2_EMP",
+  folder = output_folder
+)
 
 ```
 
@@ -1330,24 +1654,22 @@ print(pca_2_list)
 
 Now take the samples from my subset and divide them out by response category to get an idea of how the different stimuli are working together within a category.
 
-#Subset PCA
+
 ```{r PCA of Subsets, warning=FALSE, message=FALSE, fig.width=8, fig.height=6}
 
-#Copy down the original full dataset that I'll divide into categories
+ind_num <- metadata$Ind
 
-ind_num <- metadata_sub$Ind
+metadata$Time <- factor(metadata$Time)
 
-metadata_sub$Time <- factor(metadata_sub$Time)
-
-metadata_sub$Stimulus <- factor(
-  metadata_sub$Stimulus,
+metadata$Stimulus <- factor(
+  metadata$Stimulus,
   levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
              "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
 )
 
 #UPR Subset
 upr_tx <- c("TUN", "THA", "DMSO")
-upr_meta <- metadata_sub %>% 
+upr_meta <- metadata %>% 
   dplyr::filter(Stimulus %in% upr_tx)
 upr_cpm <- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% upr_meta$Final_sample_name] 
 upr_cols <- list(
@@ -1358,7 +1680,7 @@ upr_cols <- list(
 
 #DDR Subset
 ddr_tx <- c("DOX", "NUTL", "DMSO")
-ddr_meta <- metadata_sub %>% 
+ddr_meta <- metadata %>% 
   dplyr::filter(Stimulus %in% ddr_tx)
 ddr_cpm <- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% ddr_meta$Final_sample_name]  
 ddr_cols <- c(
@@ -1368,7 +1690,7 @@ ddr_cols <- c(
 
 #IMR Subset
 imr_tx <- c("LPS", "TNFa", "H2O")
-imr_meta <- metadata_sub %>% 
+imr_meta <- metadata %>% 
   dplyr::filter(Stimulus %in% imr_tx)
 imr_cpm <- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% imr_meta$Final_sample_name]  
 imr_cols <-  c(
@@ -1378,7 +1700,7 @@ imr_cols <-  c(
 
 #MMR Subset
 mmr_tx <- c("BPA", "PFOA", "EtOH")
-mmr_meta <- metadata_sub %>% 
+mmr_meta <- metadata %>% 
   dplyr::filter(Stimulus %in% mmr_tx)
 mmr_cpm <- hc_cpm_matrix[, colnames(hc_cpm_matrix) %in% mmr_meta$Final_sample_name]  
 mmr_cols <- c(
@@ -1441,11 +1763,11 @@ make_pca_plots <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_n
   list(p1 = p1, p2 = p2, p3 = p3)
 }
 
-# ---- Run for each subset ----
-upr_plots <- make_pca_plots("UPR", c("TUN", "THA", "DMSO"), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
-ddr_plots <- make_pca_plots("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
-imr_plots <- make_pca_plots("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
-mmr_plots <- make_pca_plots("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_matrix, metadata_sub, ind_num, stim_col)
+#run for each subset
+upr_plots <- make_pca_plots("UPR", c("TUN", "THA", "DMSO"), hc_cpm_matrix, metadata, ind_num, stim_col)
+ddr_plots <- make_pca_plots("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_matrix, metadata, ind_num, stim_col)
+imr_plots <- make_pca_plots("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_matrix, metadata, ind_num, stim_col)
+mmr_plots <- make_pca_plots("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_matrix, metadata, ind_num, stim_col)
 
 all_plots_subset_pca <- list(
   upr_PC1_PC2 = upr_plots$p1,
@@ -1464,7 +1786,7 @@ all_plots_subset_pca <- list(
 
 print(all_plots_subset_pca)
 
-# # Loop through each plot and save
+# Loop through each plot and save
 # for (plot_name in names(all_plots_subset_pca)) {
 #   save_plot(
 #     plot = all_plots_subset_pca[[plot_name]],
@@ -1481,10 +1803,8 @@ print(all_plots_subset_pca)
 ```{r Subset 24hr samples into response groups PCA, warning=FALSE, message=FALSE}
 
 #ensure that your metadata only has 24hr samples in it
-metadata_sub24 <- metadata_sub %>% 
+metadata_sub24 <- metadata %>% 
   dplyr::filter(Time != "2")
-
-# hc_cpm_mat_24
 
 ind_num <- metadata_sub24$Ind
 
@@ -1610,7 +1930,7 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
   list(p1 = p1, p2 = p2, p3 = p3)
 }
 
-# ---- Run for each subset ----
+#run for each subset
 upr_plots24 <- make_pca_plots24("UPR", c("TUN", "THA", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
 ddr_plots24 <- make_pca_plots24("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
 imr_plots24 <- make_pca_plots24("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
@@ -1658,7 +1978,6 @@ Create Spearman correlation heatmaps of all samples in the subset.
 #first make correlation heatmaps of all samples
 #using ComplexHeatmap
 
-
 #compute Spearman correlation
 cor_matrix_spearman <- cor(hc_cpm_matrix, 
                            method = "spearman",
@@ -1666,8 +1985,6 @@ cor_matrix_spearman <- cor(hc_cpm_matrix,
 
 #define factors for legend order
 ind_levels  <- c(paste0("H", 1:7), paste0("C", 1:7))
-
-inf_status <- c("infected", "uninfected")
 
 stim_levels <- c(
   "TUN", "THA",
@@ -1681,13 +1998,13 @@ spec_levels <- c("H", "C")
 time_levels <- c("2", "24")
 
 #extract metadata for annotations
-Individual <- factor(metadata_sub$Ind, 
+Individual <- factor(metadata$Ind, 
                      levels = ind_levels)
-Stimulus   <- factor(metadata_sub$Stimulus, 
+Stimulus   <- factor(metadata$Stimulus, 
                      levels = stim_levels)
-Species    <- factor(metadata_sub$Species, 
+Species    <- factor(metadata$Species, 
                      levels = spec_levels)
-Time       <- factor(metadata_sub$Time, 
+Time       <- factor(metadata$Time, 
                      levels = time_levels)
 
 
@@ -1733,7 +2050,7 @@ heatmap_spearman_all <- Heatmap(
   row_names_centered = FALSE,
   rect_gp = gpar(col = "black", lwd = 0.5), 
   border = gpar(col = "black", lwd = 1),
-  column_title = "Spearman Correlation log2cpm 195 Samples",
+  column_title = "Spearman Correlation log2cpm 307 Samples",
   column_title_gp = gpar(fontsize = 10, fontface = "plain"),
   heatmap_legend_param = list(
     title_gp = gpar(fontsize = 9, fontface = "plain"),
@@ -1745,11 +2062,11 @@ draw(heatmap_spearman_all)
 
 #save all samples heatmap with my custom function
 
-# save_complex_heatmap(
-#   ht = heatmap_spearman_all,
-#   filename = "CorHM_Spearman_AllSamples_EMP",
-#   folder = output_folder,
-#   height = 20, width = 20)
+save_complex_heatmap(
+  ht = heatmap_spearman_all,
+  filename = "CorHM_Spearman_AllSamples_EMP",
+  folder = output_folder,
+  height = 20, width = 20)
 
 
 ```
@@ -1776,7 +2093,7 @@ subset_heatmaps <- list()
 for (subset_name in names(subsets)) {
   
   #filter columns for each subset
-  cols_subset <- metadata_sub$Final_sample_name[metadata_sub$Stimulus %in% subsets[[subset_name]]]
+  cols_subset <- metadata$Final_sample_name[metadata$Stimulus %in% subsets[[subset_name]]]
   mat_subset <- hc_cpm_matrix[, cols_subset, drop = FALSE]
   
   #perform Spearman correlation on each subset
@@ -1784,13 +2101,13 @@ for (subset_name in names(subsets)) {
                     use = "everything")
   
   #subset annotation factors
-  subset_inds  <- factor(metadata_sub$Ind[metadata_sub$Final_sample_name %in% cols_subset], 
+  subset_inds  <- factor(metadata$Ind[metadata$Final_sample_name %in% cols_subset], 
                          levels = ind_levels)
-  subset_stim  <- factor(metadata_sub$Stimulus[metadata_sub$Final_sample_name %in% cols_subset], 
+  subset_stim  <- factor(metadata$Stimulus[metadata$Final_sample_name %in% cols_subset], 
                          levels = stim_levels)
-  subset_spec  <- factor(metadata_sub$Species[metadata_sub$Final_sample_name %in% cols_subset], 
+  subset_spec  <- factor(metadata$Species[metadata$Final_sample_name %in% cols_subset], 
                          levels = spec_levels)
-  subset_time  <- factor(metadata_sub$Time[metadata_sub$Final_sample_name %in% cols_subset], 
+  subset_time  <- factor(metadata$Time[metadata$Final_sample_name %in% cols_subset], 
                          levels = time_levels)
   
   #subset color vectors to match what's present in subset
@@ -1843,17 +2160,17 @@ for (subset_name in names(subsets)) {
 
 #save the subset heatmaps with my custom function
 
-# for (nm in names(subset_heatmaps)) {
-#   ht <- subset_heatmaps[[nm]]
-#   save_complex_heatmap(
-#     ht = ht,
-#     filename = paste0("CorHM_Spearman_", nm, "_EMP"),
-#     folder = output_folder,
-#     height = 18,
-#     width = 18
-#   )
-#   message("Saved subset heatmap: ", nm)
-# }
+for (nm in names(subset_heatmaps)) {
+  ht <- subset_heatmaps[[nm]]
+  save_complex_heatmap(
+    ht = ht,
+    filename = paste0("CorHM_Spearman_", nm, "_EMP"),
+    folder = output_folder,
+    height = 18,
+    width = 18
+  )
+  message("Saved subset heatmap: ", nm)
+}
 
 #ignore time in each set besides UPR, all other 2hr samples have been filtered out
 

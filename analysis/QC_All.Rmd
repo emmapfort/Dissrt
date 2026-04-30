@@ -476,6 +476,49 @@ raw_counts_all <- readRDS("data/counts/raw_counts_all.RDS")
 
 # saveRDS(metadata, "data/counts/dissrt_metadata.RDS")
 
-metadata <- readRDS("data/counts/dissrt_metadata.RDS")
+metadata <- readRDS("")
+
+#now I want to replace the Ind column with these
+## C1 = C3647
+## C2 = C8861
+## C3 = C40210
+## C4 = C3649
+## C5 = C3651
+## C6 = C40280
+## C7 = C4955
+## H1 = H24280
+## H2 = H28126
+## H3 = 84-1
+## H4 = H21792
+## H5 = H20682
+## H6 = H22422
+## H7 = 78-1
+
+ind_map <- c(
+  "C1" = "C3647", 
+  "C2" = "C8861", 
+  "C3" = "C40210", 
+  "C4" = "C3649", 
+  "C5" = "C3651",
+  "C6" = "C40280", 
+  "C7" = "C4955",
+  "H1" = "H24280",
+  "H2" = "H28126",
+  "H3" = "84-1", 
+  "H4" = "H21792",
+  "H5" = "H20682", 
+  "H6" = "H22422", 
+  "H7" = "78-1"
+)
+
+#update the metadata table
+metadata <- metadata %>%
+  mutate(
+    Line = trimws(as.character(Line)), # Remove hidden spaces
+    Ind = id_map[Line]
+  )
+#check that the column was parsed correctly
+
+
 ```
 

@@ -13,6 +13,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -29,7 +30,8 @@ pre[class] {
 }
 ```
 
-#Load Libraries
+# Load Libraries
+
 ```{r Necessary Libraries, message=FALSE, warning=FALSE, include=FALSE}
 library(tidyverse)
 library(Biobase)
@@ -117,7 +119,7 @@ library(magick)
 
 # saveRDS(plot_theme_custom, "data/plot_theme_custom.RDS")
 
-theme_custom <- readRDS("data/plot_theme_custom.RDS")
+theme_custom <- readRDS("data/plot_theme_custom_largerfont.RDS")
 
 ```
 
@@ -260,13 +262,13 @@ ind_vec <- readRDS("data/theme/individual_vector.RDS")
 
 ```{r Read in necessary files, message=FALSE, warning=FALSE}
 #read in my counts file for my subset of samples
-hc_counts_sub <- readRDS("data/counts/hc_counts_subset_entrez.RDS")
+hc_counts_sub <- readRDS("data/counts/hc_counts_allids_df.RDS")
 
 #read in my cpm matrix (already subset)
-hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_subset.RDS")
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS")
 
 #read in my metadata for this subset 
-metadata_sub <- read_csv("data/counts/metadata_subset.csv")
+metadata <- readRDS("data/counts/metadata_updated.RDS")
 
 ```
 
@@ -276,16 +278,17 @@ metadata_sub <- read_csv("data/counts/metadata_subset.csv")
 ```{r Set up DE, warning=FALSE, message=FALSE}
 #filter my raw counts (subset of samples) to remove lowly expressed genes as above
 
-# x <- hc_counts_sub[row.names(hc_cpm_matrix),]
-# dim(x)
+x <- hc_counts[row.names(hc_cpm_matrix),]
+dim(x)
 
-# saveRDS(x, "data/de/x_dge_counts_allind_subset.RDS")
+# saveRDS(x, "data/de/x_dge_counts_allind.RDS")
 
-x <- readRDS("data/de/x_dge_counts_allind_subset.RDS")
+x <- readRDS("data/de/x_dge_counts_allind.RDS") %>% 
+  dplyr::select(-PFOA_24_H3)
 
 #use metadata_sub to match
-meta_de <- metadata_sub
-
+meta_de <- metadata %>% 
+  dplyr::filter(Final_sample_name != "PFOA_24_H3")
 #ensure that the names are matched up properly
 identical(meta_de$Final_sample_name, colnames(x))
 
@@ -295,7 +298,7 @@ rownames(meta_de) <- meta_de$Final_sample_name
 meta_de$Cond <- make.names(meta_de$Cond)
 meta_de$Ind <- as.character(meta_de$Ind)
 
-# saveRDS(meta_de, "data/de/metadata_2_de.RDS")
+# saveRDS(meta_de, "data/de/metadata_de.RDS")
 # saveRDS(x, "data/de/x_counts_de.RDS")
 
 #create my DGElist object
@@ -790,13 +793,11 @@ I want to further delve into my analysis by looking at differences between speci
 ```{r interaction analysis modeling copy, include=FALSE}
 #Set up my model matrix for all stimuli, and then analyze THA further
 
-x <- readRDS("data/de/x_dge_counts_allind_subset.RDS") 
-#restrict to only 24hr samples for ease right now
-x_int1 <- x[, !grepl("_2_", colnames(x))]
+# x <- readRDS("data/de/x_dge_counts_allind.RDS") 
+# x_int1 <- x[, !grepl("_2_", colnames(x))]
 
-#use metadata_sub to match + restrict to 24hr as well
-meta_int1 <- metadata_sub %>% 
-  dplyr::filter(Time != "2")
+#use metadata_sub to match + restrict toas well
+# meta_int1 <- metadata
 
 meta_int1$Vehicle <- NA
 meta_int1$Vehicle[meta_int1$Stimulus %in% c("TUN","THA","DOX","NUTL")] <- "DMSO"

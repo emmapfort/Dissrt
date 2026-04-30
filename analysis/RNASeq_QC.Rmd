@@ -325,7 +325,7 @@ c_counts <- readRDS("data/counts/c_counts.RDS")
 #Combine my datasets
 ```{r Join my Human and Chimp datasets together, warning=FALSE, message=FALSE}
 #make sure to sort them so that all of the genes match up
-# 
+
 # h_counts <- h_counts[order(h_counts$Ensembl_ID), ]
 # c_counts <- c_counts[order(c_counts$Ensembl_ID), ]
 # 
@@ -334,13 +334,9 @@ c_counts <- readRDS("data/counts/c_counts.RDS")
 #now save my combined counts table with both species
 # saveRDS(hc_counts, "data/counts/combined_counts_table_h_c.RDS")
 
-# hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
+hc_counts <- readRDS("data/counts/combined_counts_table_h_c.RDS")
 
 #now I have a combined dataframe with the treatment names included
-
-####Replace hc_counts with one made below that has Entrez_ID instead of Ensembl_ID
-
-hc_counts <- readRDS("data/counts/hc_counts_entrez.RDS")
 
 ```
 
@@ -973,10 +969,12 @@ map_align_stats %>%
 
 
 #Filter Dataframe
-```{r Filter with rowMeans}
+```{r Filter with rowMeans or log2cpm}
 #first, convert to log2cpm
 
-#ensure that Entrez_ID are the rownames
+#ensure that EnsemblID are the rownames
+
+hc_counts <- column_to_rownames(hc_counts, var = "Ensembl_ID")
 
 hc_cpm_unfilt <- cpm(hc_counts, log = TRUE)
 dim(hc_cpm_unfilt)
@@ -987,9 +985,41 @@ hist(hc_cpm_unfilt,
      xlab = expression("log"[2]*"cpm"),
      col = 4)
 
+
+
+#now filter by log2cpm cutoff of 1
+
+
+#now try 1.5 log2cpm cutoff like Blake et al.
+
+#define your cutoffs for filtering
+expr_cutoff <- 1.5
+sample_number <- 153 #half of the samples
+
+labels <- paste(metadata$Species, metadata$Drug, metadata$Time, metadata$Ind, sep=" ")
+
+
+dge_original <- DGEList(counts=as.matrix(hc_counts), genes=rownames(hc_counts), group = as.character(t(labels)))
+dge_original <- calcNormFactors(dge_original)
+
+cpm <- cpm(dge_original, normalized.lib.sizes=TRUE, log=TRUE, prior.count = 0.25)
+head(cpm)
+
+#plot the unfiltered data
+hist(tmm_cpm, main = "log2(CPM) values in unfiltered data (n = 307 samples)", breaks = 100, ylim = c(0, 50000), xlab = "log2(CPM) values")
+abline(v = expr_cutoff, col = "red", lwd = 3)
+
+#now filter
+cpm_filtered <- cpm[rowSums(cpm > expr_cutoff) >= sample_number, ]
+dim(cpm_filtered)
+#total of 11997 genes with stringent filter
+
+hist(cpm_filtered, xlab = "Log2(CPM)", main = "Log2(CPM) values for genes meeting the filtering criteria", breaks = 100 )
+
+
 #now filter by rowMeans > 0 to exclude lowly expressed genes
-hc_cpm_matrix <- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) > 0))
-dim(hc_cpm_matrix)
+# hc_cpm_matrix <- subset(hc_cpm_unfilt, (rowMeans(hc_cpm_unfilt) > 0))
+# dim(hc_cpm_matrix)
 #13661 genes after filtering
 
 #save this as an RDS and csv
@@ -1035,38 +1065,32 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
 # Convert Ensembl to Entrez
 
 ```{r converting ensembl id into entrez id}
-# ensembl_ids <- rownames(hc_cpm_matrix)
-# ensembl_ids_unfilt <- rownames(hc_counts)
+ensembl_ids <- rownames(hc_cpm_matrix)
+ensembl_ids_unfilt <- rownames(hc_counts)
 
-# entrez_ids_unfilt <- mapIds(
-#   org.Hs.eg.db,
-#   keys = ensembl_ids_unfilt,
-#   column = "ENTREZID",
-#   keytype = "ENSEMBL",
-#   multiVals = "first"
-# )
+entrez_ids_unfilt <- mapIds(
+  org.Hs.eg.db,
+  keys = ensembl_ids_unfilt,
+  column = "ENTREZID",
+  keytype = "ENSEMBL",
+  multiVals = "first"
+)
 
 #since there was many mapping, check which ones are duplicated
-# sum(duplicated(entrez_ids_unfilt))
-#1701 are duplicated with entrez id
+sum(duplicated(entrez_ids_unfilt))
+# 1701 are duplicated with entrez id
 
 #convert to df
-# hc_cpm_df <- as.data.frame(hc_cpm_matrix)
-# hc_counts_df <- as.data.frame(hc_counts)
+hc_cpm_df <- as.data.frame(hc_cpm_matrix)
+hc_counts_df <- as.data.frame(hc_counts)
 
 #add the Entrez_ID column to my counts dataframe
-# hc_counts_df <- hc_counts_df %>%
-#   dplyr::mutate(Entrez_ID = entrez_ids_unfilt)
+hc_counts_df <- hc_counts_df %>%
+  dplyr::mutate(Entrez_ID = entrez_ids_unfilt)
 
 #move it to the front so I can see it easily against Ensembl_ID
-# hc_counts_df <- hc_counts_df %>%
-#   dplyr::select(Entrez_ID, everything())
-
-#now keep only unique values
-# hc_counts_df <- hc_counts_df %>%
-#   group_by(Entrez_ID) %>%
-#   summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>%
-#   ungroup()
+hc_counts_df <- hc_counts_df %>%
+  dplyr::select(Entrez_ID, everything())
 
 #remove any NA genes
 # hc_counts_df <- hc_counts_df[!is.na(hc_counts_df$Entrez_ID), ]
@@ -1074,22 +1098,7 @@ hc_cpm_filt_boxplot <- boxplot(hc_cpm_matrix,
 #this gives me a total of 13619 genes, which is within the range I desired
 #when done for counts it gives me 28802 genes
 
-#now make the rownames Entrez_ID
-# hc_counts_df <- column_to_rownames(hc_counts_df, var = "Entrez_ID")
-
-#save entrez_id version of dataframe
-# saveRDS(hc_counts_df, "data/counts/hc_counts_entrez_dataframe.RDS")
-# write.csv(hc_counts_df, "data/counts/hc_counts_entrez_dataframe.csv")
-
-#read in data
-hc_cpm_df <- readRDS("data/counts/hc_cpm_filt_entrez_dataframe.RDS")
-hc_cpm_df_unfilt <- readRDS("data/counts/hc_cpm_unfilt_entrez_dataframe.RDS")
-hc_counts_df <- readRDS("data/counts/hc_counts_entrez_dataframe.RDS")
-
-# hc_counts <- hc_counts_df
-
-# saveRDS(hc_counts, "data/counts/hc_counts_entrez.RDS")
-# now move this above to where I was making cpm lists so I have entrez id instead
+# now move this above to where I was making cpm lists to have all three metrics
 ```
 
 ```{r PCA Plots}
