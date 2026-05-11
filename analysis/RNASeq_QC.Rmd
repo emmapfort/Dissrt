@@ -2963,7 +2963,7 @@ combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
 generate_volcano_plot <- function(toptable, title) {
   
   #check for entrezid 
-  if(!"Entrez_ID" %in% colnames(toptable)) stop("Entrez_ID col not present")
+  if(!"Ensembl_ID" %in% colnames(toptable)) stop("ENSEMBL col not present")
   
   #make significance labels
   toptable <- toptable %>% 

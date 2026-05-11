@@ -261,14 +261,21 @@ ind_vec <- readRDS("data/theme/individual_vector.RDS")
 # Read in Dataframes
 
 ```{r Read in necessary files, message=FALSE, warning=FALSE}
-#read in my counts file for my subset of samples
-hc_counts_sub <- readRDS("data/counts/hc_counts_allids_df.RDS")
+#read in my cpm matrix (all samples)
+hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS") %>% 
+  as.data.frame() %>% 
+  dplyr::select(-PFOA_24_H3) %>% 
+  as.matrix()
 
-#read in my cpm matrix (already subset)
-hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS")
+#read in my counts matrix (unfilt) + remove outlier & extra cols
+hc_counts <- readRDS("data/counts/raw_counts_ids.RDS") %>% 
+  dplyr::select(-PFOA_24_H3) %>% 
+  dplyr::select(-SYMBOL) %>% 
+  dplyr::select(-ENTREZID)
 
 #read in my metadata for this subset 
-metadata <- readRDS("data/counts/metadata_updated.RDS")
+metadata <- readRDS("data/counts/metadata_updated.RDS") %>% 
+  dplyr::filter(Final_sample_name != "PFOA_24_H3")
 
 ```
 
@@ -281,10 +288,12 @@ metadata <- readRDS("data/counts/metadata_updated.RDS")
 x <- hc_counts[row.names(hc_cpm_matrix),]
 dim(x)
 
-# saveRDS(x, "data/de/x_dge_counts_allind.RDS")
+# x <- readRDS("data/de/x_dge_counts_allind.RDS") %>% 
+  # dplyr::select(-PFOA_24_H3)
 
-x <- readRDS("data/de/x_dge_counts_allind.RDS") %>% 
-  dplyr::select(-PFOA_24_H3)
+# saveRDS(x, "data/de/x_dge_counts_allind_concat.RDS")
+
+x <- readRDS("data/de/x_dge_counts_allind_concat.RDS")
 
 #use metadata_sub to match
 meta_de <- metadata %>% 
@@ -320,7 +329,7 @@ colnames(design) <- gsub("meta_de\\$Cond", "", colnames(design))
 
 #run duplicate correlation for individual effect
 corfit <- duplicateCorrelation(object = dge$counts, design = design,
-                               block = metadata_sub$Ind)
+                               block = meta_de$Ind)
 
 #voom transformation and plot
 v <- voom(dge, design, block = meta_de$Ind, 
@@ -334,6 +343,12 @@ fit <- lmFit(v, design, block = meta_de$Ind,
 contrast_matrix <- makeContrasts(
   V.TUN2_H = TUN_2_H - DMSO_2_H,
   V.THA2_H = THA_2_H - DMSO_2_H,
+  V.DOX2_H = DOX_2_H - DMSO_2_H,
+  V.NUTL2_H = NUTL_2_H - DMSO_2_H,
+  V.LPS2_H = LPS_2_H - H2O_2_H,
+  V.TNFa2_H = TNFa_2_H - H2O_2_H,
+  V.BPA2_H = BPA_2_H - EtOH_2_H,
+  V.PFOA2_H = PFOA_2_H - EtOH_2_H,
   V.TUN24_H = TUN_24_H - DMSO_24_H,
   V.THA24_H = THA_24_H - DMSO_24_H,
   V.DOX24_H = DOX_24_H - DMSO_24_H,
@@ -344,6 +359,12 @@ contrast_matrix <- makeContrasts(
   V.PFOA24_H = PFOA_24_H - EtOH_24_H,
   V.TUN2_C = TUN_2_C - DMSO_2_C,
   V.THA2_C = THA_2_C - DMSO_2_C,
+  V.DOX2_C = DOX_2_C - DMSO_2_C,
+  V.NUTL2_C = NUTL_2_C - DMSO_2_C,
+  V.LPS2_C = LPS_2_C - H2O_2_C,
+  V.TNFa2_C = TNFa_2_C - H2O_2_C,
+  V.BPA2_C = BPA_2_C - EtOH_2_C,
+  V.PFOA2_C = PFOA_2_C - EtOH_2_C,
   V.TUN24_C = TUN_24_C - DMSO_24_C,
   V.THA24_C = THA_24_C - DMSO_24_C,
   V.DOX24_C = DOX_24_C - DMSO_24_C,
@@ -388,6 +409,48 @@ Toptable_V.THA2_H <- topTable(fit = fit2,
                             p.value = 1, 
                             sort.by = "none")
 
+Toptable_V.DOX2_H <- topTable(fit = fit2, 
+                            coef = "V.DOX2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL2_H <- topTable(fit = fit2, 
+                            coef = "V.NUTL2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS2_H <- topTable(fit = fit2, 
+                            coef = "V.LPS2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa2_H <- topTable(fit = fit2, 
+                            coef = "V.TNFa2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA2_H <- topTable(fit = fit2, 
+                            coef = "V.BPA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA2_H <- topTable(fit = fit2, 
+                            coef = "V.PFOA2_H",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
 #2hr Chimp Toptables
 Toptable_V.TUN2_C <- topTable(fit = fit2, 
                             coef = "V.TUN2_C",
@@ -398,6 +461,48 @@ Toptable_V.TUN2_C <- topTable(fit = fit2,
 
 Toptable_V.THA2_C <- topTable(fit = fit2, 
                             coef = "V.THA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.DOX2_C <- topTable(fit = fit2, 
+                            coef = "V.DOX2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.NUTL2_C <- topTable(fit = fit2, 
+                            coef = "V.NUTL2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.LPS2_C <- topTable(fit = fit2, 
+                            coef = "V.LPS2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.TNFa2_C <- topTable(fit = fit2, 
+                            coef = "V.TNFa2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.BPA2_C <- topTable(fit = fit2, 
+                            coef = "V.BPA2_C",
+                            number = nrow(x), 
+                            adjust.method = "BH", 
+                            p.value = 1, 
+                            sort.by = "none")
+
+Toptable_V.PFOA2_C <- topTable(fit = fit2, 
+                            coef = "V.PFOA2_C",
                             number = nrow(x), 
                             adjust.method = "BH", 
                             p.value = 1, 
@@ -509,7 +614,7 @@ Toptable_V.TNFa24_C <- topTable(fit = fit2,
 Toptable_V.BPA24_C <- topTable(fit = fit2, 
                             coef = "V.BPA24_C",
                             number = nrow(x), 
-                            adjust.method = "BH" 
+                            adjust.method = "BH", 
                             p.value = 1, 
                             sort.by = "none")
 
@@ -526,6 +631,14 @@ ttbl_list <- list(
   TUN_2_C = Toptable_V.TUN2_C,
   THA_2_H = Toptable_V.THA2_H,
   THA_2_C = Toptable_V.THA2_C,
+  DOX_2_H = Toptable_V.DOX2_H,
+  DOX_2_C = Toptable_V.DOX2_C,
+  NUTL_2_H = Toptable_V.NUTL2_H,
+  NUTL_2_C = Toptable_V.NUTL2_C,
+  LPS_2_H = Toptable_V.LPS2_H,
+  LPS_2_C = Toptable_V.LPS2_C,
+  TNFa_2_H = Toptable_V.TNFa2_H,
+  TNFa_2_C = Toptable_V.TNFa2_C,
   TUN_24_H = Toptable_V.TUN24_H,
   TUN_24_C = Toptable_V.TUN24_C,
   THA_24_H = Toptable_V.THA24_H,
@@ -565,24 +678,24 @@ ttbl_list_24 <- list(
 
 #add in SYMBOL from Entrez_ID for each of these toptables
 #make a mapping table first so I can easily do this in the future
-entrez2symbol <- AnnotationDbi::select(
+ensembl2symbol <- AnnotationDbi::select(
   org.Hs.eg.db,
   keys = unique(unlist(lapply(ttbl_list, rownames))),
-  keytype = "ENTREZID",
+  keytype = "ENSEMBL",
   column = "SYMBOL"
 )
 
-# ttbl_list <- imap(
-#   ttbl_list,
-#   ~ .x %>%
-#     rownames_to_column(var = "Entrez_ID") %>%
-#     left_join(entrez2symbol, by = c("Entrez_ID" = "ENTREZID"))
-# )
+ttbl_list <- imap(
+  ttbl_list,
+  ~ .x %>%
+    rownames_to_column(var = "Ensembl_ID") %>%
+    left_join(ensembl2symbol, by = c("Ensembl_ID" = "ENSEMBL"))
+)
 
 #save this toptable list as an object so I can reference it later
-# saveRDS(ttbl_list, "data/de/toptable_list_subset_updated_symbolentrez.RDS")
+# saveRDS(ttbl_list, "data/de/toptable_list_allconcat_updated_symbolentrez.RDS")
 # saveRDS(ttbl_list_24, "data/de/toptable_list_24hr_updated_symbolentrez.RDS")
-ttbl_list <- readRDS("data/de/toptable_list_subset_updated_symbolentrez.RDS")
+ttbl_list <- readRDS("data/de/toptable_list_allconcat_updated_symbolentrez.RDS")
 ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
 
 #now I want to make a long-form dataframe 
@@ -601,17 +714,16 @@ ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
 # )
 
 #save this long toptable for later when plotting
-# saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolentrez.RDS")
-combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolentrez.RDS")
+# saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolensembl.RDS")
+combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolensembl.RDS")
 
-#now make a 24hr only version
+# #now make a 24hr only version
 # combined_ttbl_24 <- imap_dfr(
 #   ttbl_list_24,
 #   ~ {
 #     parts <- str_match(.y, "^(.+)_([0-9]+)_([HC])$")
-#     
+# 
 #     .x %>%
-#       # no need for rownames_to_column() if Entrez_ID already exists
 #       mutate(
 #         Stimulus = parts[2],
 #         Time     = parts[3],  # should always be "24"
@@ -619,16 +731,16 @@ combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolentrez.RDS")
 #       )
 #   }
 # ) %>%
-#   distinct(Entrez_ID, Stimulus, Species, .keep_all = TRUE)
+#   distinct(Ensembl_ID, Stimulus, Species, .keep_all = TRUE)
 
 
 
 
 #I want to add two columns to my toptable - Condition and Response category
 #cut down my metadata_24 to have no duplicates so I can use it to add these columns
-metadata_24 <- readRDS("data/de/metadata_24hr_symbolentrez.RDS")
-metadata_24_unique <- metadata_24 %>%
-  distinct(Stimulus, Species, .keep_all = TRUE) 
+# metadata_24 <- readRDS("data/counts/")
+# metadata_24_unique <- metadata_24 %>%
+#   distinct(Stimulus, Species, .keep_all = TRUE) 
 
 # combined_ttbl_24 <- combined_ttbl_24 %>%
 #   mutate(absFC = abs(logFC)) %>%
@@ -643,7 +755,7 @@ metadata_24_unique <- metadata_24 %>%
 
 #save this as an object so I can read it in later
 # saveRDS(combined_ttbl_24, "data/de/combined_toptable_long_24hr_symbolentrez.RDS")
-combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+# combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
 
 
 
@@ -656,10 +768,7 @@ combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RD
 ```{r interaction analysis modeling upr ddr, warning=FALSE, message=FALSE}
 #Set up my model matrix for all stimuli, and then analyze THA further
 
-x <- readRDS("data/de/x_dge_counts_allind_subset.RDS") 
-
-#restrict to only 24hr samples
-x_int <- x[, !grepl("_2_", colnames(x))]
+x_int <- readRDS("data/de/x_dge_counts_allind_concat.RDS") 
 
 #stimuli + vehicle to KEEP
 int_stim <- c("TUN", "THA", "DOX", "NUTL")
@@ -671,9 +780,8 @@ keep_cols   <- grepl(keep_prefix, colnames(x_int))
 x_int <- x_int[, keep_cols, drop = FALSE]
 
 #subset metadata to same samples
-meta_int <- metadata_sub %>%
+meta_int <- metadata %>%
   dplyr::filter(
-    Time != "2",
     Stimulus %in% c(int_stim, int_veh)
   )
 
@@ -706,15 +814,15 @@ rownames(meta_int) <- meta_int$Final_sample_name
 meta_int$Cond <- make.names(meta_int$Cond)
 meta_int$Ind <- as.character(meta_int$Ind)
 
-# saveRDS(meta_int, "data/de/metadata_interaction_24hr.RDS")
-# saveRDS(x_int, "data/de/x_counts_de_interaction_24hr.RDS")
+# saveRDS(meta_int, "data/de/metadata_interaction_allconcat.RDS")
+# saveRDS(x_int, "data/de/x_counts_de_interaction_allconcat.RDS")
 
 #create my DGElist object
 dge_int <- DGEList(counts = x_int)
 dge_int$samples$group <- factor(meta_int$Cond)
 dge_int <- calcNormFactors(dge_int, method = "TMM")
 
-# saveRDS(dge_int, "data/de/dge_matrix_interaction_24hr.RDS")
+# saveRDS(dge_int, "data/de/dge_matrix_interaction_allconcat.RDS")
 
 #check the normalization factors from TMM normalization of the libraries
 dge_int$samples
@@ -723,7 +831,27 @@ dge_int$samples
 #here is where I alter my model.matrix to include interaction analysis
 #I already ensured that all metadata was factored properly
 
-design_int <- model.matrix(~ sp * st, data = meta_int)
+# combine Stimulus and Time
+meta_int$st_time <- factor(paste(meta_int$Stimulus, meta_int$Time, sep = "_"))
+
+#ensure Species baseline is Chimp ('C') so Human ('H') is the effect
+meta_int$sp <- factor(meta_int$Species, levels = c("C", "H"))
+
+# 3. Model Matrix
+# This creates: (Intercept), spH, st_timeTUN_2, ..., spH:st_timeTUN_2
+design_int <- model.matrix(~ sp * st_time, data = meta_int)
+
+# 4. Clean up names for easier contrast writing
+colnames(design_int) <- make.names(colnames(design_int))
+# Common cleanup: removes 'spH' and 'st_time' prefixes
+colnames(design_int) <- gsub("spH", "H", colnames(design_int))
+colnames(design_int) <- gsub("st_time", "", colnames(design_int))
+colnames(design_int) <- gsub(":", ".", colnames(design_int))
+
+# Clean up column names to match your Cond levels exactly
+colnames(design_int) <- gsub("Cond", "", colnames(design_int))
+
+# design_int <- model.matrix(~ sp * st, data = meta_int)
 rownames(design_int) <- meta_int$Final_sample_name            #assign sample names
 #clean up the column names so they're easy to identify
 colnames(design_int) <- gsub(":", ".", colnames(design_int))
@@ -755,18 +883,32 @@ fit_int <- lmFit(v2_int, design_int, block = meta_int$Ind,
 
 #make my contrast matrix to compare across tx and veh within each species
 cm_int <- makeContrasts(
-  H_TUN = stTUN + H.stTUN, #co1
-  H_THA = stTHA + H.stTHA, #co2
-  H_DOX = stDOX  + H.stDOX, #co3
-  H_NUTL = stNUTL + H.stNUTL, #H stim effect stim-DMSO #co4
-  C_TUN = stTUN, #co5
-  C_THA = stTHA, #co6
-  C_DOX = stDOX, # co7
-  C_NUTL = stNUTL, #C stim effect stim-DMSO #co8
-  int_TUN = H.stTUN, #co9
-  int_THA = H.stTHA, #co10
-  int_DOX = H.stDOX, #co11
-  int_NUTL = H.stNUTL, #interaction effect H-C for stim-DMSO for both #co12
+  H_TUN_2 = TUN_2 + H.TUN_2, #co1
+  H_THA_2 = THA_2 + H.THA_2, #co2
+  H_DOX_2 = DOX_2  + H.DOX_2, #co3
+  H_NUTL_2 = NUTL_2 + H.NUTL_2, #H stim effect stim-DMSO #co4
+  C_TUN_2 = TUN_2, #co5
+  C_THA_2 = THA_2, #co6
+  C_DOX_2 = DOX_2, # co7
+  C_NUTL_2 = NUTL_2, #C stim effect stim-DMSO 2hr #co8
+  int_TUN_2 = H.TUN_2, #co9
+  int_THA_2 = H.THA_2, #co10
+  int_DOX_2 = H.DOX_2, #co11
+  int_NUTL_2 = H.NUTL_2, #interaction effect H-C for stim-DMSO for both #co12
+  
+  #now the 24hr comparisons to 24hr veh
+  H_TUN_24  = (TUN_24 + H.TUN_24) - (DMSO_24 + H.DMSO_24), 
+  H_THA_24  = (THA_24 + H.THA_24) - (DMSO_24 + H.DMSO_24), 
+  H_DOX_24  = (DOX_24 + H.DOX_24) - (DMSO_24 + H.DMSO_24), 
+  H_NUTL_24 = (NUTL_24 + H.NUTL_24) - (DMSO_24 + H.DMSO_24), 
+  C_TUN_24  = TUN_24 - DMSO_24, 
+  C_THA_24  = THA_24 - DMSO_24, 
+  C_DOX_24  = DOX_24 - DMSO_24, 
+  C_NUTL_24 = NUTL_24 - DMSO_24, 
+  int_TUN_24  = H.TUN_24 - H.DMSO_24, 
+  int_THA_24  = H.THA_24 - H.DMSO_24, 
+  int_DOX_24  = H.DOX_24 - H.DMSO_24, 
+  int_NUTL_24 = H.NUTL_24 - H.DMSO_24, 
   levels = design_int
 )
 
@@ -783,6 +925,400 @@ results_summary_int <- decideTests(fit2_int, adjust.method = "BH", p.value = 0.0
 summary(results_summary_int)
 
 #now I can create toptables with these interaction data
+```
+# Interaction Toptables UPR DDR
+
+```{r toptables upr ddr int analysis, message=FALSE, warning=FALSE}
+
+# Create a list to store all tables
+toptable_list <- list()
+
+# Loop through all contrast names
+for (co in colnames(fit2_int)) {
+  # Generate the topTable
+  temp_df <- topTable(fit2_int, 
+                      coef = co, 
+                      adjust.method = "BH", 
+                      number = Inf, 
+                      sort.by = "none") %>% 
+    rownames_to_column(var = "Ensembl_ID")
+  
+  # Assign to global environment so you can call H_TUN_2, etc.
+  assign(co, temp_df)
+  
+  # Add to our list for the combined table
+  toptable_list[[co]] <- temp_df
+}
+
+#now make a combined one
+
+# Merge all dataframes in the list by Ensembl_ID
+# This will create a very wide dataframe
+combined_toptable_ddrupr <- Reduce(function(x, y) merge(x, y, by = "Ensembl_ID", all = TRUE), toptable_list)
+
+# Fix the column names so you know which stats belong to which contrast
+# We'll rename them using the names of the list elements
+new_colnames <- "Ensembl_ID"
+for (n in names(toptable_list)) {
+  # Get names of columns other than Ensembl_ID (logFC, AveExpr, t, P.Value, adj.P.Val, B)
+  stats_cols <- colnames(toptable_list[[n]])[colnames(toptable_list[[n]]) != "Ensembl_ID"]
+  new_colnames <- c(new_colnames, paste0(n, "_", stats_cols))
+}
+
+colnames(combined_toptable_ddrupr) <- new_colnames
+
+# Quick check
+head(combined_toptable_ddrupr)
+
+
+```
+
+
+# Interaction Scatterplots
+
+```{r scatterplots interactions, warning=FALSE, message=FALSE}
+
+ #define SYMBOLS for divergent genes
+
+hc_symb <- readRDS("data/counts/hc_counts_allids_df.RDS") %>% 
+  rownames_to_column(var = "Ensembl_ID")
+
+# 1. Robust mapping with ID cleaning (removes .version if present)
+gene_map <- hc_symb %>% 
+  dplyr::select(Ensembl_ID, SYMBOL) %>% 
+  distinct() %>%
+  mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID),
+         SYMBOL = as.character(SYMBOL),
+         SYMBOL = ifelse(is.na(SYMBOL) | SYMBOL == "" | SYMBOL == "NA", Ensembl_ID, SYMBOL))
+
+plots_list <- list()
+
+for (st in stim_pairs) {
+  
+  df_h <- get(paste0("H_", st)); df_c <- get(paste0("C_", st)); df_i <- get(paste0("int_", st))
+  stim_base <- gsub("_.*", "", st)
+  quad_color <- ifelse(stim_base %in% names(stim_col), stim_col[[stim_base]], "firebrick")
+  
+  # Clean IDs in the dataframes before joining to ensure they match gene_map
+  plot_df <- df_h %>% 
+    mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>%
+    select(Ensembl_ID, logFC_H = logFC) %>%
+    inner_join(df_c %>% mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>% 
+                 select(Ensembl_ID, logFC_C = logFC), by = "Ensembl_ID") %>%
+    left_join(df_i %>% mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>% 
+                select(Ensembl_ID, logFC_Int = logFC, adj.P_Int = adj.P.Val), by = "Ensembl_ID") %>%
+    left_join(gene_map, by = "Ensembl_ID")
+
+  # Define Top 5 divergent genes - slightly relaxed p-value to ensure labels exist if sig is sparse
+  top_div_genes <- plot_df %>% 
+    filter(adj.P_Int < 0.1 & ((logFC_H > 0 & logFC_C < 0) | (logFC_H < 0 & logFC_C > 0))) %>%
+    slice_max(abs(logFC_Int), n = 5)
+
+  plot_df <- plot_df %>%
+    mutate(color_cat = case_when(
+      Ensembl_ID %in% top_div_genes$Ensembl_ID ~ "Top_Divergent",
+      (logFC_H > 0 & logFC_C < 0) | (logFC_H < 0 & logFC_C > 0) ~ "Divergent_Quadrant",
+      TRUE ~ "Conserved_Quadrant"
+    ))
+  
+  rho <- round(cor(plot_df$logFC_H, plot_df$logFC_C, method = "spearman"), 2)
+  total_n <- nrow(plot_df)
+  q_counts <- plot_df %>% summarise(TL = sum(logFC_H < 0 & logFC_C > 0), BR = sum(logFC_H > 0 & logFC_C < 0))
+
+  # Plot with Original Title style and Fixed Lines
+  p <- ggplot(plot_df, aes(x = logFC_H, y = logFC_C)) +
+    geom_point(data = filter(plot_df, color_cat == "Conserved_Quadrant"), 
+               color = "grey30", alpha = 0.3, size = 0.7) +
+    geom_point(data = filter(plot_df, color_cat == "Divergent_Quadrant"), 
+               color = quad_color, alpha = 0.6, size = 0.9) +
+    geom_point(data = filter(plot_df, color_cat == "Top_Divergent"), 
+               color = "red", alpha = 1, size = 1.8) +
+    geom_smooth(method = "lm", color = "black", linetype = "dashed", size = 1, se = FALSE) +
+    geom_vline(xintercept = 0, linetype = "solid", color = "black") + 
+    geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+    geom_text_repel(
+      data = top_div_genes,
+      aes(label = SYMBOL), 
+      size = 3.5, color = "red", 
+      fontface = "bold.italic", box.padding = 0.5, point.padding = 0.3,
+      max.overlaps = Inf, segment.color = "red"
+    ) +
+    annotate("label", x = -4.5, y = 4.5, label = paste0("n=", q_counts$TL), fill = quad_color, color = "black") +
+    annotate("label", x = 4.5, y = -4.5, label = paste0("n=", q_counts$BR), fill = quad_color, color = "black") +
+    labs(
+      title = paste("Species Response Comparison:", st),
+      subtitle = paste0("Spearman rho: ", rho, " | Total Genes: ", total_n),
+      x = expression(Human~log[2]*FC),
+      y = expression(Chimp~log[2]*FC)
+    ) +
+    theme_custom() +
+    coord_fixed(xlim = c(-6, 6), ylim = c(-6, 6), clip = "off")
+
+  plots_list[[st]] <- p
+}
+
+# 1. Save and Display individual plots
+for (st in names(plots_list)) {
+  
+  # Define the filename
+  filename_base <- paste0("Species_logFC_Scatter_", st)
+  
+  # --- CRITICAL: Save the plot ---
+  save_plot(
+    plot = plots_list[[st]], 
+    filename = filename_base, 
+    folder = output_folder,
+    width = 6, 
+    height = 6
+  )
+  
+  # --- CRITICAL: Show the plot in RStudio ---
+  print(plots_list[[st]])
+  
+  message("Processed and Saved: ", filename_base)
+}
+
+# # 2. Create, Save, and Display grids
+# for (time in c("2", "24")) {
+#   
+#   # Filter for the correct timepoint
+#   grid_plots <- list(
+#     plots_list[[paste0("TUN_", time)]],
+#     plots_list[[paste0("THA_", time)]],
+#     plots_list[[paste0("DOX_", time)]],
+#     plots_list[[paste0("NUTL_", time)]]
+#   )
+#   
+#   combined_grid <- wrap_plots(grid_plots, ncol = 2) + 
+#     plot_annotation(title = paste0("Species Comparison - ", time, "hr"))
+#   
+#   grid_filename <- paste0("Species_logFC_Grid_", time, "hr")
+#   
+#   # Save Grid
+#   save_plot(
+#     plot = combined_grid, 
+#     filename = grid_filename, 
+#     folder = output_folder,
+#     width = 12, 
+#     height = 12
+#   )
+#   
+#   # Show Grid
+#   print(combined_grid)
+#   
+#   message("Processed and Saved Grid: ", grid_filename)
+# }
+
+
+#stats
+final_stats_summary <- data.frame(Stimulus = stim_pairs) %>%
+  rowwise() %>%
+  mutate(
+    Spearman_Rho = {
+      h <- get(paste0("H_", Stimulus)); c <- get(paste0("C_", Stimulus))
+      cor(h$logFC, c$logFC, method = "spearman")
+    },
+    Top_Left_Count = {
+      h <- get(paste0("H_", Stimulus)); c <- get(paste0("C_", Stimulus))
+      sum(h$logFC < 0 & c$logFC > 0)
+    },
+    Bottom_Right_Count = {
+      h <- get(paste0("H_", Stimulus)); c <- get(paste0("C_", Stimulus))
+      sum(h$logFC > 0 & c$logFC < 0)
+    }
+  )
+
+print(final_stats_summary)
+
+```
+
+# version 2 scatterplot
+
+```{r log2fc scatters cross species 2}
+# 1. Map symbols using AnnotationDBI
+# Ensuring Ensembl IDs are stripped of versions for matching
+all_ensembl_ids <- unique(c(H_TUN_2$Ensembl_ID, H_THA_2$Ensembl_ID, 
+                            H_DOX_2$Ensembl_ID, H_NUTL_2$Ensembl_ID,
+                            H_TUN_24$Ensembl_ID, H_THA_24$Ensembl_ID, 
+                            H_DOX_24$Ensembl_ID, H_NUTL_24$Ensembl_ID))
+all_ensembl_ids <- gsub("\\..*$", "", all_ensembl_ids)
+
+gene_map <- AnnotationDbi::select(org.Hs.eg.db, 
+                                  keys = all_ensembl_ids, 
+                                  columns = c("SYMBOL"), 
+                                  keytype = "ENSEMBL") %>%
+  mutate(Ensembl_ID = ENSEMBL) %>% 
+  distinct(ENSEMBL, .keep_all = TRUE)
+
+plots_list <- list()
+
+for (st in stim_pairs) {
+  
+  df_h <- get(paste0("H_", st))
+  df_c <- get(paste0("C_", st))
+  df_i <- get(paste0("int_", st))
+  
+  stim_base <- gsub("_.*", "", st)
+  quad_color <- ifelse(stim_base %in% names(stim_col), stim_col[[stim_base]], "firebrick")
+  
+  # Join and clean
+  plot_df <- df_h %>% 
+    mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>%
+    select(Ensembl_ID, logFC_H = logFC) %>%
+    inner_join(df_c %>% mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>% 
+                 select(Ensembl_ID, logFC_C = logFC), by = "Ensembl_ID") %>%
+    left_join(df_i %>% mutate(Ensembl_ID = gsub("\\..*$", "", Ensembl_ID)) %>% 
+                select(Ensembl_ID, logFC_Int = logFC, adj.P_Int = adj.P.Val), by = "Ensembl_ID") %>%
+    left_join(gene_map, by = "Ensembl_ID")
+  
+  # Identify genes to label - only those with non-NA SYMBOLS
+  label_df <- plot_df %>% 
+    filter(adj.P_Int < 0.05 & 
+           ((logFC_H > 0 & logFC_C < 0) | (logFC_H < 0 & logFC_C > 0)) &
+           !is.na(SYMBOL)) %>%
+    slice_max(abs(logFC_Int), n = 5)
+  
+  # PRINT GENE NAMES TO CONSOLE
+  cat("\n--- Genes labeled for", st, "---\n")
+  if(nrow(label_df) > 0) {
+    cat(paste(label_df$SYMBOL, collapse = ", "), "\n")
+  } else {
+    cat("None found (No significant divergent genes with valid SYMBOLs)\n")
+  }
+
+  plot_df <- plot_df %>%
+    mutate(color_cat = case_when(
+      (logFC_H > 0 & logFC_C < 0) | (logFC_H < 0 & logFC_C > 0) ~ "Divergent_Quadrant",
+      TRUE ~ "Conserved_Quadrant"
+    ))
+  
+  rho <- round(cor(plot_df$logFC_H, plot_df$logFC_C, method = "spearman"), 2)
+  total_n <- nrow(plot_df)
+  q_counts <- plot_df %>% summarise(TL = sum(logFC_H < 0 & logFC_C > 0), BR = sum(logFC_H > 0 & logFC_C < 0))
+
+  p <- ggplot(plot_df, aes(x = logFC_H, y = logFC_C)) +
+    geom_point(data = filter(plot_df, color_cat == "Conserved_Quadrant"), 
+               color = "grey30", alpha = 0.3, size = 0.7) +
+    geom_point(data = filter(plot_df, color_cat == "Divergent_Quadrant"), 
+               color = quad_color, alpha = 0.6, size = 0.9) +
+    geom_smooth(method = "lm", color = "black", linetype = "dashed", size = 1, se = FALSE) +
+    geom_vline(xintercept = 0, linetype = "solid", color = "black") +
+    geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+    geom_text_repel(
+      data = label_df,
+      aes(label = SYMBOL), 
+      size = 3.5, color = "black", fontface = "bold.italic",
+      box.padding = 0.5, point.padding = 0.3, max.overlaps = Inf
+    ) +
+    annotate("label", x = -4.5, y = 4.5, label = paste0("n=", q_counts$TL), fill = quad_color, color = "black") +
+    annotate("label", x = 4.5, y = -4.5, label = paste0("n=", q_counts$BR), fill = quad_color, color = "black") +
+    labs(
+      title = paste("Species Response Comparison:", st),
+      subtitle = paste0("Spearman rho: ", rho, " | Total Genes: ", total_n),
+      x = expression(Human~log[2]*FC),
+      y = expression(Chimp~log[2]*FC)
+    ) +
+    theme_custom() +
+    coord_fixed(xlim = c(-6, 6), ylim = c(-6, 6))
+
+  plots_list[[st]] <- p
+}
+
+# 1. Save and Display individual plots
+for (st in names(plots_list)) {
+  
+  # Define the filename
+  filename_base <- paste0("Species_logFC_Scatter_", st)
+  
+  # --- CRITICAL: Save the plot ---
+  save_plot(
+    plot = plots_list[[st]], 
+    filename = filename_base, 
+    folder = output_folder,
+    width = 6, 
+    height = 6
+  )
+  
+  # --- CRITICAL: Show the plot in RStudio ---
+  print(plots_list[[st]])
+  
+  message("Processed and Saved: ", filename_base)
+}
+```
+
+# plot example genes
+
+```{r ex genes}
+
+## --- 1. Global Setup ---
+group_levels_ddr <- c("DOX_H", "NUTL_H", "DMSO_H", "DOX_C", "NUTL_C", "DMSO_C")
+group_levels_upr <- c("TUN_H", "THA_H", "DMSO_H", "TUN_C", "THA_C", "DMSO_C")
+
+in_levels <- c(paste0("H", 1:7), paste0("C", 1:7))
+st_levels <- unique(c(stim_order, "DMSO"))
+
+## --- 2. Unified Plotting Function ---
+plot_divergent_expression <- function(target_genes, target_stims, df_long, pathway_name, custom_groups) {
+  
+  plot_data <- df_long %>%
+    # Ensure SYMBOL exists and we filter for the 3 treatments (e.g., DOX, NUTL, DMSO)
+    filter(SYMBOL %in% target_genes, 
+           Stimulus %in% target_stims) %>%
+    ungroup() %>% 
+    mutate(
+      Indv_name = factor(Indv_name, levels = in_levels),
+      Stimulus  = factor(Stimulus, levels = st_levels),
+      Species   = factor(Species, levels = c("H", "C")),
+      # The 'Group' is our X-axis. It creates 6 distinct positions.
+      Group     = factor(paste0(Stimulus, "_", Species), levels = custom_groups)
+    ) %>%
+    # Drop any rows that aren't part of our 6-bar layout
+    filter(!is.na(Group))
+
+  for(gene in unique(plot_data$SYMBOL)) {
+    gene_data <- plot_data %>% filter(SYMBOL == gene)
+    
+    p <- ggplot(gene_data, aes(x = Group, y = log2cpm, fill = Stimulus)) +
+      # 6 Linear Boxes total
+      geom_boxplot(aes(alpha = Species), outlier.shape = NA, width = 0.7) +
+      
+      # 7 Points per bar, perfectly centered on the box
+      geom_point(aes(color = Indv_name), 
+                 size = 3, 
+                 alpha = 1, 
+                 position = position_identity()) + 
+      
+      # Aesthetics
+      scale_fill_manual(values = stim_col) +
+      scale_color_manual(values = ind_col) + 
+      scale_alpha_manual(values = c("H" = 1, "C" = 0.5), guide = "none") +
+      
+      # Labels & Formatting
+      ggtitle(paste0(pathway_name, ": ", gene)) +
+      labs(x = "Treatment & Species", 
+           y = expression(log[2]*cpm),
+           color = "Individual",
+           fill = "Stimulus") +
+      
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "right",
+        panel.grid.major.x = element_blank()
+      ) +
+      guides(
+        fill = guide_legend(order = 1),
+        color = guide_legend(order = 2, ncol = 1)
+      )
+    
+    print(p)
+  }
+}
+
+## --- 3. Execution ---
+# By passing c(Active1, Active2, "DMSO"), we get all 3 treatments for both species on one plot
+plot_divergent_expression(upr_genes, c("TUN", "THA", "DMSO"), boxplot_long_upr, "UPR", group_levels_upr)
+plot_divergent_expression(ddr_genes, c("DOX", "NUTL", "DMSO"), boxplot_long_ddr, "DDR", group_levels_ddr)
 ```
 
 
@@ -1006,6 +1542,31 @@ int_NUTL <- topTable(fit2_int,
                     number = Inf,
                     sort.by = "none") %>% 
   rownames_to_column(var = "Entrez_ID")
+
+toptable_list <- c(H_TUN
+  H_THA,
+  H_DOX,
+  H_NUTL,
+  H_LPS, 
+  H_TNFa 
+  H_BPA 
+  H_PFOA 
+  C_TUN 
+  C_THA
+  C_DOX 
+  C_NUTL 
+  C_LPS,
+  C_TNFa, 
+  C_BPA, 
+  C_PFOA, 
+  int_TUN, 
+  int_THA, 
+  int_DOX, 
+  int_NUTL, 
+  int_LPS, 
+  int_TNFa,
+  int_BPA,
+  int_PFOA)
 
 #now create toptables that only include the significant DEGs based on adj.P
 sig.H_TUN <- H_TUN[H_TUN$adj.P.Val < 0.05, ]
