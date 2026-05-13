@@ -1085,13 +1085,19 @@ meta_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/metadata_u
 cpm_filt_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/hc_cpm_filtered_matrix_all.RDS")
 
 #read in each of the sample subsets data
-cmf_all <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/Cormotif_k1_k20_all_seed19191_TACC.rds")
-cmf_t2 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_2_seed19191.rds")
-cmf_t24 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_24_seed19191.rds")
-cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_UPR_seed19191.rds")
-cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_DDR_seed19191.rds")
-cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_IMR_seed19191.rds")
-cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_MCR_seed19191.rds")
+cmf_all <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_k1_k20_all_seed19191_TACC.rds")
+cmf_t2 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_2_seed19191.rds")
+cmf_t24 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_24_seed19191.rds")
+cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_UPR_24hr_seed19191.rds")
+cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_DDR_24hr_seed19191.rds")
+cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_IMR_24hr_seed19191.rds")
+cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_MCR_24hr_seed19191.rds")
+
+#this set is with both t2 and t24, I want to restrict these to only t24 samples
+# cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_UPR_seed19191.rds")
+# cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_DDR_seed19191.rds")
+# cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_IMR_seed19191.rds")
+# cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_MCR_seed19191.rds")
 
 ```
 
@@ -2042,4 +2048,15 @@ for (subset_name in names(cmf_sets_list)) {
 
 ```
 
-# Look
+# Plot log2FC patterns for each motif
+
+```{r log2fc patterns cmf, warning=FALSE, message=FALSE}
+#now I want to use my toptables that I've made to plot the log2fc patterns for each of these motifs
+
+#this can be used to see whether the expression patterns truly fit what is modeled on the cormotif plots
+
+
+
+
+```
+

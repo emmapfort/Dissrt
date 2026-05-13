@@ -269,9 +269,10 @@ hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS") %>%
 
 #read in my counts matrix (unfilt) + remove outlier & extra cols
 hc_counts <- readRDS("data/counts/raw_counts_ids.RDS") %>% 
-  dplyr::select(-PFOA_24_H3) %>% 
-  dplyr::select(-SYMBOL) %>% 
-  dplyr::select(-ENTREZID)
+  dplyr::select(-PFOA_24_H3) 
+# %>% 
+  # dplyr::select(-SYMBOL) %>% 
+  # dplyr::select(-ENTREZID)
 
 #read in my metadata for this subset 
 metadata <- readRDS("data/counts/metadata_updated.RDS") %>% 
@@ -1332,7 +1333,7 @@ I want to further delve into my analysis by looking at differences between speci
 # x <- readRDS("data/de/x_dge_counts_allind.RDS") 
 # x_int1 <- x[, !grepl("_2_", colnames(x))]
 
-#use metadata_sub to match + restrict toas well
+#use metadata_sub to match + restrict
 # meta_int1 <- metadata
 
 meta_int1$Vehicle <- NA
