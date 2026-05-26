@@ -1081,25 +1081,244 @@ Each of these were run with k1:20 2,000 max iterations.
 #read in RDS files from TACC runs for Cormotif
 
 #here are my metadata and matrix files used to run each of these subsets
-meta_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/metadata_updated_all.RDS")
-cpm_filt_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/hc_cpm_filtered_matrix_all.RDS")
+meta_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/metadata_updated_all.RDS")
+cpm_filt_cmf <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/hc_cpm_filtered_matrix_all.RDS")
 
 #read in each of the sample subsets data
 cmf_all <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_k1_k20_all_seed19191_TACC.rds")
 cmf_t2 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_2_seed19191.rds")
 cmf_t24 <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_24_seed19191.rds")
-cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_UPR_24hr_seed19191.rds")
-cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_DDR_24hr_seed19191.rds")
-cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_IMR_24hr_seed19191.rds")
-cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_MCR_24hr_seed19191.rds")
+# cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_UPR_24hr_seed19191.rds")
+# cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_DDR_24hr_seed19191.rds")
+# cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_IMR_24hr_seed19191.rds")
+# cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/Cormotif_MCR_24hr_seed19191.rds")
 
 #this set is with both t2 and t24, I want to restrict these to only t24 samples
-# cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_UPR_seed19191.rds")
-# cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_DDR_seed19191.rds")
-# cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_IMR_seed19191.rds")
-# cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/tacc_outputs/CorMotif_MCR_seed19191.rds")
+cmf_upr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_UPR_seed19191.rds")
+cmf_ddr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_DDR_seed19191.rds")
+cmf_imr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_IMR_seed19191.rds")
+cmf_mcr <- readRDS("C:/Users/emmap/OneDrive/Desktop/cmf/cormotif/CorMotif_MCR_seed19191.rds")
 
 ```
+
+
+# Run Cormotif modeling with 24hr samples only in R
+
+```{r set up vectors to make compid and groupid, warning = FALSE, message=FALSE}
+#subset my expr matrix (cpm_filt_cmf) by each subset, focusing only on 24hr samples
+expr_upr <- cpm_filt_cmf[, grepl("^(TUN|THA|DMSO)_24_", colnames(cpm_filt_cmf))]
+expr_ddr <- cpm_filt_cmf[, grepl("^(DOX|NUTL|DMSO)_24_", colnames(cpm_filt_cmf))]
+expr_imr <- cpm_filt_cmf[, grepl("^(LPS|TNFa|H2O)_24_", colnames(cpm_filt_cmf))]
+expr_mcr <- cpm_filt_cmf[, grepl("^(BPA|PFOA|EtOH)_24_", colnames(cpm_filt_cmf))]
+
+#matrix containing all stimuli
+global_stimuli <- c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+                    "LPS", "TNFa", "H2O", 
+                    "BPA", "PFOA", "EtOH")
+
+expr_all_24 <- cpm_filt_cmf[, grepl(paste0("^(", paste(global_stimuli, collapse="|"),
+                                           ")_24_"), colnames(cpm_filt_cmf))]
+
+
+#factor orders
+upr_order <- c("TUN_24", "THA_24", "DMSO_24")
+ddr_order <- c("DOX_24", "NUTL_24", "DMSO_24")
+imr_order <- c("LPS_24", "TNFa_24", "H2O_24")
+mcr_order <- c("BPA_24", "PFOA_24", "EtOH_24")
+
+global_order <- c("TUN_24", "THA_24", "DOX_24", "NUTL_24", "DMSO_24", 
+                  "LPS_24", "TNFa_24", "H2O_24", "BPA_24", "PFOA_24", "EtOH_24")
+
+
+#generate species-blocked groupids (H first, C second)
+make_blocked_groupid <- function(colnames_vec, stimulus_order) {
+  meta <- data.frame(sample = colnames_vec) |>
+    transform(
+      stimulus = sub("_(H|C)[0-9]+$", "", sample),
+      species  = sub("^.*_(H|C)[0-9]+$", "\\1", sample)
+    )
+  meta$stimulus <- factor(meta$stimulus, levels = stimulus_order)
+  if (any(is.na(meta$stimulus))) { stop("Sample mismatch with stimulus_order") }
+  
+  stim_id <- as.numeric(meta$stimulus)
+  num_stimuli <- length(stimulus_order)
+  
+  #H: 1 to N | C: (1 to N) + N
+  groupid <- ifelse(meta$species == "H", stim_id, stim_id + num_stimuli)
+  names(groupid) <- meta$sample
+  as.numeric(groupid)
+}
+
+groupid_upr    <- make_blocked_groupid(colnames(expr_upr), upr_order)
+groupid_ddr    <- make_blocked_groupid(colnames(expr_ddr), ddr_order)
+groupid_imr    <- make_blocked_groupid(colnames(expr_imr), imr_order)
+groupid_mcr    <- make_blocked_groupid(colnames(expr_mcr), mcr_order)
+groupid_all_24 <- make_blocked_groupid(colnames(expr_all_24), global_order)
+
+
+#compid study design maps (H top, C bottom)
+
+# Subsets (MCR now explicitly includes study row pairs for PFOA)
+compid_upr <- data.frame(Cond1 = c(1, 2, 4, 5), Cond2 = c(3, 3, 6, 6)) #vs DMSO
+compid_ddr <- data.frame(Cond1 = c(1, 2, 4, 5), Cond2 = c(3, 3, 6, 6)) #vs DMSO
+compid_imr <- data.frame(Cond1 = c(1, 2, 4, 5), Cond2 = c(3, 3, 6, 6)) #vs H2O
+compid_mcr <- data.frame(Cond1 = c(1, 2, 4, 5), Cond2 = c(3, 3, 6, 6)) #vs EtOH 
+
+#24hr combined model for checks(8 stimuli x 2 species = 16 studies)
+compid_all_24 <- rbind(
+  data.frame(Cond1 = c(1, 2, 3, 4, 6, 7, 9, 10),
+             Cond2 = c(5, 5, 5, 5, 8, 8, 11, 11)),
+  data.frame(Cond1 = c(12, 13, 14, 15, 17, 18, 20, 21), 
+             Cond2 = c(16, 16, 16, 16, 19, 19, 22, 22))
+)
+
+```
+
+
+## Model Cormotif 
+
+```{r run cormotif with these subsets, warning=FALSE, message=FALSE}
+#make my expr_list for the 24hr runs
+expr_list <- list(
+  upr_24 = expr_upr, 
+  ddr_24 = expr_ddr, 
+  imr_24 = expr_imr, 
+  mcr_24 = expr_mcr,
+  all_24 = expr_all_24
+)
+
+#make my list of groupids
+groupid_list <- list(
+  upr_24 = groupid_upr, 
+  ddr_24 = groupid_ddr, 
+  imr_24 = groupid_imr, 
+  mcr_24 = groupid_mcr,
+  all_24 = groupid_all_24
+)
+
+#make my list of compids
+compid_list <- list(
+  upr_24 = compid_upr, 
+  ddr_24 = compid_ddr, 
+  imr_24 = compid_imr, 
+  mcr_24 = compid_mcr,
+  all_24 = compid_all_24
+)
+
+#store the fits in a list
+cmf_fit_list <- list()
+
+#store the plots into a list to print later
+cmf_plot_list <- list()
+
+#set seed once for reproducibility
+set.seed(19191)
+
+for (name in names(expr_list)) {
+ 
+  cat("Fitting Cormotif for subset:", name, "\n")
+ 
+  #fit model
+  fit <- cormotiffit(
+    exprs = expr_list[[name]],
+    groupid = groupid_list[[name]],
+    compid = compid_list[[name]],
+    K = 1:20,
+    max.iter = 2000,
+    BIC = TRUE,
+    runtype = "logCPM"
+  )
+ 
+  #store into a list
+  cmf_fit_list[[name]] <- fit
+ 
+  #saveRDS with _24_ notation
+  saveRDS(fit, file = paste0("data/cmf/subset/cormotif_fit_matrix_", name, "_k20.RDS"))
+ 
+  #plot IC and save plot
+  plotIC(fit)
+  save_plot(
+    plot = last_plot(),
+    filename = paste0("cmf_aic_bic_subset_", name, "_EMP"),
+    folder = output_folder
+  )
+  #now save this plot to my list to print later
+  cmf_plot_list[[paste0("cmf_ic_", name)]] <- last_plot()
+ 
+  #plot motif and save
+  plotMotif(fit)
+  save_plot(
+    plot = last_plot(),
+    filename = paste0("cmf_motif_subset_", name, "_EMP"),
+    folder = output_folder
+  )
+  #save the plot to the list as well
+  cmf_plot_list[[paste0("cmf_plot_", name)]] <- last_plot()
+ 
+  cat("Finished subset:", name, "\n\n")
+ 
+}
+
+#now read in each of these updated results so I can save each plot to my plots folder
+#loaded from RDS to safeguard system memory!
+
+cmf_upr_24 <- readRDS("data/cmf/subset/cormotif_fit_matrix_upr_24_k20.RDS")
+cmf_ddr_24 <- readRDS("data/cmf/subset/cormotif_fit_matrix_ddr_24_k20.RDS")
+cmf_imr_24 <- readRDS("data/cmf/subset/cormotif_fit_matrix_imr_24_k20.RDS")
+cmf_mcr_24 <- readRDS("data/cmf/subset/cormotif_fit_matrix_mcr_24_k20.RDS")
+cmf_all_24 <- readRDS("data/cmf/subset/cormotif_fit_matrix_all_24_k20.RDS")
+
+cmf_data_list <- list(
+  upr_24 = cmf_upr_24,
+  ddr_24 = cmf_ddr_24,
+  imr_24 = cmf_imr_24,
+  mcr_24 = cmf_mcr_24,
+  all_24 = cmf_all_24
+)
+
+#make two lists so I can store the IC/motif plots
+cmf_ic_plots <- list()
+cmf_motif_plots <- list()
+
+for(name in names(cmf_data_list)) {
+
+  cat("processing subset:", name, "\n")
+
+  fit <- cmf_data_list[[name]]
+
+  #process and log information criteria plots
+  plotIC(fit)
+  ic_plot <- recordPlot()
+  ic_name <- paste0("cmf_ic_", name)
+
+  cmf_ic_plots[[ic_name]] <- ic_plot
+
+  save_plot(
+     plot = ic_plot,
+     filename = paste0(ic_name, "_EMP"),
+     folder = output_folder
+  )
+
+  #now do the same for the motifs plot
+  plotMotif(fit)
+  mtf_plot <- recordPlot()
+  mtf_name <- paste0("cmf_motif_", name)
+
+  cmf_motif_plots[[mtf_name]] <- mtf_plot
+
+  save_plot(
+     plot = mtf_plot,
+     filename = paste0(mtf_name, "_EMP"),
+     folder = output_folder
+  )
+
+  cat("finished subset:", name, "\n\n")
+
+}
+
+#now that I've saved each of these images, let's dive into characterizing each of these motifs
+```
+
 
 
 # Plot Cormotif outputs from TACC
@@ -1457,7 +1676,7 @@ if (length(upr_unassign) == length(upr_prob_genes) - length(upr_assign)) {
 ## DDR Set (4 clusters)
 
 ```{r ddr set clustlike, warning=FALSE, message=FALSE}
-#now use this same setup for the upr subset
+#now use this same setup for the ddr subset
 
 #extract the cluster likelihood - clustlike
 #probability that a given gene belongs to a given motif cluster
@@ -1562,6 +1781,171 @@ if (length(imr_unassign) == length(imr_prob_genes) - length(imr_assign)) {
 
 ```
 
+
+## UPR Set 24hr (3 clusters)
+
+```{r upr 24hr subset cormotif, warning=FALSE, message=FALSE}
+
+#now use this setup from above for the 24hr only subset for UPR
+
+#extract the cluster likelihood - clustlike
+#probability that a given gene belongs to a given motif cluster
+cl_upr_24 <- cmf_upr_24$bestmotif$clustlike
+rownames(cl_upr_24) <- rownames(cpm_filt_cmf) #add in Ensembl_ID rownames
+
+#assign each gene to a motif with max clustlike
+assign_mtf_upr_24 <- apply(cl_upr_24, 1, which.max)
+max_clust_upr_24 <- apply(cl_upr_24, 1, max)
+
+#define my cutoff number for motif assignment (this will include >=)
+prob_cutoff <- 0.5
+
+#combine these into a dataframe - motif assigned genes (p.post)
+mtf_assign_upr_24 <- cl_upr_24 %>%
+  as.data.frame() %>%
+  rownames_to_column("Ensembl_ID") %>%
+  mutate(
+    Max_Probability = pmax(V1, V2, V3),
+    #identify which column has the max value
+    Assigned_Motif = max.col(dplyr::select(., starts_with("V")), ties.method = "first")
+  ) %>%
+  #only keep genes meeting our probability threshold of 50%
+  filter(Max_Probability >= prob_cutoff)
+
+#make a list with each motif's genes included in a vector
+upr_clustlike_24 <- mtf_assign_upr_24 %>%
+  group_by(Assigned_Motif) %>%
+  group_split() %>%
+  set_names(map_chr(., ~paste0("upr_c", .x$Assigned_Motif[1]))) %>%
+  map(~.x$Ensembl_ID)
+
+#check the lengths for all final gene sets
+map_int(upr_clustlike_24, length)
+
+#now, check to see if any genes are not assigned in this set
+upr_assign_24 <- unique(unlist(upr_clustlike_24))
+length(upr_assign_24)
+upr_prob_genes_24 <- rownames(cl_upr_24)
+upr_unassign_24 <- setdiff(upr_prob_genes_24, upr_assign_24)
+
+#check that unassigned genes = total genes - assigned genes
+if (length(upr_unassign_24) == length(upr_prob_genes_24) - length(upr_assign_24)) {
+  cat(sprintf("SUCCESS: unassigned = total - assigned. unassigned = %d\n", length(upr_unassign_24)))
+} else {
+  cat(sprintf("WARNING: unassigned != total - assigned. unassigned = %d\n", length(upr_unassign_24)))
+}
+
+```
+
+## DDR Set 24hr (4 clusters)
+
+```{r ddr 24hr subset cormotif, warning=FALSE, message=FALSE}
+#now use this same setup for the ddr 24hr subset
+
+#extract the cluster likelihood - clustlike
+#probability that a given gene belongs to a given motif cluster
+cl_ddr_24 <- cmf_ddr_24$bestmotif$clustlike
+rownames(cl_ddr_24) <- rownames(cpm_filt_cmf) #add in Ensembl_ID rownames
+
+#assign each gene to a motif with max clustlike
+assign_mtf_ddr_24 <- apply(cl_ddr_24, 1, which.max)
+max_clust_ddr_24 <- apply(cl_ddr_24, 1, max)
+
+#define my cutoff number for motif assignment (this will include >=)
+prob_cutoff <- 0.5
+
+#combine these into a dataframe - motif assigned genes (p.post)
+mtf_assign_ddr_24 <- cl_ddr_24 %>%
+  as.data.frame() %>%
+  rownames_to_column("Ensembl_ID") %>%
+  mutate(
+    Max_Probability = pmax(V1, V2, V3, V4),
+    #identify which column has the max value
+    Assigned_Motif = max.col(dplyr::select(., starts_with("V")), ties.method = "first")
+  ) %>%
+  #only keep genes meeting our probability threshold of 50%
+  filter(Max_Probability >= prob_cutoff)
+
+#make a list with each motif's genes included in a vector
+ddr_clustlike_24 <- mtf_assign_ddr_24 %>%
+  group_by(Assigned_Motif) %>%
+  group_split() %>%
+  set_names(map_chr(., ~paste0("ddr_c", .x$Assigned_Motif[1]))) %>%
+  map(~.x$Ensembl_ID)
+
+#check the lengths for all final gene sets
+map_int(ddr_clustlike_24, length)
+
+#now, check to see if any genes are not assigned in this set
+ddr_assign_24 <- unique(unlist(ddr_clustlike_24))
+length(ddr_assign_24)
+ddr_prob_genes_24 <- rownames(cl_ddr_24)
+ddr_unassign_24 <- setdiff(ddr_prob_genes_24, ddr_assign_24)
+
+#check that unassigned genes = total genes - assigned genes
+if (length(ddr_unassign_24) == length(ddr_prob_genes_24) - length(ddr_assign_24)) {
+  cat(sprintf("SUCCESS: unassigned = total - assigned. unassigned = %d\n", length(ddr_unassign_24)))
+} else {
+  cat(sprintf("WARNING: unassigned != total - assigned. unassigned = %d\n", length(ddr_unassign_24)))
+}
+
+```
+
+## IMR Set 24hr (2 clusters)
+
+```{r imr 24hr subset cormotif, message=FALSE, warning=FALSE}
+#now use this same setup for the imr 24hr subset
+
+#extract the cluster likelihood - clustlike
+#probability that a given gene belongs to a given motif cluster
+cl_imr_24 <- cmf_imr_24$bestmotif$clustlike
+rownames(cl_imr_24) <- rownames(cpm_filt_cmf) #add in Ensembl_ID rownames
+
+#assign each gene to a motif with max clustlike
+assign_mtf_imr_24 <- apply(cl_imr_24, 1, which.max)
+max_clust_imr_24 <- apply(cl_imr_24, 1, max)
+
+#define my cutoff number for motif assignment (this will include >=)
+prob_cutoff <- 0.5
+
+#combine these into a dataframe - motif assigned genes (p.post)
+mtf_assign_imr_24 <- cl_imr_24 %>%
+  as.data.frame() %>%
+  rownames_to_column("Ensembl_ID") %>%
+  mutate(
+    Max_Probability = pmax(V1, V2),
+    #identify which column has the max value
+    Assigned_Motif = max.col(dplyr::select(., starts_with("V")), ties.method = "first")
+  ) %>%
+  #only keep genes meeting our probability threshold of 50%
+  filter(Max_Probability >= prob_cutoff)
+
+#make a list with each motif's genes included in a vector
+imr_clustlike_24 <- mtf_assign_imr_24 %>%
+  group_by(Assigned_Motif) %>%
+  group_split() %>%
+  set_names(map_chr(., ~paste0("imr_c", .x$Assigned_Motif[1]))) %>%
+  map(~.x$Ensembl_ID)
+
+#check the lengths for all final gene sets
+map_int(imr_clustlike_24, length)
+
+#now, check to see if any genes are not assigned in this set
+imr_assign_24 <- unique(unlist(imr_clustlike_24))
+length(imr_assign_24)
+imr_prob_genes_24 <- rownames(cl_imr_24)
+imr_unassign_24 <- setdiff(imr_prob_genes_24, imr_assign_24)
+
+#check that unassigned genes = total genes - assigned genes
+if (length(imr_unassign_24) == length(imr_prob_genes_24) - length(imr_assign_24)) {
+  cat(sprintf("SUCCESS: unassigned = total - assigned. unassigned = %d\n", length(imr_unassign_24)))
+} else {
+  cat(sprintf("WARNING: unassigned != total - assigned. unassigned = %d\n", length(imr_unassign_24)))
+}
+```
+
+
+
 # Characterize Motif Genes
 
 Now that I have defined the number of genes that fit within each motif for all subsets, I want to characterize what the gene expression patterns look like with p.post.
@@ -1576,7 +1960,17 @@ cmf_sets_list <- list(
   "24hr" = t24_clustlike,
   "UPR" = upr_clustlike,
   "DDR" = ddr_clustlike,
-  "IMR" = imr_clustlike
+  "IMR" = imr_clustlike,
+  "UPR 24hr" = upr_clustlike_24,
+  "DDR 24hr" = ddr_clustlike_24,
+  "IMR 24hr" = imr_clustlike_24
+)
+
+cmf_sets_list_24 <- list(
+  "24hr" = t24_clustlike,
+  "UPR 24hr" = upr_clustlike_24,
+  "DDR 24hr" = ddr_clustlike_24,
+  "IMR 24hr" = imr_clustlike_24
 )
 
 ```
@@ -1594,7 +1988,10 @@ unassign_map <- c(
   "24hr" = "t24_unassign",
   "UPR"  = "upr_unassign",
   "DDR"  = "ddr_unassign",
-  "IMR"  = "imr_unassign"
+  "IMR"  = "imr_unassign",
+  "UPR 24hr" = "upr_unassign_24",
+  "DDR 24hr" = "ddr_unassign_24",
+  "IMR 24hr" = "imr_unassign_24"
 )
 
 #plotting function
@@ -1775,9 +2172,15 @@ hc_filt_df$SYMBOL <- ifelse(is.na(hc_filt_df$SYMBOL), hc_filt_df$Ensembl_ID, hc_
 
 #stimulus map matching the names in cmf_sets_list ("UPR", "DDR", "IMR")
 subset_stimulus_map <- list(
-  "UPR" = list(stimuli = c("TUN", "THA", "DMSO"), times = c("2", "24")),
-  "DDR" = list(stimuli = c("DOX", "NUTL", "DMSO"), times = c("2", "24")),
-  "IMR" = list(stimuli = c("LPS", "TNFa", "H2O"), times = c("2", "24"))
+  "UPR 24hr" = list(stimuli = c("TUN", "THA", "DMSO"), times = c(
+    # "2", 
+    "24")),
+  "DDR 24hr" = list(stimuli = c("DOX", "NUTL", "DMSO"), times = c(
+    # "2", 
+    "24")),
+  "IMR 24hr" = list(stimuli = c("LPS", "TNFa", "H2O"), times = c(
+    # "2",
+    "24"))
 )
 
 #pull 3 random genes per cluster
@@ -1821,11 +2224,11 @@ plot_example_gene <- function(gene_data, gene_name, motif_name, subset_name) {
 #loop through to save and print
 ex_gene_plots <- list()
 
-for (subset_name in names(cmf_sets_list)) {
+for (subset_name in names(cmf_sets_list_24)) {
   
   cat("==== Processing Genes for:", subset_name, "====\n")
   
-  motif_list   <- cmf_sets_list[[subset_name]]
+  motif_list   <- cmf_sets_list_24[[subset_name]]
   
   #determine stimulus and time rules for each subset
   if (subset_name %in% names(subset_stimulus_map)) {
@@ -1975,12 +2378,12 @@ enrichment_results <- list()
 enrichment_plots   <- list()
 
 #execute loops and make plots for both GO and KEGG per motif per subset
-for (subset_name in names(cmf_sets_list)) {
+for (subset_name in names(cmf_sets_list_24)) {
   
   message("==== Processing Subset: ", subset_name, " ====")
   
   #make my sets, adding unassigned so I can see what it looks like
-  sub_motifs <- cmf_sets_list[[subset_name]]
+  sub_motifs <- cmf_sets_list_24[[subset_name]]
   
   unassign_var_name <- unassign_map[subset_name]
   if (exists(unassign_var_name)) {

@@ -170,7 +170,7 @@ save_plot <- function(plot, filename,
   
 }
 
-output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
+# output_folder <- "C:/Users/emmap/OneDrive/Desktop/Ward Lab/Experiments/Stressor Project/Full Set RNAseq/plots"
 
 
 #save plot function created
@@ -269,7 +269,8 @@ hc_cpm_matrix <- readRDS("data/counts/hc_cpm_filtered_matrix_all.RDS") %>%
 
 #read in my counts matrix (unfilt) + remove outlier & extra cols
 hc_counts <- readRDS("data/counts/raw_counts_ids.RDS") %>% 
-  dplyr::select(-PFOA_24_H3) 
+  dplyr::select(-PFOA_24_H3) %>% 
+  column_to_rownames(var = "Ensembl_ID")
 # %>% 
   # dplyr::select(-SYMBOL) %>% 
   # dplyr::select(-ENTREZID)
@@ -286,37 +287,58 @@ metadata <- readRDS("data/counts/metadata_updated.RDS") %>%
 ```{r Set up DE, warning=FALSE, message=FALSE}
 #filter my raw counts (subset of samples) to remove lowly expressed genes as above
 
-x <- hc_counts[row.names(hc_cpm_matrix),]
+x <- hc_counts[row.names(hc_cpm_matrix),] %>% 
+  dplyr::select(contains("_24_"))
 dim(x)
 
-# x <- readRDS("data/de/x_dge_counts_allind.RDS") %>% 
-  # dplyr::select(-PFOA_24_H3)
+# saveRDS(x, "data/de/x_dge_counts_allind_concat_24.RDS")
 
-# saveRDS(x, "data/de/x_dge_counts_allind_concat.RDS")
+x <- readRDS("data/de/x_dge_counts_allind_concat_24.RDS")
 
-x <- readRDS("data/de/x_dge_counts_allind_concat.RDS")
+#set factors
+stim_order <- c("TUN", "THA", "DOX", "NUTL", "DMSO", "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+species_order <- c("H", "C")
+ind_order <- c(paste0("H", 1:7), paste0("C", 1:7))
 
 #use metadata_sub to match
 meta_de <- metadata %>% 
+  dplyr::filter(Time == "24") %>% 
   dplyr::filter(Final_sample_name != "PFOA_24_H3")
-#ensure that the names are matched up properly
-identical(meta_de$Final_sample_name, colnames(x))
 
-colnames(x) <- meta_de$Final_sample_name
+#sort meta_de
+meta_de <- meta_de %>% 
+  mutate(
+    Ind = factor(Ind, levels = ind_order),
+    Stimulus = factor(Stimulus, levels = stim_order)
+  ) %>% 
+  arrange(Ind, Stimulus)
+
+#extract the sorted list of names
+target_columns <- as.character(meta_de$Final_sample_name)
+
+#reorder the columns of x to match the metadata rows exactly
+x_sort <- x[, target_columns]
+
+#ensure that the names are matched up properly
+identical(meta_de$Final_sample_name, colnames(x_sort))
+
+colnames(x_sort) <- meta_de$Final_sample_name
 rownames(meta_de) <- meta_de$Final_sample_name
 
 meta_de$Cond <- make.names(meta_de$Cond)
 meta_de$Ind <- as.character(meta_de$Ind)
 
-# saveRDS(meta_de, "data/de/metadata_de.RDS")
-# saveRDS(x, "data/de/x_counts_de.RDS")
+# saveRDS(meta_de, "data/de/metadata_de_24.RDS")
+# saveRDS(x_sort, "data/de/x_counts_de_24.RDS")
+
+x <- readRDS("data/de/x_counts_de_24.RDS")
 
 #create my DGElist object
 dge <- DGEList(counts = x)
 dge$samples$group <- factor(meta_de$Cond)
 dge <- calcNormFactors(dge, method = "TMM")
 
-# saveRDS(dge, "data/de/dge_matrix.RDS")
+# saveRDS(dge, "data/de/dge_matrix_24.RDS")
 
 #check the normalization factors from TMM normalization of the libraries
 dge$samples
@@ -342,14 +364,14 @@ fit <- lmFit(v, design, block = meta_de$Ind,
 
 #make my contrast matrix to compare across tx and veh within each species
 contrast_matrix <- makeContrasts(
-  V.TUN2_H = TUN_2_H - DMSO_2_H,
-  V.THA2_H = THA_2_H - DMSO_2_H,
-  V.DOX2_H = DOX_2_H - DMSO_2_H,
-  V.NUTL2_H = NUTL_2_H - DMSO_2_H,
-  V.LPS2_H = LPS_2_H - H2O_2_H,
-  V.TNFa2_H = TNFa_2_H - H2O_2_H,
-  V.BPA2_H = BPA_2_H - EtOH_2_H,
-  V.PFOA2_H = PFOA_2_H - EtOH_2_H,
+  # V.TUN2_H = TUN_2_H - DMSO_2_H,
+  # V.THA2_H = THA_2_H - DMSO_2_H,
+  # V.DOX2_H = DOX_2_H - DMSO_2_H,
+  # V.NUTL2_H = NUTL_2_H - DMSO_2_H,
+  # V.LPS2_H = LPS_2_H - H2O_2_H,
+  # V.TNFa2_H = TNFa_2_H - H2O_2_H,
+  # V.BPA2_H = BPA_2_H - EtOH_2_H,
+  # V.PFOA2_H = PFOA_2_H - EtOH_2_H,
   V.TUN24_H = TUN_24_H - DMSO_24_H,
   V.THA24_H = THA_24_H - DMSO_24_H,
   V.DOX24_H = DOX_24_H - DMSO_24_H,
@@ -358,14 +380,14 @@ contrast_matrix <- makeContrasts(
   V.TNFa24_H = TNFa_24_H - H2O_24_H,
   V.BPA24_H = BPA_24_H - EtOH_24_H,
   V.PFOA24_H = PFOA_24_H - EtOH_24_H,
-  V.TUN2_C = TUN_2_C - DMSO_2_C,
-  V.THA2_C = THA_2_C - DMSO_2_C,
-  V.DOX2_C = DOX_2_C - DMSO_2_C,
-  V.NUTL2_C = NUTL_2_C - DMSO_2_C,
-  V.LPS2_C = LPS_2_C - H2O_2_C,
-  V.TNFa2_C = TNFa_2_C - H2O_2_C,
-  V.BPA2_C = BPA_2_C - EtOH_2_C,
-  V.PFOA2_C = PFOA_2_C - EtOH_2_C,
+  # V.TUN2_C = TUN_2_C - DMSO_2_C,
+  # V.THA2_C = THA_2_C - DMSO_2_C,
+  # V.DOX2_C = DOX_2_C - DMSO_2_C,
+  # V.NUTL2_C = NUTL_2_C - DMSO_2_C,
+  # V.LPS2_C = LPS_2_C - H2O_2_C,
+  # V.TNFa2_C = TNFa_2_C - H2O_2_C,
+  # V.BPA2_C = BPA_2_C - EtOH_2_C,
+  # V.PFOA2_C = PFOA_2_C - EtOH_2_C,
   V.TUN24_C = TUN_24_C - DMSO_24_C,
   V.THA24_C = THA_24_C - DMSO_24_C,
   V.DOX24_C = DOX_24_C - DMSO_24_C,
@@ -396,118 +418,118 @@ summary(results_summary)
 ```{r Toptables, warning=FALSE, message=FALSE}
 
 #2hr Human Toptables
-Toptable_V.TUN2_H <- topTable(fit = fit2, 
-                            coef = "V.TUN2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.THA2_H <- topTable(fit = fit2, 
-                            coef = "V.THA2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.DOX2_H <- topTable(fit = fit2, 
-                            coef = "V.DOX2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.NUTL2_H <- topTable(fit = fit2, 
-                            coef = "V.NUTL2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.LPS2_H <- topTable(fit = fit2, 
-                            coef = "V.LPS2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.TNFa2_H <- topTable(fit = fit2, 
-                            coef = "V.TNFa2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.BPA2_H <- topTable(fit = fit2, 
-                            coef = "V.BPA2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.PFOA2_H <- topTable(fit = fit2, 
-                            coef = "V.PFOA2_H",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-#2hr Chimp Toptables
-Toptable_V.TUN2_C <- topTable(fit = fit2, 
-                            coef = "V.TUN2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.THA2_C <- topTable(fit = fit2, 
-                            coef = "V.THA2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.DOX2_C <- topTable(fit = fit2, 
-                            coef = "V.DOX2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.NUTL2_C <- topTable(fit = fit2, 
-                            coef = "V.NUTL2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.LPS2_C <- topTable(fit = fit2, 
-                            coef = "V.LPS2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.TNFa2_C <- topTable(fit = fit2, 
-                            coef = "V.TNFa2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.BPA2_C <- topTable(fit = fit2, 
-                            coef = "V.BPA2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
-
-Toptable_V.PFOA2_C <- topTable(fit = fit2, 
-                            coef = "V.PFOA2_C",
-                            number = nrow(x), 
-                            adjust.method = "BH", 
-                            p.value = 1, 
-                            sort.by = "none")
+# Toptable_V.TUN2_H <- topTable(fit = fit2, 
+#                             coef = "V.TUN2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.THA2_H <- topTable(fit = fit2, 
+#                             coef = "V.THA2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.DOX2_H <- topTable(fit = fit2, 
+#                             coef = "V.DOX2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.NUTL2_H <- topTable(fit = fit2, 
+#                             coef = "V.NUTL2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.LPS2_H <- topTable(fit = fit2, 
+#                             coef = "V.LPS2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.TNFa2_H <- topTable(fit = fit2, 
+#                             coef = "V.TNFa2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.BPA2_H <- topTable(fit = fit2, 
+#                             coef = "V.BPA2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.PFOA2_H <- topTable(fit = fit2, 
+#                             coef = "V.PFOA2_H",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# #2hr Chimp Toptables
+# Toptable_V.TUN2_C <- topTable(fit = fit2, 
+#                             coef = "V.TUN2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.THA2_C <- topTable(fit = fit2, 
+#                             coef = "V.THA2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.DOX2_C <- topTable(fit = fit2, 
+#                             coef = "V.DOX2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.NUTL2_C <- topTable(fit = fit2, 
+#                             coef = "V.NUTL2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.LPS2_C <- topTable(fit = fit2, 
+#                             coef = "V.LPS2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.TNFa2_C <- topTable(fit = fit2, 
+#                             coef = "V.TNFa2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.BPA2_C <- topTable(fit = fit2, 
+#                             coef = "V.BPA2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
+# 
+# Toptable_V.PFOA2_C <- topTable(fit = fit2, 
+#                             coef = "V.PFOA2_C",
+#                             number = nrow(x), 
+#                             adjust.method = "BH", 
+#                             p.value = 1, 
+#                             sort.by = "none")
 
 #24hr toptables human
 
@@ -627,38 +649,38 @@ Toptable_V.PFOA24_C <- topTable(fit = fit2,
                             sort.by = "none")
 
 #make two lists: one that contains all of these toptables and one with just 24hr toptables
-ttbl_list <- list(
-  TUN_2_H = Toptable_V.TUN2_H,
-  TUN_2_C = Toptable_V.TUN2_C,
-  THA_2_H = Toptable_V.THA2_H,
-  THA_2_C = Toptable_V.THA2_C,
-  DOX_2_H = Toptable_V.DOX2_H,
-  DOX_2_C = Toptable_V.DOX2_C,
-  NUTL_2_H = Toptable_V.NUTL2_H,
-  NUTL_2_C = Toptable_V.NUTL2_C,
-  LPS_2_H = Toptable_V.LPS2_H,
-  LPS_2_C = Toptable_V.LPS2_C,
-  TNFa_2_H = Toptable_V.TNFa2_H,
-  TNFa_2_C = Toptable_V.TNFa2_C,
-  TUN_24_H = Toptable_V.TUN24_H,
-  TUN_24_C = Toptable_V.TUN24_C,
-  THA_24_H = Toptable_V.THA24_H,
-  THA_24_C = Toptable_V.THA24_C,
-  DOX_24_H = Toptable_V.DOX24_H,
-  DOX_24_C = Toptable_V.DOX24_C,
-  NUTL_24_H = Toptable_V.NUTL24_H,
-  NUTL_24_C = Toptable_V.NUTL24_C,
-  LPS_24_H = Toptable_V.LPS24_H,
-  LPS_24_C = Toptable_V.LPS24_C,
-  TNFa_24_H = Toptable_V.TNFa24_H,
-  TNFa_24_C = Toptable_V.TNFa24_C,
-  BPA_24_H = Toptable_V.BPA24_H,
-  BPA_24_C = Toptable_V.BPA24_C,
-  PFOA_24_H = Toptable_V.PFOA24_H,
-  PFOA_24_C = Toptable_V.PFOA24_C
-)
+# ttbl_list <- list(
+#   TUN_2_H = Toptable_V.TUN2_H,
+#   TUN_2_C = Toptable_V.TUN2_C,
+#   THA_2_H = Toptable_V.THA2_H,
+#   THA_2_C = Toptable_V.THA2_C,
+#   DOX_2_H = Toptable_V.DOX2_H,
+#   DOX_2_C = Toptable_V.DOX2_C,
+#   NUTL_2_H = Toptable_V.NUTL2_H,
+#   NUTL_2_C = Toptable_V.NUTL2_C,
+#   LPS_2_H = Toptable_V.LPS2_H,
+#   LPS_2_C = Toptable_V.LPS2_C,
+#   TNFa_2_H = Toptable_V.TNFa2_H,
+#   TNFa_2_C = Toptable_V.TNFa2_C,
+#   TUN_24_H = Toptable_V.TUN24_H,
+#   TUN_24_C = Toptable_V.TUN24_C,
+#   THA_24_H = Toptable_V.THA24_H,
+#   THA_24_C = Toptable_V.THA24_C,
+#   DOX_24_H = Toptable_V.DOX24_H,
+#   DOX_24_C = Toptable_V.DOX24_C,
+#   NUTL_24_H = Toptable_V.NUTL24_H,
+#   NUTL_24_C = Toptable_V.NUTL24_C,
+#   LPS_24_H = Toptable_V.LPS24_H,
+#   LPS_24_C = Toptable_V.LPS24_C,
+#   TNFa_24_H = Toptable_V.TNFa24_H,
+#   TNFa_24_C = Toptable_V.TNFa24_C,
+#   BPA_24_H = Toptable_V.BPA24_H,
+#   BPA_24_C = Toptable_V.BPA24_C,
+#   PFOA_24_H = Toptable_V.PFOA24_H,
+#   PFOA_24_C = Toptable_V.PFOA24_C
+# )
 
-ttbl_list_24 <- list(
+ttbl_list <- list(
   TUN_24_H = Toptable_V.TUN24_H,
   TUN_24_C = Toptable_V.TUN24_C,
   THA_24_H = Toptable_V.THA24_H,
@@ -695,9 +717,9 @@ ttbl_list <- imap(
 
 #save this toptable list as an object so I can reference it later
 # saveRDS(ttbl_list, "data/de/toptable_list_allconcat_updated_symbolentrez.RDS")
-# saveRDS(ttbl_list_24, "data/de/toptable_list_24hr_updated_symbolentrez.RDS")
-ttbl_list <- readRDS("data/de/toptable_list_allconcat_updated_symbolentrez.RDS")
-ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
+# saveRDS(ttbl_list, "data/de/toptable_list_24hr_updated_symbolens.RDS")
+ttbl_list <- readRDS("data/de/toptable_list_24hr_updated_symbolens.RDS")
+# ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
 
 #now I want to make a long-form dataframe 
 # combined_ttbl <- imap_dfr(
@@ -715,8 +737,8 @@ ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
 # )
 
 #save this long toptable for later when plotting
-# saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolensembl.RDS")
-combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolensembl.RDS")
+# saveRDS(combined_ttbl, "data/de/combined_toptable_long_symbolensembl_24.RDS")
+combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolensembl_24.RDS")
 
 # #now make a 24hr only version
 # combined_ttbl_24 <- imap_dfr(
@@ -740,28 +762,86 @@ combined_ttbl <- readRDS("data/de/combined_toptable_long_symbolensembl.RDS")
 #I want to add two columns to my toptable - Condition and Response category
 #cut down my metadata_24 to have no duplicates so I can use it to add these columns
 # metadata_24 <- readRDS("data/counts/")
-# metadata_24_unique <- metadata_24 %>%
-#   distinct(Stimulus, Species, .keep_all = TRUE) 
+meta_de_24 <- meta_de %>%
+  distinct(Stimulus, Species, .keep_all = TRUE)
 
-# combined_ttbl_24 <- combined_ttbl_24 %>%
-#   mutate(absFC = abs(logFC)) %>%
-#   left_join(
-#     metadata_24_unique %>%
-#       select(Stimulus, Species, Response, Cond),
-#     by = c("Stimulus", "Species")
-#   ) %>% 
-#   dplyr::select(Entrez_ID, SYMBOL, logFC, absFC,
-#                 AveExpr, t, P.Value, adj.P.Val, B,
-#                 Stimulus, Time, everything())
+combined_ttbl_24 <- combined_ttbl %>%
+  mutate(absFC = abs(logFC)) %>%
+  left_join(
+    meta_de_24 %>%
+      select(Stimulus, Species, Response, Cond),
+    by = c("Stimulus", "Species")
+  ) %>%
+  dplyr::select(Ensembl_ID, SYMBOL, logFC, absFC,
+                AveExpr, t, P.Value, adj.P.Val, B,
+                Stimulus, Time, everything())
 
 #save this as an object so I can read it in later
-# saveRDS(combined_ttbl_24, "data/de/combined_toptable_long_24hr_symbolentrez.RDS")
-# combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+# saveRDS(combined_ttbl_24, "data/de/combined_toptable_long_24hr_symbolens.RDS")
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolens.RDS")
 
 
 
 ```
 
+
+
+```{r prop barplots DEGs, warning=FALSE, message=FALSE}
+
+# 1. Define your strict factor levels for sorting
+stim_order <- c("TUN", "THA", "DOX", "NUTL", "DMSO", "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+species_order <- c("H", "C")
+
+# 2. Aggregate, calculate counts, and reshape for stacking
+plot_data_stacked <- combined_ttbl_24 %>%
+  group_by(Cond, Stimulus, Species) %>%
+  summarize(
+    Total_Genes = n_distinct(Ensembl_ID),
+    DEGs = sum(adj.P.Val < 0.05, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Non_DEGs = Total_Genes - DEGs) %>%
+  # Enforce your custom factor ordering for rows
+  mutate(
+    Stimulus = factor(Stimulus, levels = stim_order),
+    Species = factor(Species, levels = species_order)
+  ) %>%
+  arrange(Stimulus, Species) %>%
+  mutate(Cond = factor(Cond, levels = unique(Cond))) %>%
+  # Pivot to long format so ggplot can stack natively
+  # We specify the order of the levels here to force DEGs on top
+  pivot_longer(cols = c(Non_DEGs, DEGs), names_to = "Gene_Category", values_to = "Count") %>%
+  mutate(Gene_Category = factor(Gene_Category, levels = c("DEGs", "Non_DEGs")))
+
+# 3. Create the natively stacked bar plot
+ggplot(plot_data_stacked, aes(x = Cond, y = Count, fill = Gene_Category)) +
+  # geom_bar with position = "stack" places the second factor level (DEGs) on top
+  geom_bar(stat = "identity", width = 0.85, position = "stack") +
+  
+  # Add text labels inside their respective stacked segments
+  # position_stack(vjust = 0.5) automatically finds the center of each segment
+  geom_text(aes(label = ifelse(Count > 0, scales::comma(Count), "")),
+            position = position_stack(vjust = 0.5),
+            color = "black", size = 3) +
+  
+  # Assign colors: DEGs = Blue, Non-DEGs = Grey
+  scale_fill_manual(values = c("DEGs" = "#1f77b4", "Non_DEGs" = "#a9a9a9"),
+                    labels = c("DEGs" = "DEGs", "Non_DEGs" = "NonDEGs"),
+                    name = "Gene Category") +
+  theme_custom() +
+  labs(
+    title = "Proportion of DEGs by Stimulus and Species",
+    x = "Condition (Stimulus_Species)",
+    y = "Gene Count"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 7),
+    panel.grid.major.x = element_blank(),
+    legend.position = "top"
+  )
+
+
+```
 
 
 # Interaction Analysis UPR + DDR Only
@@ -1666,6 +1746,8 @@ print(p)
 
 
 ```
+
+
 
 
 

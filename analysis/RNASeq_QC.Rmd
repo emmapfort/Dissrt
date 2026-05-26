@@ -2955,10 +2955,14 @@ toptable_sig_list <- readRDS("data/de/Toptable_sig_list.RDS")
 
 combined_24hr <- readRDS("data/de/Combined_24hr_Toptable_EMP_251001.RDS")
 
+
 ```
 
 ```{r Volcano Plots DEGs All Timepoints}
 #now I want to create a function to plot volcano plots for all comparisons
+
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolens.RDS")
+ttbl_list <- readRDS("data/de/toptable_list_24hr_updated_symbolens.RDS")
 
 generate_volcano_plot <- function(toptable, title) {
   
@@ -2995,9 +2999,9 @@ generate_volcano_plot <- function(toptable, title) {
   )
   
   #colors 
-  color_map <- c("Upregulated" = "blue",
+  color_map <- c("Upregulated" = "red",
                  "Not Significant" = "grey30",
-                 "Downregulated" = "red")
+                 "Downregulated" = "blue")
   
   #generate volcano plots
   p <- ggplot(toptable, aes(x = logFC, 
@@ -3020,10 +3024,10 @@ generate_volcano_plot <- function(toptable, title) {
 }
 
 #now generate a volcano plot for each set
-volcano_plots_sig <- lapply(names(toptable_list), function(nm) {
-  generate_volcano_plot(toptable_list[[nm]], title = nm)
+volcano_plots_sig <- lapply(names(ttbl_list), function(nm) {
+  generate_volcano_plot(ttbl_list[[nm]], title = nm)
 })
-names(volcano_plots_sig) <- names(toptable_list)
+names(volcano_plots_sig) <- names(ttbl_list)
 
 #display all
 for (plot_name in names(volcano_plots_sig)) {
@@ -3383,14 +3387,14 @@ toptable_list <- readRDS("data/de/Toptable_list_entrez.RDS")
 
 #first save all of the toptables that now have entrez and symbol as csv in my DEGs folder
 
-# output <- "data/de/DEGs"
+output <- "data/de/DEGs"
 # 
 # #save all data frames in toptable_list to csv
-# walk2(toptable_list, names(toptable_list), ~ {
-#   file_path <- file.path(output, paste0("Toptable_", .y, ".csv"))
-#   write.csv(.x, file_path, row.names = FALSE)
-#   message("Saved: ", file_path)
-# })
+walk2(ttbl_list, names(ttbl_list), ~ {
+  file_path <- file.path(output, paste0("Toptable_", .y, ".csv"))
+  write.csv(.x, file_path, row.names = FALSE)
+  message("Saved: ", file_path)
+})
 
 #all of the csvs are saved
 
@@ -3844,8 +3848,9 @@ save_complex_heatmap(DIC_logFC_HM,
 #make comparisons across all 2 + 24hr pairwise treatment DEGs
 #venn diagram 
 
-stimuli <- c("TUN2", "THA2", "DOX2", "NUTL2",
-             "LPS2", "TNFa2", "BPA2", "PFOA2",
+stimuli <- c(
+  # "TUN2", "THA2", "DOX2", "NUTL2",
+  #            "LPS2", "TNFa2", "BPA2", "PFOA2",
              "TUN24", "THA24", "DOX24", "NUTL24",
              "LPS24", "TNFa24", "BPA24", "PFOA24")
 
@@ -3857,28 +3862,28 @@ for (st in stimuli) {
   nm_C <- paste0("V.", st, "_C")
   
   #skip if not in the toptable list for DEGs
-  if (!(nm_H %in% names(toptable_list)) & !(nm_C %in% names(toptable_list))) {
+  if (!(nm_H %in% names(ttbl_list)) & !(nm_C %in% names(ttbl_list))) {
     message("skipping", st, "- no DEGs H and C")
     next
   }
   
-  h_genes <- if (nm_H %in% names(toptable_list)) {
-    df_h <- toptable_list[[nm_H]]
+  h_genes <- if (nm_H %in% names(ttbl_list)) {
+    df_h <- ttbl_list[[nm_H]]
     df_h$Entrez_ID <- as.character(df_h$Entrez_ID)
     df_h$Entrez_ID[!is.na(df_h$adj.P.Val) & df_h$adj.P.Val < 0.05]
   } else character(0)
   
-  c_genes <- if (nm_C %in% names(toptable_list)) {
-    df_c <- toptable_list[[nm_C]]
+  c_genes <- if (nm_C %in% names(ttbl_list)) {
+    df_c <- ttbl_list[[nm_C]]
     df_c$Entrez_ID <- as.character(df_c$Entrez_ID)
     df_c$Entrez_ID[!is.na(df_c$adj.P.Val) & df_c$adj.P.Val < 0.05]
   }
   
   # #pull DEGs by filtering for adj.p < 0.05
-  deg_H <- toptable_list[[nm_H]] %>%
+  deg_H <- ttbl_list[[nm_H]] %>%
     dplyr::filter(adj.P.Val < 0.05) %>%
     pull(Entrez_ID)
-  deg_C <- toptable_list[[nm_H]] %>%
+  deg_C <- ttbl_list[[nm_H]] %>%
     dplyr::filter(adj.P.Val < 0.05) %>%
     pull(Entrez_ID)
 
@@ -3911,38 +3916,128 @@ for (st in stimuli) {
 }
   
   # #save as png and pdf in my output_folder
-#   png_filename <- file.path(output_folder,
-#                             paste0("PropVenn_", st, "_EMP_251010.png"))
-#   png(png_filename, width = 6, height = 6, units = "in", res = 300)
-#   print(
-#     plot(fit,
-#        fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
-#        labels = TRUE,
-#        quantities = TRUE,
-#        main = plot_title
-#   )
-#   )
-#   dev.off()
-# 
-#   pdf_filename <- file.path(output_folder,
-#                             paste0("PropVenn_", st, "_EMP_251010.pdf"))
-#   cairo_pdf(pdf_filename, width = 6, height = 6)
-#   print(
-#     plot(fit,
-#        fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
-#        labels = TRUE,
-#        quantities = TRUE,
-#        main = plot_title
-#   )
-#   )
-#   dev.off()
-# 
-#   message("Saved Euler diagram for ", st)
-# 
-# }
+  png_filename <- file.path(output_folder,
+                            paste0("PropVenn_", st, "_EMP_260516.png"))
+  png(png_filename, width = 6, height = 6, units = "in", res = 300)
+  print(
+    plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+       labels = TRUE,
+       quantities = TRUE,
+       main = plot_title
+  )
+  )
+  dev.off()
+
+  pdf_filename <- file.path(output_folder,
+                            paste0("PropVenn_", st, "_EMP_251010.pdf"))
+  cairo_pdf(pdf_filename, width = 6, height = 6)
+  print(
+    plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+       labels = TRUE,
+       quantities = TRUE,
+       main = plot_title
+  )
+  )
+  dev.off()
+
+  message("Saved Euler diagram for ", st)
+
+}
 
 
 ```
+
+```{r venn try two}
+stimuli <- c(
+             "TUN_24", "THA_24", "DOX_24", "NUTL_24",
+             "LPS_24", "TNFa_24", "BPA_24", "PFOA_24")
+
+# loop through the defined treatments
+for (st in stimuli) {
+  
+  # make object names
+  nm_H <- paste0(st, "_H")
+  nm_C <- paste0(st, "_C")
+  
+  if (!(nm_H %in%  names(ttbl_list)) & !(nm_C %in% names(ttbl_list))) {
+    message("skipping ", st, " - no DEGs H and C")
+    next
+  }
+  
+  # Pull Human DEGs and wrap in unique()
+  h_genes <- if (nm_H %in% names(ttbl_list)) {
+    df_h <- ttbl_list[[nm_H]]
+    df_h$Ensembl_ID <- as.character(df_h$Ensembl_ID)
+    unique(df_h$Ensembl_ID[!is.na(df_h$adj.P.Val) & df_h$adj.P.Val < 0.05])
+  } else character(0)
+  
+  # Pull Chimp DEGs and wrap in unique()
+  c_genes <- if (nm_C %in% names(ttbl_list)) {
+    df_c <- ttbl_list[[nm_C]]
+    df_c$Ensembl_ID <- as.character(df_c$Ensembl_ID)
+    unique(df_c$Ensembl_ID[!is.na(df_c$adj.P.Val) & df_c$adj.P.Val < 0.05])
+  } else character(0)
+
+  # if both empty - skip
+  if (length(h_genes) == 0 & length(c_genes) == 0) {
+    message("skipping ", st, " - no DEGs H and C")
+    next
+  }
+  
+  # create venn list
+  venn_list <- list(
+    H = h_genes,
+    C = c_genes
+  )
+  
+  # fit proportional venn
+  fit <- euler(venn_list, shape = "ellipse")
+  
+  # plot proportional venn
+  plot_title <- paste0("DEGs H vs C - ", st)
+  p <- plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6), # Dark Pink and Green
+       labels = TRUE,
+       quantities = TRUE, 
+       main = plot_title
+       )
+  
+  print(p)
+  
+  # #save as png and pdf in my output_folder 
+  png_filename <- file.path(output_folder,
+                            paste0("PropVenn_", st, "_EMP_260516.png"))
+  png(png_filename, width = 6, height = 6, units = "in", res = 300)
+  print(
+    plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+       labels = TRUE,
+       quantities = TRUE,
+       main = plot_title
+    )
+  )
+  dev.off()
+
+  pdf_filename <- file.path(output_folder,
+                            paste0("PropVenn_", st, "_EMP_251010.pdf"))
+  cairo_pdf(pdf_filename, width = 6, height = 6)
+  print(
+    plot(fit,
+       fills = list(fill = c("#740949", "#A6AA59"), alpha = 0.6),
+       labels = TRUE,
+       quantities = TRUE,
+       main = plot_title
+    )
+  )
+  dev.off()
+
+  message("Saved Euler diagram for ", st)
+
+}
+```
+
 
 #Timepoint Comparison Venn
 ```{r Timepoint comparison Venn Diagrams}
@@ -4387,10 +4482,9 @@ combined_plot <- plots[["DOX"]] + plots[["NUTL"]] +
 #Species Specific logFC Correlation Scatterplots - all stimuli
 ```{r Species Specific logFC Cor Scatter all}
 #define stimuli
-stim_all <- c("TUN2", "THA2", "DOX2", "NUTL2",
-             "LPS2", "TNFa2", "BPA2", "PFOA2",
-             "TUN24", "THA24", "DOX24", "NUTL24",
-             "LPS24", "TNFa24", "BPA24", "PFOA24")
+stim_all <- c(
+             "TUN_24", "THA_24", "DOX_24", "NUTL_24",
+             "LPS_24", "TNFa_24", "BPA_24", "PFOA_24")
 
 spearman_res_all <- data.frame(
   Stimulus = character(),
@@ -4403,10 +4497,10 @@ plots_all <- list()
 
 for (st in stim_all) {
   # Make object names
-  nm_H <- paste0("V.", st, "_H")
-  nm_C <- paste0("V.", st, "_C")
+  nm_H <- paste0(st, "_H")
+  nm_C <- paste0(st, "_C")
   
-  if (!(nm_H %in% names(toptable_list)) | !(nm_C %in% names(toptable_list))) {
+  if (!(nm_H %in% names(ttbl_list)) | !(nm_C %in% names(ttbl_list))) {
     message("Skipping ", st, " (missing H or C)")
     next
   }
@@ -4415,15 +4509,15 @@ for (st in stim_all) {
   stim_color <- ifelse(stim_name %in% names(stim_col), 
                        stim_col[stim_name], "black")
   
-  df_h <- toptable_list[[nm_H]] %>% 
-    mutate(Entrez_ID = as.character(Entrez_ID))
-  df_c <- toptable_list[[nm_C]] %>% 
-    mutate(Entrez_ID = as.character(Entrez_ID))
+  df_h <- ttbl_list[[nm_H]] %>% 
+    mutate(Ensembl_ID = as.character(Ensembl_ID))
+  df_c <- ttbl_list[[nm_C]] %>% 
+    mutate(Ensembl_ID = as.character(Ensembl_ID))
   
   # Merge by Entrez ID
-  merged_df_all <- inner_join(df_h, df_c, by = "Entrez_ID",
+  merged_df_all <- inner_join(df_h, df_c, by = "Ensembl_ID",
                               suffix = c("_H", "_C")) %>% 
-    dplyr::select(Entrez_ID, logFC_H = logFC_H, logFC_C = logFC_C)
+    dplyr::select(Ensembl_ID, logFC_H = logFC_H, logFC_C = logFC_C)
   
   # Identify opposite-direction genes
   merged_df_all <- merged_df_all %>%
@@ -4490,50 +4584,50 @@ for (st in stim_all) {
 }
 
 #save as 2x4 grid
-# combined_plot_2x4 <- wrap_plots(
-#   plots_all[["TUN"]],
-#   plots_all[["THA"]],
-#   plots_all[["DOX"]],
-#   plots_all[["NUTL"]],
-#   plots_all[["LPS"]],
-#   plots_all[["TNFa"]],
-#   plots_all[["BPA"]],
-#   plots_all[["PFOA"]],
-#   ncol = 4,
-#   nrow = 2
-# ) + plot_annotation(theme = theme_custom())
+combined_plot_2x4 <- wrap_plots(
+  plots_all[["TUN"]],
+  plots_all[["THA"]],
+  plots_all[["DOX"]],
+  plots_all[["NUTL"]],
+  plots_all[["LPS"]],
+  plots_all[["TNFa"]],
+  plots_all[["BPA"]],
+  plots_all[["PFOA"]],
+  ncol = 4,
+  nrow = 2
+) + plot_annotation(theme = theme_custom())
 
 #save — each plot as 5x5 → total 20x10 inches
-# save_plot(
-#   plot = combined_plot_2x4,
-#   filename = "Species_logFC_Cor_scatter_allstimuli_2x4_EMP",
-#   folder = output_folder,
-#   width = 20,
-#   height = 10
-# )
+save_plot(
+  plot = combined_plot_2x4,
+  filename = "Species_logFC_Cor_scatter_allstimuli_2x4_EMP",
+  folder = output_folder,
+  width = 20,
+  height = 10
+)
 
 #now save this as a 4x2 grid just in case
-# combined_plot_4x2 <- wrap_plots(
-#   plots_all[["TUN"]],
-#   plots_all[["THA"]],
-#   plots_all[["DOX"]],
-#   plots_all[["NUTL"]],
-#   plots_all[["LPS"]],
-#   plots_all[["TNFa"]],
-#   plots_all[["BPA"]],
-#   plots_all[["PFOA"]],
-#   ncol = 2,
-#   nrow = 4
-# ) + plot_annotation(theme = theme_custom())
+combined_plot_4x2 <- wrap_plots(
+  plots_all[["TUN"]],
+  plots_all[["THA"]],
+  plots_all[["DOX"]],
+  plots_all[["NUTL"]],
+  plots_all[["LPS"]],
+  plots_all[["TNFa"]],
+  plots_all[["BPA"]],
+  plots_all[["PFOA"]],
+  ncol = 2,
+  nrow = 4
+) + plot_annotation(theme = theme_custom())
 
 #save — each plot 5x5 = total 10x20 inches
-# save_plot(
-#   plot = combined_plot_4x2,
-#   filename = "Species_logFC_Cor_scatter_allstimuli_4x2_EMP",
-#   folder = output_folder,
-#   width = 10,
-#   height = 20
-# )
+save_plot(
+  plot = combined_plot_4x2,
+  filename = "Species_logFC_Cor_scatter_allstimuli_4x2_EMP",
+  folder = output_folder,
+  width = 10,
+  height = 20
+)
 
 
 ```

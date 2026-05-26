@@ -3832,24 +3832,22 @@ for(subset_name in names(subset_clustlike)) {
 #this will be using my toptables that I made with DE analysis previously
 
 #read in my toptable list and my long toptable dataframe for 24hr samples
-ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolentrez.RDS")
-combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolentrez.RDS")
+ttbl_list_24 <- readRDS("data/de/toptable_list_24hr_updated_symbolens.RDS")
+combined_ttbl_24 <- readRDS("data/de/combined_toptable_long_24hr_symbolens.RDS")
 
 #pull in my gene vectors
 motif_gene_sets <- list(
-  all24 = all24_clustlike
-  # upr = upr_clustlike,
-  # ddr = ddr_clustlike,
-  # imr = imr_clustlike,
-  # mmr = mmr_clustlike
+  all = t24_clustlike,
+  upr = upr_clustlike,
+  ddr = ddr_clustlike,
+  imr = imr_clustlike
 )
 
 motif_stimuli <- list(
-  all24 = c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa","BPA", "PFOA")
-  # upr = c("TUN", "THA"),
-  # ddr = c("DOX", "NUTL"),
-  # imr = c("LPS", "TNFa"),
-  # mmr = c("BPA", "PFOA")
+  all = c("TUN", "THA", "DOX", "NUTL", "LPS", "TNFa","BPA", "PFOA"),
+  upr = c("TUN", "THA"),
+  ddr = c("DOX", "NUTL"),
+  imr = c("LPS", "TNFa")
 )
 
 

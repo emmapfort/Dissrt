@@ -926,6 +926,477 @@ print(qc_map_plots_list)
 
 ```
 
+# Mapping Stats 24hr Samples Only
+
+```{r make boxplots and barplots for the 24hr samples only, warning=FALSE, message=FALSE, fig.height = 10, fig.width=12}
+
+#### Filter for 24hr Samples & Create Combined Variables ####
+map_align_stats_24 <- map_align_stats %>% 
+  dplyr::filter(Time == "24") %>% 
+  dplyr::mutate(
+    # e.g., "TUN_H" or "TUN_C" depending on Species name
+    Species_Short = ifelse(grepl("Human", Species, ignore.case = TRUE) | grepl("^H", Ind), "H", "C"),
+    Condition = paste(Stimulus, Species_Short, sep = "_"),
+    
+    # e.g., "Human_TUN" or "Chimp_TUN"
+    Species_Stimulus = paste(Species, Stimulus, sep = "_")
+  )
+
+# Set factor levels for Stimulus to keep your preferred order
+map_align_stats_24$Stimulus <- factor(
+  map_align_stats_24$Stimulus,
+  levels = c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+             "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+)
+
+# Generate target ordering for our new combined variables based on stim_order
+stim_order <- c("TUN", "THA", "DOX", "NUTL", "DMSO", 
+                "LPS", "TNFa", "H2O", "BPA", "PFOA", "EtOH")
+
+cond_order <- c(paste0(stim_order, "_H"), paste0(stim_order, "_C"))
+map_align_stats_24$Condition <- factor(map_align_stats_24$Condition, levels = cond_order)
+
+# Set species names dynamically based on what exists in your dataframe (e.g., Human/Chimp)
+unique_species <- unique(map_align_stats_24$Species)
+spec_stim_order <- unlist(lapply(unique_species, function(s) paste(s, stim_order, sep = "_")))
+map_align_stats_24$Species_Stimulus <- factor(map_align_stats_24$Species_Stimulus, levels = spec_stim_order)
+
+
+#### Fragments by Condition (Stimulus_Species) ####
+
+# Total Reads per Condition Barplot
+total_reads_cond_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = TotalReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean total fragments by condition (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads per Condition Barplot
+map_reads_cond_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = MappedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean mapped fragments by condition (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads per Condition Barplot
+pp_reads_cond_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean properly-paired fragments by condition (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Total Reads by Condition Boxplot ####
+total_reads_cond_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = TotalReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Total fragments by condition boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Total Mapped Reads by Condition Boxplot ####
+map_reads_cond_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = MappedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mapped fragments by condition boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Properly Paired Mapped Reads by Condition Boxplot ####
+pp_reads_cond_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Condition, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Properly-paired fragments by condition boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Fragments by Species and Stimulus ####
+
+# Total Reads per Species_Stimulus Barplot
+total_reads_spec_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = TotalReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean total fragments by species & stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads per Species_Stimulus Barplot
+map_reads_spec_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = MappedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean mapped fragments by species & stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads per Species_Stimulus Barplot
+pp_reads_spec_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean properly-paired fragments by species & stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Total Reads by Species and Stimulus Boxplot ####
+total_reads_spec_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = TotalReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Total fragments by species & stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Total Mapped Reads by Species and Stimulus Boxplot ####
+map_reads_spec_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = MappedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mapped fragments by species & stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Properly Paired Mapped Reads by Species and Stimulus Boxplot ####
+pp_reads_spec_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species_Stimulus, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Properly-paired fragments by species & stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Fragments Isolated by Species (All Individuals Plotted) ####
+
+# Total Reads per Species Barplot (all individuals plotted via geom_col identity/none summary)
+total_reads_spec_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = TotalReads, fill = Species)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = spec_col) + # Assuming spec_col is defined in your global environment
+  ggtitle(expression("Total fragments by individual species (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads per Species Barplot
+map_reads_spec_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = MappedReads, fill = Species)) +
+  geom_col(position = "dodge") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = spec_col) +
+  ggtitle(expression("Mapped fragments by individual species (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads per Species Barplot
+pp_reads_spec_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = ProperlyPairedReads, fill = Species)) +
+  geom_col(position = "dodge") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = spec_col) +
+  ggtitle(expression("Properly-paired fragments by individual species (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Reads by Species Boxplot
+total_reads_spec_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = TotalReads, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = spec_col) +
+  ggtitle(expression("Total fragments by species boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads by Species Boxplot
+map_reads_spec_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = MappedReads, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = spec_col) +
+  ggtitle(expression("Mapped fragments by species boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads by Species Boxplot
+pp_reads_spec_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Species, y = ProperlyPairedReads, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = spec_col) +
+  ggtitle(expression("Properly-paired fragments by species boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#### Fragments Isolated by Stimulus (All Stimuli Plotted) ####
+
+# Total Reads per Stimulus Barplot
+total_reads_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = TotalReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean total fragments by stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads per Stimulus Barplot
+map_reads_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = MappedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean mapped fragments by stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads per Stimulus Barplot
+pp_reads_stim_plot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_col(stat = "summary", fun = "mean") +
+  geom_hline(aes(yintercept = 20000000)) +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mean properly-paired fragments by stimulus (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Reads by Stimulus Boxplot
+total_reads_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = TotalReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Total fragments by stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Total Mapped Reads by Stimulus Boxplot
+map_reads_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = MappedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Mapped fragments by stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+# Properly Paired Mapped Reads by Stimulus Boxplot
+pp_reads_stim_boxplot <- map_align_stats_24 %>% 
+  ggplot(., aes(x = Stimulus, y = ProperlyPairedReads, fill = Stimulus)) +
+  geom_boxplot() +
+  scale_fill_manual(values = stim_col) +
+  ggtitle(expression("Properly-paired fragments by stimulus boxplot (24hr)")) +
+  xlab("") +
+  ylab(expression("RNA-sequencing fragments")) +
+  theme_custom() +
+  theme(axis.text.x = element_text(size = 10, color = "black", angle = 90, hjust = 1, vjust = 0.2))
+
+
+#make a list so I can save all of these plots
+qc_map_plots_list <- list(
+  total_reads_cond_plot,
+  map_reads_cond_plot,
+  pp_reads_cond_plot,
+  total_reads_cond_boxplot,
+  map_reads_cond_boxplot,
+  pp_reads_cond_boxplot,
+  total_reads_spec_stim_plot,
+  map_reads_spec_stim_plot,
+  pp_reads_spec_stim_plot,
+  total_reads_spec_stim_boxplot,
+  map_reads_spec_stim_boxplot,
+  pp_reads_spec_stim_boxplot,
+  total_reads_spec_plot,
+  map_reads_spec_plot,
+  pp_reads_spec_plot,
+  total_reads_spec_boxplot,
+  map_reads_spec_boxplot,
+  pp_reads_spec_boxplot,
+  total_reads_stim_plot,
+  map_reads_stim_plot,
+  pp_reads_stim_plot,
+  total_reads_stim_boxplot,
+  map_reads_stim_boxplot,
+  pp_reads_stim_boxplot
+)
+
+qc_map_plots_names <- list(
+  "total_reads_24hr_condition",
+  "map_reads_24hr_condition",
+  "pp_reads_24hr_condition",
+  "total_reads_24hr_condition_boxplot",
+  "map_reads_24hr_condition_boxplot",
+  "pp_reads_24hr_condition_boxplot",
+  "total_reads_24hr_species_stimulus",
+  "map_reads_24hr_species_stimulus",
+  "pp_reads_24hr_species_stimulus",
+  "total_reads_24hr_species_stimulus_boxplot",
+  "map_reads_24hr_species_stimulus_boxplot",
+  "pp_reads_24hr_species_stimulus_boxplot",
+  "total_reads_24hr_species",
+  "map_reads_24hr_species",
+  "pp_reads_24hr_species",
+  "total_reads_24hr_species_boxplot",
+  "map_reads_24hr_species_boxplot",
+  "pp_reads_24hr_species_boxplot",
+  "total_reads_24hr_stimulus",
+  "map_reads_24hr_stimulus",
+  "pp_reads_24hr_stimulus",
+  "total_reads_24hr_stimulus_boxplot",
+  "map_reads_24hr_stimulus_boxplot",
+  "pp_reads_24hr_stimulus_boxplot"
+)
+
+qc_map_plots_names <- paste0(qc_map_plots_names, "_EMP")
+
+
+stopifnot(length(qc_map_plots_list) == length(qc_map_plots_names))
+
+#print all of these plots here
+print(qc_map_plots_list)
+
+#save all of these plots to my designated folder
+
+for (i in seq_along(qc_map_plots_list)) {
+   save_plot(
+     plot = qc_map_plots_list[[i]],
+     filename = qc_map_plots_names[i],
+     folder = output_folder
+   )
+}
+
+
+#generate quick summary table for means and medians per category (now including overall species and stimulus groups)
+mean_qc_summary_table <- map_align_stats_24 %>% 
+  dplyr::group_by(Species, Stimulus, Condition, Species_Stimulus) %>% 
+  dplyr::summarise(
+    Mean_TotalReads = mean(TotalReads, na.rm = TRUE),
+    Median_TotalReads = median(TotalReads, na.rm = TRUE),
+    Mean_MappedReads = mean(MappedReads, na.rm = TRUE),
+    Median_MappedReads = median(MappedReads, na.rm = TRUE),
+    Mean_ProperlyPairedReads = mean(ProperlyPairedReads, na.rm = TRUE),
+    Median_ProperlyPairedReads = median(ProperlyPairedReads, na.rm = TRUE),
+    Sample_Size = n(),
+    .groups = "drop"
+  )
+
+#generate standalone breakdown table grouped by Species
+species_qc_summary_table <- map_align_stats_24 %>% 
+  dplyr::group_by(Species) %>% 
+  dplyr::summarise(
+    Mean_TotalReads = mean(TotalReads, na.rm = TRUE),
+    Median_TotalReads = median(TotalReads, na.rm = TRUE),
+    Mean_MappedReads = mean(MappedReads, na.rm = TRUE),
+    Median_MappedReads = median(MappedReads, na.rm = TRUE),
+    Mean_ProperlyPairedReads = mean(ProperlyPairedReads, na.rm = TRUE),
+    Median_ProperlyPairedReads = median(ProperlyPairedReads, na.rm = TRUE),
+    Sample_Size = n(),
+    .groups = "drop"
+  )
+
+#generate standalone breakdown table grouped by Stimulus
+stimulus_qc_summary_table <- map_align_stats_24 %>% 
+  dplyr::group_by(Stimulus) %>% 
+  dplyr::summarise(
+    Mean_TotalReads = mean(TotalReads, na.rm = TRUE),
+    Median_TotalReads = median(TotalReads, na.rm = TRUE),
+    Mean_MappedReads = mean(MappedReads, na.rm = TRUE),
+    Median_MappedReads = median(MappedReads, na.rm = TRUE),
+    Mean_ProperlyPairedReads = mean(ProperlyPairedReads, na.rm = TRUE),
+    Median_ProperlyPairedReads = median(ProperlyPairedReads, na.rm = TRUE),
+    Sample_Size = n(),
+    .groups = "drop"
+  )
+
+#print summary stats to console
+print("--- Main Interaction Summary Table ---")
+print(mean_qc_summary_table)
+print("--- Species Only Summary Table ---")
+print(species_qc_summary_table)
+print("--- Stimulus Only Summary Table ---")
+print(stimulus_qc_summary_table)
+
+#save summary stats tables as csv
+write.csv(
+  mean_qc_summary_table, 
+  file = file.path(output_folder, "QC_alignment_means_summary_24hr_EMP.csv"), 
+  row.names = FALSE
+)
+
+write.csv(
+  species_qc_summary_table, 
+  file = file.path(output_folder, "QC_alignment_species_summary_24hr_EMP.csv"), 
+  row.names = FALSE
+)
+
+write.csv(
+  stimulus_qc_summary_table, 
+  file = file.path(output_folder, "QC_alignment_stimulus_summary_24hr_EMP.csv"), 
+  row.names = FALSE
+)
+```
+
+
 # Filter Dataframe
 
 Convert my dataframe to log2cpm and filter out lowly-expressed genes via rowMeans.
@@ -1251,7 +1722,8 @@ filt_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt,
                            vjust = -.3, 
                            max.overlaps = 100,
                            segment.color = "grey",
-                           segment.size = 0.05) +
+                           segment.size = 0.05,
+                           size = 3) +
   scale_color_manual(values = stim_col) +
   ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
   theme_custom()
@@ -1273,50 +1745,50 @@ filt_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt,
 
 #Now plot my PCA for stringent filtered log2cpm
 
-####PC1/PC2####
-filt_str_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt_str, 
-                                  data = metadata, 
-                                  colour = "Stimulus", 
-                                  shape = "Time", 
-                                  size =4, x=1, y=2) +
-  ggrepel::geom_text_repel(label = ind_num, 
-                           max.overlaps = 50,
-                           segment.color = "grey",
-                           segment.size = 0.05,
-                           size = 3) +
-  scale_color_manual(values = stim_col) +
-  ggtitle(expression("Filtered log"[2]*"cpm PC1/PC2")) +
-  theme_custom()
+# ####PC1/PC2####
+# filt_str_PC1_PC2 <- ggplot2::autoplot(prcomp_hc_filt_str, 
+#                                   data = metadata, 
+#                                   colour = "Stimulus", 
+#                                   shape = "Time", 
+#                                   size =4, x=1, y=2) +
+#   ggrepel::geom_text_repel(label = ind_num, 
+#                            max.overlaps = 50,
+#                            segment.color = "grey",
+#                            segment.size = 0.05,
+#                            size = 3) +
+#   scale_color_manual(values = stim_col) +
+#   ggtitle(expression("Filtered log"[2]*"cpm PC1/PC2")) +
+#   theme_custom()
 
-####PC2/PC3####
-filt_str_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt_str, 
-                                  data = metadata, 
-                                  colour = "Stimulus", 
-                                  shape = "Time", 
-                                  size =4, x=2, y=3) +
-  ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.3, 
-                           max.overlaps = 100,
-                           segment.color = "grey",
-                           segment.size = 0.05) +
-  scale_color_manual(values = stim_col) +
-  ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
-  theme_custom()
-
-####PC3/PC4####
-filt_str_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt_str, 
-                                  data = metadata, 
-                                  colour = "Stimulus", 
-                                  shape = "Time", 
-                                  size =4, x=3, y=4) +
-  ggrepel::geom_text_repel(label=ind_num, 
-                           vjust = -.3, 
-                           max.overlaps = 100,
-                           segment.color = "grey",
-                           segment.size = 0.05) +
-  scale_color_manual(values = stim_col) +
-  ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
-  theme_custom()
+# ####PC2/PC3####
+# filt_str_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt_str, 
+#                                   data = metadata, 
+#                                   colour = "Stimulus", 
+#                                   shape = "Time", 
+#                                   size =4, x=2, y=3) +
+#   ggrepel::geom_text_repel(label=ind_num, 
+#                            vjust = -.3, 
+#                            max.overlaps = 100,
+#                            segment.color = "grey",
+#                            segment.size = 0.05) +
+#   scale_color_manual(values = stim_col) +
+#   ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
+#   theme_custom()
+# 
+# ####PC3/PC4####
+# filt_str_PC3_PC4 <- ggplot2::autoplot(prcomp_hc_filt_str, 
+#                                   data = metadata, 
+#                                   colour = "Stimulus", 
+#                                   shape = "Time", 
+#                                   size =4, x=3, y=4) +
+#   ggrepel::geom_text_repel(label=ind_num, 
+#                            vjust = -.3, 
+#                            max.overlaps = 100,
+#                            segment.color = "grey",
+#                            segment.size = 0.05) +
+#   scale_color_manual(values = stim_col) +
+#   ggtitle(expression("Filtered log"[2]*"cpm PC2/PC3")) +
+#   theme_custom()
 
 
 
@@ -1327,21 +1799,21 @@ hc_pca_plots <- list(
   unfilt_PC3_PC4 = unfilt_PC3_PC4,
   filt_PC1_PC2 = filt_PC1_PC2,
   filt_PC2_PC3 = filt_PC2_PC3,
-  filt_PC3_PC4 = filt_PC3_PC4,
-  filt_str_PC1_PC2 = filt_str_PC1_PC2,
-  filt_str_PC2_PC3 = filt_str_PC2_PC3,
-  filt_str_PC3_PC4 = filt_str_PC3_PC4
+  filt_PC3_PC4 = filt_PC3_PC4
+  # filt_str_PC1_PC2 = filt_str_PC1_PC2,
+  # filt_str_PC2_PC3 = filt_str_PC2_PC3,
+  # filt_str_PC3_PC4 = filt_str_PC3_PC4
 )
 
 print(hc_pca_plots)
 
-for (plot_name in names(hc_pca_plots)) {
-  save_plot(
-    plot = hc_pca_plots[[plot_name]],
-    filename = paste0("PCA_HC_", plot_name, "_EMP"),
-    folder = output_folder
-  )
-}
+# for (plot_name in names(hc_pca_plots)) {
+#   save_plot(
+#     plot = hc_pca_plots[[plot_name]],
+#     filename = paste0("PCA_HC_", plot_name, "_EMP"),
+#     folder = output_folder
+#   )
+# }
 
 ```
 
@@ -1444,10 +1916,11 @@ filt24_PC2_PC3 <- ggplot2::autoplot(prcomp_hc_filt_24,
                                     shape = "Species", 
                                     size =3, x=2, y=3) +
   ggrepel::geom_text_repel(label=ind_num,
-                           vjust = -.3,
-                           max.overlaps = 50,
+                           vjust = -.2,
+                           max.overlaps = 25,
                            segment.color = "grey",
-                           segment.size = 0.05) +
+                           segment.size = 0.01,
+                           size = 2) +
   scale_color_manual(values = stim_col) +
   ggtitle(expression("log"[2]*"cpm PC2/PC3 24hr")) +
   theme_custom()
@@ -1503,14 +1976,21 @@ print(pca_24_list)
 #   )
 # }
 
-# save_plot(
-#   plot = filt24_PC1_PC2,
-#   filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
-#   folder = output_folder,
-#   height = 6,
-#   width = 6
-# )
+save_plot(
+  plot = filt24_PC1_PC2,
+  filename = "PCA_24hr_HC_filt24_PC1_PC2_EMP",
+  folder = output_folder,
+  height = 6,
+  width = 6
+)
 
+save_plot(
+  plot = filt24_PC2_PC3,
+  filename = "PCA_24hr_HC_filt24_PC2_PC3_EMP",
+  folder = output_folder,
+  height = 6,
+  width = 6
+)
 
 ```
 ## PCA from 2hr Samples
@@ -1739,7 +2219,7 @@ make_pca_plots <- function(subset_name, subset_drugs, hc_matrix, metadata, ind_n
   meta_sub$Ind_label <- ind_num[keep_idx]
   
   #subset expression matrix to same samples
-  hc_matrix_sub <- hc_matrix[, keep_idx]
+  hc_matrix_sub <- hc_matrix[, colnames(hc_matrix) %in% meta_sub$Final_sample_name]
   
   #run PCA on subset
   prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
@@ -1911,7 +2391,7 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
   meta_sub$Ind_label <- ind_num[keep_idx]
   
   #subset expression matrix to same samples
-  hc_matrix_sub <- hc_matrix[, keep_idx]
+  hc_matrix_sub <- hc_matrix[, colnames(hc_matrix) %in% meta_sub$Final_sample_name]
   
   #run PCA on subset
   prcomp_sub <- prcomp(t(hc_matrix_sub), scale. = TRUE)
@@ -1921,9 +2401,10 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
                  colour = "Stimulus", shape = "Species", size = 4,
                  x = 1, y = 2) +
     geom_text_repel(aes(label = Ind_label),
-                    max.overlaps = 100,
+                    max.overlaps = 25,
                     segment.color = "grey",
-                    segment.size = 0.1) +
+                    segment.size = 0.1,
+                    size = 3) +
     scale_color_manual(values = stim_col) +
     ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC1/PC2")) +
     coord_cartesian(clip = "off") +
@@ -1934,9 +2415,10 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
                  colour = "Stimulus", shape = "Species", 
                  size = 4, x = 2, y = 3) +
     geom_text_repel(aes(label = Ind_label),
-                    max.overlaps = 100,
+                    max.overlaps = 25,
                     segment.color = "grey",
-                    segment.size = 0.1) +
+                    segment.size = 0.1,
+                       size = 3) +
     scale_color_manual(values = stim_col) +
     ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC2/PC3")) +
     coord_cartesian(clip = "off") +
@@ -1947,9 +2429,10 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
                  colour = "Stimulus", shape = "Species", 
                  size = 4, x = 3, y = 4) +
     geom_text_repel(aes(label = Ind_label),
-                    max.overlaps = 100,
+                    max.overlaps = 25,
                     segment.color = "grey",
-                    segment.size = 0.1) +
+                    segment.size = 0.1,
+                    size = 3) +
     scale_color_manual(values = stim_col) +
     ggtitle(bquote(.(subset_name) ~ "subset: Filtered log"[2] * "cpm PC3/PC4")) +
     coord_cartesian(clip = "off") +
@@ -1962,7 +2445,7 @@ make_pca_plots24 <- function(subset_name, subset_drugs, hc_matrix, metadata, ind
 upr_plots24 <- make_pca_plots24("UPR", c("TUN", "THA", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
 ddr_plots24 <- make_pca_plots24("DDR", c("DOX", "NUTL", "DMSO"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
 imr_plots24 <- make_pca_plots24("IMR", c("LPS", "TNFa", "H2O"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
-mmr_plots24 <- make_pca_plots24("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
+# mmr_plots24 <- make_pca_plots24("MMR", c("BPA", "PFOA", "EtOH"), hc_cpm_mat_24, metadata_sub24, ind_num, stim_col)
 mmr_plots24_rmout <- make_pca_plots24("MMR", c("BPA", "PFOA", "EtOH"), mmr_cpm24, mmr_meta24, mmr_ind_num, stim_col)
 
 all_plots_subset_pca24 <- list(
@@ -1975,9 +2458,9 @@ all_plots_subset_pca24 <- list(
   imr24_PC1_PC2 = imr_plots24$p1,
   imr24_PC2_PC3 = imr_plots24$p2,
   imr24_PC3_PC4 = imr_plots24$p3,
-  mmr24_PC1_PC2 = mmr_plots24$p1,
-  mmr24_PC2_PC3 = mmr_plots24$p2,
-  mmr24_PC3_PC4 = mmr_plots24$p3,
+  # mmr24_PC1_PC2 = mmr_plots24$p1,
+  # mmr24_PC2_PC3 = mmr_plots24$p2,
+  # mmr24_PC3_PC4 = mmr_plots24$p3,
   mmr24_PC1_PC2_rmout = mmr_plots24_rmout$p1,
   mmr24_PC2_PC3_rmout = mmr_plots24_rmout$p2,
   mmr24_PC3_PC4_rmout = mmr_plots24_rmout$p3
@@ -1990,7 +2473,9 @@ for (plot_name in names(all_plots_subset_pca24)) {
   save_plot(
     plot = all_plots_subset_pca24[[plot_name]],
     filename = paste0("Subset_24hr_PCA_", plot_name, "_EMP"),
-    folder = output_folder
+    folder = output_folder,
+    height = 6,
+    width = 6
     )
 }
 ```
